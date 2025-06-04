@@ -1,34 +1,8 @@
 export interface IpoComprehensiveAnalysis {
-    _id: string;
+    _id: string; // Handle MongoDB ObjectId format
     ipo_table_id: string;
     company_name: string;
-    fundamentals: {
-        score: number;
-        summary: string;
-        market_position: string;
-        business_model: string;
-        revenue_details: {
-            total_revenue: number;
-            revenue_cagr: number;
-            revenue_trend: string;
-        };
-        profit_analysis: {
-            net_profit: number;
-            profit_margin: number;
-            ebitda: number;
-            profit_trend: string;
-        };
-        assets_and_liabilities: {
-            total_assets: number;
-            total_liabilities: number;
-            debt_to_equity_ratio: number;
-        };
-        financial_ratios: {
-            current_ratio: string;
-            quick_ratio: string;
-            return_on_equity: string;
-        };
-    };
+    fundamentals: IpoFundamentals;
     risk_meter: {
         score: number;
         summary: string;
@@ -49,8 +23,8 @@ export interface IpoComprehensiveAnalysis {
             description: string;
         };
         financial_stability: {
-            score: number;
-            description: string;
+            score: number | null; // Can be null
+            description: string | null; // Can be null
         };
         operational_agility: {
             score: number;
@@ -84,21 +58,8 @@ export interface IpoComprehensiveAnalysis {
             score: number;
             rationale: string;
         };
-        market_adaptability?: {
-            score: number;
-            description: string;
-        };
-        financial_stability?: {
-            score: number;
-            description: string;
-        };
-        operational_agility?: {
-            score: number;
-            description: string;
-        };
-        product_diversification?: string;
-        pivoting_history?: string[];
-        future_adaptability_potential?: string;
+        // Remove duplicated properties that belong in flexibility
+        // These were incorrectly duplicated in the time section
     };
     performance: {
         score: number;
@@ -152,5 +113,33 @@ export interface IpoComprehensiveAnalysis {
         total_revenue: number;
         net_profit: number;
         total_assets: number;
+    };
+}
+
+interface IpoFundamentals {
+    score: number;
+    summary: string;
+    market_position: string;
+    business_model: string;
+    revenue_details: {
+        total_revenue: number;
+        revenue_cagr: number;
+        revenue_trend: string;
+    };
+    profit_analysis: {
+        net_profit: number;
+        profit_margin: number;
+        ebitda: number | null; // Can be null
+        profit_trend: string;
+    };
+    assets_and_liabilities: {
+        total_assets: number;
+        total_liabilities: number | null; // Can be null
+        debt_to_equity_ratio: number | null; // Can be null
+    };
+    financial_ratios: {
+        current_ratio: string | null; // Can be null
+        quick_ratio: string | null; // Can be null
+        return_on_equity: string | null; // Can be null
     };
 }

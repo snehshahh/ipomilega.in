@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Copy, ExternalLink, Loader2 } from "lucide-react"
+import { toast } from "react-toastify"
 
 export default function Admin() {
   const [ipoList, setIpoList] = useState<Ipo[]>([])
@@ -21,6 +22,7 @@ export default function Admin() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
+    toast.success("<div>Copy to clipboard</div>")
   }
 
   useEffect(() => {
@@ -88,8 +90,8 @@ export default function Admin() {
 
   return (
     <div className="container mx-auto p-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">IPO Dashboard</h1>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
         <div className="text-sm text-muted-foreground">
           {ipoList.length} {ipoList.length === 1 ? 'IPO' : 'IPOs'} found
         </div>
@@ -154,7 +156,7 @@ export default function Admin() {
                         asChild
                       >
                         <a 
-                          href={ipo.detail_url}
+                          href={`/analysis/${ipo._id?.toString()}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center"
