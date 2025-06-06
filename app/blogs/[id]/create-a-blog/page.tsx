@@ -89,26 +89,28 @@ export default function CreateBlogPage() {
     const fetchIpoData = async () => {
       try {
         setIsLoadingIpo(true)
-        const response: Response = await fetch(`/api/ipo/${ipoId}`)
-        const response2: Response = await fetch(`/api/analysis/${ipoId}`)
-        
+        const response : any = await fetch(`/api/ipo/${ipoId}`)
+      
+        const response2 : any = await fetch(`/api/analysis/${ipoId}`)
         if (!response.ok || !response2.ok) {
           throw new Error('Failed to fetch IPO data')
         }
         
-        const data: Ipo = await response.json()
-        const analysisData: IpoComprehensiveAnalysis = await response2.json()
-        setIpoData({ ipo: data, analysis: analysisData })
+        const data: any = await response.json()
+        const analysisData: any = await response2.json()
+        console.log("ipo data",data.ipos)
+        console.log("analysis data",analysisData.ipos_analysis)
+        setIpoData({ ipo: data.ipos, analysis: analysisData.ipos_analysis })
         
-        if (data) {
+        if (data.ipos) {
           setBlogPost(prev => ({
             ...prev,
-            title: `${data.upcoming_ipo_2025} IPO Analysis: Complete Review & Investment Guide`,
-            slug: generateSlug(`${data.upcoming_ipo_2025}-ipo-analysis`),
-            excerpt: `Comprehensive analysis of ${data.upcoming_ipo_2025} IPO including price band, issue size, and investment recommendations.`,
-            meta_description: `Complete review of ${data.upcoming_ipo_2025} IPO - Price: ${data.price_band}, Size: ${data.ipo_size}. Expert analysis and investment guide.`,
-            tags: [data.upcoming_ipo_2025, data.ipo_type, 'IPO 2025', 'Stock Market'],
-            content: generateInitialContent(data)
+            title: `${data.ipos.upcoming_ipo_2025} IPO Analysis: Complete Review & Investment Guide`,
+            slug: generateSlug(`${data.ipos.upcoming_ipo_2025}-ipo-analysis`),
+            excerpt: `Comprehensive analysis of ${data.ipos.upcoming_ipo_2025} IPO including price band, issue size, and investment recommendations.`,
+            meta_description: `Complete review of ${data.ipos.upcoming_ipo_2025} IPO - Price: ${data.ipos.price_band}, Size: ${data.ipos.ipo_size}. Expert analysis and investment guide.`,
+            tags: [data.ipos.upcoming_ipo_2025, data.ipos.ipo_type, 'IPO 2025', 'Stock Market'],
+            content: generateInitialContent(data.ipos)
           }))
         }
       } catch (error) {
@@ -134,67 +136,75 @@ export default function CreateBlogPage() {
   }
 
   const generateInitialContent = (ipo: Ipo) => {
-    return `# ${ipo.upcoming_ipo_2025} IPO: Complete Analysis & Investment Guide
-
-## Overview
-
-${ipo.upcoming_ipo_2025} is set to launch its Initial Public Offering (IPO) in 2025, marking a significant milestone for the company and presenting an exciting opportunity for investors.
-
-## IPO Details
-
-### Key Information
-- **Company:** ${ipo.upcoming_ipo_2025}
-- **IPO Type:** ${ipo.ipo_type}
-- **Price Band:** ${ipo.price_band || 'To be announced'}
-- **Issue Size:** ${ipo.ipo_size || 'To be announced'}
-- **Open Date:** ${ipo.open_date ? new Date(ipo.open_date).toLocaleDateString('en-IN') : 'To be announced'}
-- **Close Date:** ${ipo.closing_date ? new Date(ipo.closing_date).toLocaleDateString('en-IN') : 'To be announced'}
-
-## Company Background
-
-[Write about the company's history, business model, and market position]
-
-## Financial Analysis
-
-### Revenue & Profitability
-[Add financial highlights and key metrics]
-
-### Growth Prospects
-[Discuss future growth opportunities and market potential]
-
-## IPO Analysis
-
-### Valuation
-[Analyze the IPO pricing and valuation metrics]
-
-### Use of Proceeds
-[Explain how the company plans to use the IPO funds]
-
-### Risk Factors
-[Highlight key risks investors should consider]
-
-## Investment Recommendation
-
-### Pros
-- [List positive factors]
-
-### Cons
-- [List concerns or risks]
-
-### Final Verdict
-[Provide your investment recommendation]
-
-## How to Apply
-
-[Include step-by-step guide for IPO application]
-
-## Conclusion
-
-[Summarize key points and final thoughts]
-
----
-
-*This analysis is for informational purposes only and should not be considered as investment advice. Please consult with a financial advisor before making investment decisions.*`
+    // Add null checks to prevent undefined values
+    const companyName = ipo.upcoming_ipo_2025 || 'Company Name';
+    const ipoType = ipo.ipo_type || 'IPO Type';
+    const priceBand = ipo.price_band || 'To be announced';
+    const issueSize = ipo.ipo_size || 'To be announced';
+    const openDate = ipo.open_date ? new Date(ipo.open_date).toLocaleDateString('en-IN') : 'To be announced';
+    const closeDate = ipo.closing_date ? new Date(ipo.closing_date).toLocaleDateString('en-IN') : 'To be announced';
+  
+    return `# ${companyName} IPO: Complete Analysis & Investment Guide
+  
+  ## Overview
+  
+  ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marking a significant milestone for the company and presenting an exciting opportunity for investors.
+  
+  ## IPO Details
+  
+  ### Key Information
+  - **Company:** ${companyName}
+  - **IPO Type:** ${ipoType}
+  - **Price Band:** ${priceBand}
+  - **Issue Size:** ${issueSize}
+  - **Open Date:** ${openDate}
+  - **Close Date:** ${closeDate}
+  
+  ## Company Background
+  
+  [Write about the company's history, business model, and market position]
+  
+  ## Financial Analysis
+  
+  ### Revenue & Profitability
+  [Add financial highlights and key metrics]
+  
+  ### Growth Prospects
+  [Discuss future growth opportunities and market potential]
+  
+  ## IPO Analysis
+  
+  ### Valuation
+  [Analyze the IPO pricing and valuation metrics]
+  
+  ### Use of Proceeds
+  [Explain how the company plans to use the IPO funds]
+  
+  ### Risk Factors
+  [Highlight key risks investors should consider]
+  
+  ## Investment Recommendation
+  
+  ### Pros
+  - [List positive factors]
+  
+  ### Cons
+  - [List concerns or risks]
+  
+  ### Final Verdict
+  [Provide your investment recommendation]
+  
+  ## How to Apply
+  
+  [Include step-by-step guide for IPO application]
+  
+  ## Conclusion
+  
+  [Summarize key points and final thoughts]
+  
+  ---
+  
+  *This analysis is for informational purposes only and should not be considered as investment advice. Please consult with a financial advisor before making investment decisions.*`
   }
 
   const handleInputChange = (field: keyof BlogPost, value: string | string[]) => {
@@ -241,7 +251,7 @@ ${ipo.upcoming_ipo_2025} is set to launch its Initial Public Offering (IPO) in 2
         updated_at: new Date().toISOString()
       }
 
-      const response = await fetch('/api/blog', {
+      const response = await fetch('/api/blogs', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,7 +272,7 @@ ${ipo.upcoming_ipo_2025} is set to launch its Initial Public Offering (IPO) in 2
       }
 
       // Redirect to blog management or view page
-      router.push(`/admin/blogs`)
+      router.push(`/admin`)
       
     } catch (error) {
       console.error('Error saving blog post:', error)
@@ -346,7 +356,7 @@ ${ipo.upcoming_ipo_2025} is set to launch its Initial Public Offering (IPO) in 2
                     Create Blog Post
                   </h1>
                   <p className="text-sm text-muted-foreground">
-                    {ipoData?.upcoming_ipo_2025} IPO Analysis
+                    {ipoData?.ipo?.upcoming_ipo_2025} IPO Analysis
                   </p>
                 </div>
               </div>
@@ -404,13 +414,13 @@ ${ipo.upcoming_ipo_2025} is set to launch its Initial Public Offering (IPO) in 2
                         <Building2 className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-lg">{ipoData.upcoming_ipo_2025}</h3>
+                        <h3 className="font-semibold text-lg">{ipoData.ipo.upcoming_ipo_2025}</h3>
                         <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                          <span>{ipoData.ipo_type}</span>
+                          <span>{ipoData.ipo.ipo_type}</span>
                           <span>•</span>
-                          <span>{ipoData.price_band}</span>
+                          <span>{ipoData.ipo.price_band}</span>
                           <span>•</span>
-                          <span>{ipoData.ipo_size}</span>
+                          <span>{ipoData.ipo.ipo_size}</span>
                         </div>
                       </div>
                     </div>

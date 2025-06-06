@@ -6,53 +6,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import {
-  Copy,
   ExternalLink,
-  Loader2,
   Search,
   Filter,
   Download,
-  RefreshCw,
   Building2,
   Calendar,
   DollarSign,
   TrendingUp,
-  Eye,
-  Edit,
-  Plus,
-  BarChart3,
-  Users,
   Activity,
-  Moon,
-  Sun,
   Shield,
   Star,
   ChevronLeft,
   ChevronRight,
-  PenTool,
   FileText,
-  Menu,
-  X,
   XCircle,
-  LineChart
+  RefreshCw,
+  LineChart,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
+import { Ipo } from "../models/ipo"
 
-interface Ipo {
-  _id?: string
-  upcoming_ipo_2025?: string
-  ipo_type?: string
-  open_date?: string
-  closing_date?: string
-  price_band?: string
-  ipo_size?: string
-  detail_url?: string
-  rhp_url?: string
-}
 
-export default function Admin() {
+
+export default function IPOs() {
   const [ipoList, setIpoList] = useState<Ipo[]>([])
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
@@ -60,23 +39,11 @@ export default function Admin() {
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredIpos, setFilteredIpos] = useState<Ipo[]>([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const itemsPerPage = 10
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
     console.log("Copied to clipboard:", text)
-  }
-
-  const refreshData = () => {
-    setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-    }, 1000)
-  }
-
-  const handleBlogClick = (ipoId: string) => {
-    router.push(`/blogs/${ipoId}/create-a-blog`)
   }
 
   useEffect(() => {
@@ -92,7 +59,7 @@ export default function Admin() {
     const fetchIpos = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch('/api/admin')
+        const response = await fetch('/api/ipo')
         if (!response.ok) {
           throw new Error('Failed to fetch IPO data')
         }
@@ -118,9 +85,9 @@ export default function Admin() {
       label: "Total IPOs",
       value: totalIpos.toString(),
       change: "+12%",
-      description: "Active listings managed",
+      description: "Active listings",
       icon: Building2,
-      color: "text-primary"
+      color: "text-primary",
     },
     {
       label: "Mainboard IPOs",
@@ -128,7 +95,7 @@ export default function Admin() {
       change: "+8%",
       description: "Large cap offerings",
       icon: TrendingUp,
-      color: "text-green-600 dark:text-green-400"
+      color: "text-green-600 dark:text-green-400",
     },
     {
       label: "SME IPOs",
@@ -136,7 +103,7 @@ export default function Admin() {
       change: "+15%",
       description: "Small & medium enterprises",
       icon: Activity,
-      color: "text-primary"
+      color: "text-primary",
     },
     {
       label: "Total Market Cap",
@@ -144,8 +111,8 @@ export default function Admin() {
       change: "+23%",
       description: "Combined issue size",
       icon: DollarSign,
-      color: "text-green-600 dark:text-green-400"
-    }
+      color: "text-green-600 dark:text-green-400",
+    },
   ]
 
   const totalPages = Math.ceil(filteredIpos.length / itemsPerPage)
@@ -169,6 +136,14 @@ export default function Admin() {
         e.currentTarget.value = currentPage.toString()
       }
     }
+  }
+
+  const handleViewBlogs = (ipoId: string) => {
+    router.push(`/blogs/${ipoId}`)
+  }
+
+  const handleViewAnalysis = (ipoId: string) => {
+    router.push(`/analysis/${ipoId}`)
   }
 
   if (isLoading) {
@@ -222,74 +197,38 @@ export default function Admin() {
             <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
               <div className="flex items-center space-x-2 min-w-0">
                 <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
-                  <BarChart3 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                  <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                 </div>
                 <div className="min-w-0">
                   <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-transparent truncate">
-                    Admin Dashboard
+                    IPO Dashboard
                   </h1>
-                  <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">IPO Management Console</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Explore Upcoming IPOs</p>
                 </div>
               </div>
             </div>
-
-            {/* Desktop Actions */}
-            <div className="hidden sm:flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
               <ThemeToggle />
-              <Button variant="outline" size="sm" onClick={refreshData} className="border-primary/20 hover:bg-primary/10">
-                <RefreshCw className="h-4 w-4 mr-2 text-primary" />
-                Refresh
-              </Button>
-              <Button size="sm" className="bg-primary hover:bg-primary/90">
-                <Plus className="h-4 w-4 mr-2" />
-                Add IPO
-              </Button>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="flex sm:hidden items-center space-x-2">
-              <ThemeToggle />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="h-10 w-10"
-              >
-                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </Button>
             </div>
           </div>
-
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <div className={cn(
-              "mt-4 pt-4 border-t sm:hidden overflow-hidden transition-all duration-300 ease-in-out",
-              isMobileMenuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
-            )}>
-              <div className="flex flex-col space-y-3">
-                <Button variant="outline" size="lg" onClick={refreshData} className="justify-start border-primary/20 hover:bg-primary/10">
-                  <RefreshCw className="h-5 w-5 mr-2 text-primary" />
-                  Refresh Data
-                </Button>
-                <Button size="lg" className="justify-start bg-primary hover:bg-primary/90">
-                  <Plus className="h-5 w-5 mr-2" />
-                  Add New IPO
-                </Button>
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Dashboard Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {dashboardStats.map((stat, index) => (
-            <Card key={index} className="group hover:shadow-lg transition-all duration-300 sm:hover:scale-105 border-0 bg-background/60 backdrop-blur-sm">
-              <CardContent className="pt-5 sm:pt-6 p-4 sm:p-6">
+            <Card
+              key={index}
+              className="group hover:shadow-lg transition-all duration-300 sm:hover:scale-105 border-0 bg-background/60 backdrop-blur-sm"
+            >
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <stat.icon className={cn("h-6 w-6 sm:h-8 sm:w-8", stat.color, "group-hover:scale-110 transition-transform")} />
-                  <Badge variant="secondary" className="text-xs font-medium bg-green-600/10 text-green-600 dark:bg-green-400/10 dark:text-green-400">
+                  <Badge
+                    variant="secondary"
+                    className="text-xs font-medium bg-green-600/10 text-green-600 dark:bg-green-400/10 dark:text-green-400"
+                  >
                     {stat.change}
                   </Badge>
                 </div>
@@ -366,12 +305,12 @@ export default function Admin() {
                 </div>
                 <div>
                   <p className="text-base sm:text-lg font-medium text-foreground mb-2">
-                    {searchQuery ? 'No IPOs found' : 'No IPOs in database'}
+                    {searchQuery ? 'No IPOs found' : 'No IPOs available'}
                   </p>
                   <p className="text-muted-foreground text-sm">
                     {searchQuery
                       ? `No results found for "${searchQuery}". Try different keywords.`
-                      : 'Start by adding your first IPO to the system.'
+                      : 'No IPOs are currently listed.'
                     }
                   </p>
                 </div>
@@ -411,9 +350,9 @@ export default function Admin() {
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             {ipo.open_date && !isNaN(new Date(ipo.open_date).getTime())
                               ? new Date(ipo.open_date).toLocaleDateString('en-IN', {
-                                day: '2-digit',
-                                month: 'short'
-                              })
+                                  day: '2-digit',
+                                  month: 'short',
+                                })
                               : 'TBA'}
                           </div>
                         </div>
@@ -423,9 +362,9 @@ export default function Admin() {
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             {ipo.closing_date && !isNaN(new Date(ipo.closing_date).getTime())
                               ? new Date(ipo.closing_date).toLocaleDateString('en-IN', {
-                                day: '2-digit',
-                                month: 'short'
-                              })
+                                  day: '2-digit',
+                                  month: 'short',
+                                })
                               : 'TBA'}
                           </div>
                         </div>
@@ -446,17 +385,7 @@ export default function Admin() {
                       </div>
 
                       <div className="flex items-center gap-2 pt-3 flex-wrap">
-                        {ipo._id && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
-                            onClick={() => copyToClipboard(ipo._id!)}
-                          >
-                            <Copy className="h-4 w-4 mr-1.5 text-primary" />
-                            ID
-                          </Button>
-                        )}
+
                         {ipo.detail_url && (
                           <Button
                             variant="outline"
@@ -464,8 +393,8 @@ export default function Admin() {
                             className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
                             onClick={() => window.open(ipo.detail_url!, '_blank')}
                           >
-                            <Eye className="h-4 w-4 mr-1.5 text-primary" />
-                            View
+                            <ExternalLink className="h-4 w-4 mr-1.5 text-primary" />
+                            Details
                           </Button>
                         )}
                         {ipo.rhp_url && (
@@ -483,11 +412,22 @@ export default function Admin() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleBlogClick(ipo._id!)}
+                            onClick={() => handleViewBlogs(ipo._id!)}
                             className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
                           >
-                            <PenTool className="h-4 w-4 mr-1.5 text-primary" />
-                            Blog
+                            <FileText className="h-4 w-4 mr-1.5 text-primary" />
+                            View Blogs
+                          </Button>
+                        )}
+                        {ipo._id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewAnalysis(ipo._id!)}
+                            className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                          >
+                            <LineChart className="h-4 w-4 mr-1.5 text-primary" />
+                            View Analysis
                           </Button>
                         )}
                       </div>
@@ -535,10 +475,10 @@ export default function Admin() {
                             <span className="text-sm text-foreground">
                               {ipo.open_date && !isNaN(new Date(ipo.open_date).getTime())
                                 ? new Date(ipo.open_date).toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric'
-                                })
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })
                                 : 'TBA'}
                             </span>
                           </div>
@@ -549,10 +489,10 @@ export default function Admin() {
                             <span className="text-sm text-foreground">
                               {ipo.closing_date && !isNaN(new Date(ipo.closing_date).getTime())
                                 ? new Date(ipo.closing_date).toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric'
-                                })
+                                    day: '2-digit',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })
                                 : 'TBA'}
                             </span>
                           </div>
@@ -568,17 +508,7 @@ export default function Admin() {
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-2 flex-wrap">
-                            {ipo._id && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-9 px-3 border-primary/20 hover:bg-primary/10"
-                                onClick={() => copyToClipboard(ipo._id!)}
-                              >
-                                <Copy className="h-4 w-4 mr-1.5 text-primary" />
-                                ID
-                              </Button>
-                            )}
+                        
                             {ipo.detail_url && (
                               <Button
                                 variant="outline"
@@ -586,8 +516,8 @@ export default function Admin() {
                                 className="h-9 px-3 border-primary/20 hover:bg-primary/10"
                                 onClick={() => window.open(ipo.detail_url!, '_blank')}
                               >
-                                <Eye className="h-4 w-4 mr-1.5 text-primary" />
-                                View
+                                <ExternalLink className="h-4 w-4 mr-1.5 text-primary" />
+                                Details
                               </Button>
                             )}
                             {ipo.rhp_url && (
@@ -601,25 +531,26 @@ export default function Admin() {
                                 RHP
                               </Button>
                             )}
+                            {ipo.slug && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleViewBlogs(ipo.slug)}
+                                className="h-9 px-3 border-primary/20 hover:bg-primary/10"
+                              >
+                                <FileText className="h-4 w-4 mr-1.5 text-primary" />
+                                View Blogs
+                              </Button>
+                            )}
                             {ipo._id && (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleBlogClick(ipo._id!)}
+                                onClick={() => handleViewAnalysis(ipo._id!)}
                                 className="h-9 px-3 border-primary/20 hover:bg-primary/10"
                               >
-                                <PenTool className="h-4 w-4 mr-1.5 text-primary" />
-                                Blog
-                              </Button>
-                            )}
-                            {ipo._id && ( 
-                              <Button
-                                size="sm"
-                                onClick={() => router.push(`/analysis/${ipo._id}`)}
-                                className="h-9 px-3 border-primary/20 hover:bg-primary/10"
-                              >
-                                <LineChart className="h-4 w-4 mr-1.5 text-red-600 dark:text-red-400" />
-                                Analysis
+                                <LineChart className="h-4 w-4 mr-1.5 text-primary" />
+                                View Analysis
                               </Button>
                             )}
                           </div>
@@ -649,12 +580,7 @@ export default function Admin() {
                     </Button>
                     <div className="flex items-center gap-1">
                       {Array.from({ length: totalPages }, (_, i) => i + 1)
-                        .filter(page => 
-                          totalPages <= 5 || 
-                          page === 1 || 
-                          page === totalPages || 
-                          (page >= currentPage - 1 && page <= currentPage + 1)
-                        )
+                        .filter(page => totalPages <= 5 || page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1))
                         .map((page, idx, arr) => (
                           <span key={page}>
                             {idx > 0 && page - arr[idx - 1] > 1 && <span className="px-2 text-muted-foreground">...</span>}

@@ -36,57 +36,8 @@ import {
   Sun
 } from 'lucide-react';
 import Link from 'next/link';
-import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
-
-// Mock data with more detailed information
-const blogPosts = [
-  {
-    id: 1,
-    title: "Comprehensive Analysis of XYZ Corp IPO Launch",
-    excerpt: "Deep dive into the financials, market positioning, and growth prospects of XYZ Corp as they prepare for their public debut with strong fundamentals.",
-    category: "IPO Analysis",
-    date: "Nov 15, 2024",
-    readTime: "8 min read",
-    author: "Investment Team",
-    ipoDetails: {
-      companyName: "XYZ Corp",
-      issueSize: "₹2,500 Cr",
-      sector: "Technology",
-      gmp: "+12%"
-    }
-  },
-  {
-    id: 2,
-    title: "Tech Sector IPO Trends: What Investors Need to Know",
-    excerpt: "Analysis of recent tech IPO performances and key factors driving valuations in the current market environment with expert insights.",
-    category: "Market Trends",
-    date: "Nov 12, 2024",
-    readTime: "6 min read",
-    author: "Market Research",
-    ipoDetails: {
-      companyName: "Multiple",
-      issueSize: "₹15,000+ Cr",
-      sector: "Technology",
-      gmp: "+8%"
-    }
-  },
-  {
-    id: 3,
-    title: "Manufacturing IPO Boom: Infrastructure Growth Story",
-    excerpt: "How infrastructure development is driving manufacturing IPOs with strong order books and government policy support creating opportunities.",
-    category: "Sector Analysis",
-    date: "Nov 10, 2024",
-    readTime: "10 min read",
-    author: "Sector Specialist",
-    ipoDetails: {
-      companyName: "ManufacCorp Ltd",
-      issueSize: "₹1,800 Cr",
-      sector: "Manufacturing",
-      gmp: "+15%"
-    }
-  }
-];
+import { IpoComprehensiveAnalysis } from './models/ipo_comprehensive_analysis';
 
 const upcomingIPOs = [
   { 
@@ -173,6 +124,28 @@ const successStories = [
 ];
 
 export default function Home() {
+
+  const [featuredBlogs, setFeaturedBlogs] = useState<BlogPost[]>([]);
+  const [latestAnalysis, setLatestAnalysis] = useState<IpoComprehensiveAnalysis[]>([]);
+
+  useEffect(() => {
+    async function fetchFeaturedBlogs() {
+      const response = await fetch('/api/blogs/featured');
+      const data = await response.json();
+      setFeaturedBlogs(data.blogs);
+    }
+    fetchFeaturedBlogs();
+  }, []);
+
+  useEffect(() => {
+    async function fetchLatestAnalysis() {
+      const response = await fetch('/api/analysis/latest-analysis');
+      const data = await response.json();
+      setLatestAnalysis(data.analysis);
+    }
+    fetchLatestAnalysis();
+  }, []);
+
   return (
     <>
       {/* SEO Head would go here in actual Next.js app */}
@@ -378,40 +351,37 @@ export default function Home() {
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
-              {blogPosts.map((post) => (
-                <Link key={post.id} href={`/analysis/${post.id}`} className="group block">
+              {latestAnalysis.map((post) => (
+                <Link key={post.ipo_table_id} href={`/analysis/${post.ipo_table_id}`} className="group block">
                   <Card className="h-full group-hover:shadow-lg transition-all duration-300 hover:scale-[1.02]">
                     <CardHeader>
                       <div className="flex justify-between items-start mb-2">
                         <Badge variant="outline" className="text-xs">
-                          {post.category}
+                          {post.ipo_details.sector}
                         </Badge>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Clock className="h-3 w-3" />
-                          {post.readTime}
+                          {post.created_at}
                         </span>
                       </div>
                       <CardTitle className="text-lg group-hover:text-primary transition-colors mb-2">
-                        {post.title}
+                        {post.company_name}
                       </CardTitle>
                       <CardDescription className="text-sm mb-3">
-                        {post.excerpt}
+                        {post.ipo_details.issue_size}
                       </CardDescription>
-                      <div className="text-xs text-muted-foreground mb-2">
-                        By {post.author} • {post.date}
-                      </div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
                         <div className="flex flex-wrap gap-2">
                           <Badge variant="secondary" className="text-xs">
-                            {post.ipoDetails.companyName}
+                            {post.ipo_details.issue_size}
                           </Badge>
                           <Badge variant="default" className="text-xs">
-                            {post.ipoDetails.issueSize}
+                            {post.ipo_details.price_band}
                           </Badge>
                           <Badge variant="outline" className="text-xs border-green-600 text-green-600 dark:border-green-400 dark:text-green-400">
-                            GMP {post.ipoDetails.gmp}
+                            GMP {post.ipo_details.approximate_gains_potential}
                           </Badge>
                         </div>
                         <div className="flex items-center justify-between pt-2">

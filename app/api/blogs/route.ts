@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase, getCollection } from "@/lib/mongo";
+import { ObjectId } from "mongodb";
 
 export async function GET(request: Request) {
     try {
         const { db } = await connectToDatabase();
-        
-        const ipos = await getCollection<BlogPost>("blogs"); 
-        
+
+        const ipos = await getCollection<BlogPost>("blogs");
+
         const ipoList = await ipos.find({}).toArray();
-        
+
         return NextResponse.json({
             message: "Data retrieved successfully",
             success: true,
@@ -27,9 +28,16 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const { db } = await connectToDatabase();
-        
-        const body: BlogPost = await request.json();    
-        
+
+        const body: BlogPost = await request.json();
+        await db.collection("blogs").insertOne(body);
+
+        const slug = body.slug;
+        await db.collection("blogs").updateOne(
+            { _id: new ObjectId(body.ipo_id) },
+            { $set: { slug: slug } }
+        );
+
         return NextResponse.json({
             message: "Data retrieved successfully",
             success: true,

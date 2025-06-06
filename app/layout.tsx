@@ -1,19 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Link from "next/link";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// Geist fonts are now imported directly from the geist package
+const geistSans = GeistSans;
+const geistMono = GeistMono;
 
 export const metadata: Metadata = {
   title: "IPO Dashboard",
@@ -45,8 +39,8 @@ export default function RootLayout({
                 <Link href="/admin" className="hover:underline">
                   Admin
                 </Link>
-                <Link href="/analysis" className="hover:underline">
-                  Analysis
+                <Link href="/blogs" className="hover:underline">
+                  Blogs
                 </Link>
                 <ThemeToggle />
               </nav>

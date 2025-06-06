@@ -3,6 +3,7 @@ export interface Ipo {
     upcoming_ipo_2025: string;
     open_date: string;
     closing_date: string;
+    slug?: string;
     ipo_type: string;
     ipo_size: string;
     price_band: string;

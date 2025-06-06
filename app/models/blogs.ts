@@ -1,6 +1,7 @@
 interface BlogPost {
     title: string;
     slug: string;
+    ipo_id: string;
     content: string;
     excerpt: string;
     tags: string[];
