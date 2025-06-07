@@ -37,7 +37,7 @@ export default function RootLayout({
     await signOut();
   };
 
-  const isAdmin = process.env.ADMIN_EMAILS?.split(",").includes(session?.user?.email || "");
+  const isAdmin =["admin@gmail.com","snehshah7634@gmail.com","shahvraj114@gmail.com"].includes(session?.user?.email || "");
 
   return (
     <html lang="en" suppressHydrationWarning>
