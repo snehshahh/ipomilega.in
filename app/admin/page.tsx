@@ -42,6 +42,8 @@ import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
 import { Ipo } from "../models/ipo"
 import { toast } from "sonner"
+import Link from "next/link"
+import { useSession } from "@/lib/auth-client"
 
 export default function Admin() {
   const [ipoList, setIpoList] = useState<Ipo[]>([])
@@ -60,6 +62,8 @@ export default function Admin() {
       description: text,
     })
   }
+
+
 
   const refreshData = () => {
     setIsLoading(true)
@@ -145,6 +149,10 @@ export default function Admin() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const currentIpos = filteredIpos.slice(startIndex, endIndex)
+  const session = useSession()
+  if (!session.data?.user) {
+    return router.push('/unauthorized')
+  }
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -233,10 +241,18 @@ export default function Admin() {
                 <RefreshCw className="h-4 w-4 mr-2 text-primary" />
                 Refresh
               </Button>
-              <Button size="sm" className="bg-primary hover:bg-primary/90">
-                <Plus className="h-4 w-4 mr-2" />
-                Add IPO
-              </Button>
+              <Link href="https://colab.research.google.com/drive/1AQs8gK3j-R0jAiXf487OxM9rokYA-wQV" target="_blank">
+                <Button variant="outline" size="sm" className="border-primary/20 hover:bg-primary/10">
+                  <Plus className="h-4 w-4 mr-2 text-primary" />
+                  Add New IPOs
+                </Button>
+              </Link>
+              <Link href="https://colab.research.google.com/drive/1ta4iMO-VU87QWxDpRUA_a0IsVrKXp4Mg" target="_blank">
+                <Button variant="outline" size="sm" className="border-primary/20 hover:bg-primary/10">
+                  <Plus className="h-4 w-4 mr-2 text-primary" />
+                  Create New Analysis
+                </Button>
+              </Link>
             </div>
 
             {/* Mobile Menu Button */}
@@ -583,7 +599,7 @@ export default function Admin() {
                                 View
                               </Button>
                             )}
-                            {ipo.ipo_details.rhp_draft_prospectus_links[0].href&& (
+                            {ipo.ipo_details.rhp_draft_prospectus_links[0].href && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -594,7 +610,7 @@ export default function Admin() {
                                 DHRP
                               </Button>
                             )}
-                            {ipo.ipo_details.drhp_draft_prospectus_links[0].href&& (
+                            {ipo.ipo_details.drhp_draft_prospectus_links[0].href && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -616,7 +632,7 @@ export default function Admin() {
                                 Blog
                               </Button>
                             )}
-                            {ipo._id && ( 
+                            {ipo._id && (
                               <Button
                                 size="sm"
                                 onClick={() => router.push(`/analysis/${ipo._id}`)}
@@ -653,10 +669,10 @@ export default function Admin() {
                     </Button>
                     <div className="flex items-center gap-1">
                       {Array.from({ length: totalPages }, (_, i) => i + 1)
-                        .filter(page => 
-                          totalPages <= 5 || 
-                          page === 1 || 
-                          page === totalPages || 
+                        .filter(page =>
+                          totalPages <= 5 ||
+                          page === 1 ||
+                          page === totalPages ||
                           (page >= currentPage - 1 && page <= currentPage + 1)
                         )
                         .map((page, idx, arr) => (

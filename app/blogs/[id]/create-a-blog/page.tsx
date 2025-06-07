@@ -43,6 +43,7 @@ import { toast } from "react-toastify"
 import Link from "next/link"
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis"
 import { Ipo } from "@/app/models/ipo"
+import { useSession } from "@/lib/auth-client"
 
 interface IpoandAnalysis {
   ipo: Ipo;
@@ -66,7 +67,7 @@ export default function CreateBlogPage() {
   const params = useParams()
   const router = useRouter()
   const ipoId = params.id as string
-  const [ipoData,setIpoData]=useState<IpoandAnalysis | null>(null)
+  const [ipoData, setIpoData] = useState<IpoandAnalysis | null>(null)
   const [ipoAnalysis, setIpoAnalysis] = useState<IpoComprehensiveAnalysis | null>(null)
   const [isLoadingIpo, setIsLoadingIpo] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -82,6 +83,10 @@ export default function CreateBlogPage() {
     author: 'Admin'
   })
 
+  const session = useSession()
+  if (!session.data?.user) {
+    return router.push('/unauthorized')
+  }
   const [newTag, setNewTag] = useState('')
   const [isPreviewMode, setIsPreviewMode] = useState(false)
 
@@ -89,19 +94,19 @@ export default function CreateBlogPage() {
     const fetchIpoData = async () => {
       try {
         setIsLoadingIpo(true)
-        const response : any = await fetch(`/api/ipo/${ipoId}`)
-      
-        const response2 : any = await fetch(`/api/analysis/${ipoId}`)
+        const response: any = await fetch(`/api/ipo/${ipoId}`)
+
+        const response2: any = await fetch(`/api/analysis/${ipoId}`)
         if (!response.ok || !response2.ok) {
           throw new Error('Failed to fetch IPO data')
         }
-        
+
         const data: any = await response.json()
         const analysisData: any = await response2.json()
-        console.log("ipo data",data.ipos)
-        console.log("analysis data",analysisData.ipos_analysis)
+        console.log("ipo data", data.ipos)
+        console.log("analysis data", analysisData.ipos_analysis)
         setIpoData({ ipo: data.ipos, analysis: analysisData.ipos_analysis })
-        
+
         if (data.ipos) {
           setBlogPost(prev => ({
             ...prev,
@@ -143,7 +148,7 @@ export default function CreateBlogPage() {
     const issueSize = ipo.ipo_size || 'To be announced';
     const openDate = ipo.open_date ? new Date(ipo.open_date).toLocaleDateString('en-IN') : 'To be announced';
     const closeDate = ipo.closing_date ? new Date(ipo.closing_date).toLocaleDateString('en-IN') : 'To be announced';
-  
+
     return `# ${companyName} IPO: Complete Analysis & Investment Guide
   
   ## Overview
@@ -242,7 +247,7 @@ export default function CreateBlogPage() {
   const handleSave = async (status: 'draft' | 'published') => {
     try {
       setIsSaving(true)
-      
+
       const payload = {
         ...blogPost,
         status,
@@ -264,7 +269,7 @@ export default function CreateBlogPage() {
       }
 
       const data = await response.json()
-      
+
       if (status === 'published') {
         toast.success('Blog post published successfully!')
       } else {
@@ -273,7 +278,7 @@ export default function CreateBlogPage() {
 
       // Redirect to blog management or view page
       router.push(`/admin`)
-      
+
     } catch (error) {
       console.error('Error saving blog post:', error)
       toast.error('Failed to save blog post')
@@ -312,9 +317,9 @@ export default function CreateBlogPage() {
         break
     }
 
-    const newContent = 
-      textarea.value.substring(0, start) + 
-      replacement + 
+    const newContent =
+      textarea.value.substring(0, start) +
+      replacement +
       textarea.value.substring(end)
 
     setBlogPost(prev => ({ ...prev, content: newContent }))
