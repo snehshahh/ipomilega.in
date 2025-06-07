@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
-import { getCollection } from "@/lib/mongo";
-import { BlogPost } from "@/app/models/blogs";
+import { connectToDatabase } from "@/lib/mongo";
 
 export async function GET() {
     try {
         
-        const blogs = await getCollection<BlogPost>("blogs"); 
+        const {db} = await connectToDatabase();
+        const blogs = await db.collection("blogs").find({}).toArray(); 
         
-        const blogList = await blogs.find({}).toArray();
-        const featuredBlogList = blogList.filter(blog => blog.created_at >new Date().setDate(new Date().getDate() - 7));
-        const threeFeaturedBlogList = featuredBlogList.slice(0, 3);
+        const blogList = blogs || [];
+        const threeFeaturedBlogList = blogList.slice(0, 3);
         
         return NextResponse.json({
             message: "Data retrieved successfully",

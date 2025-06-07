@@ -57,8 +57,6 @@ export default function Admin() {
     })
   }
 
-
-
   const refreshData = () => {
     setIsLoading(true)
     setTimeout(() => {
@@ -143,8 +141,8 @@ export default function Admin() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const currentIpos = filteredIpos.slice(startIndex, endIndex)
-  const session = useSession()
-  if (!session.data?.user) {
+  const { data: session } = useSession();
+  if (!session?.user || !(["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(session?.user?.email || ""))) {
     return router.push('/unauthorized')
   }
 

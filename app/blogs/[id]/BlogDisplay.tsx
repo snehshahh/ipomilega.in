@@ -49,96 +49,6 @@ interface Ipo {
   };
 }
 
-function formatMarkdownContent(content: string): string {
-  // First, normalize line endings and handle multiple newlines
-  let formatted = content
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n');
-
-  // Handle headers (must be done before other formatting)
-  formatted = formatted
-    .replace(/^### (.*$)/gim, '<h3 class="text-xl font-semibold mt-8 mb-4 text-foreground">$1</h3>')
-    .replace(/^## (.*$)/gim, '<h2 class="text-2xl font-bold mt-10 mb-6 text-foreground">$1</h2>')
-    .replace(/^# (.*$)/gim, '<h1 class="text-3xl font-bold mt-12 mb-8 text-foreground">$1</h1>');
-
-  // Handle blockquotes
-  formatted = formatted.replace(/^> (.*$)/gim, '<blockquote class="border-l-4 border-primary pl-6 py-4 my-6 italic text-muted-foreground bg-muted/30 rounded-r-lg">$1</blockquote>');
-
-  // Handle lists - improved pattern
-  formatted = formatted.replace(/^- (.*$)/gim, '<li class="ml-6 mb-2 text-foreground list-disc list-inside">$1</li>');
-  
-  // Wrap consecutive list items in <ul> tags
-  formatted = formatted.replace(/(<li[^>]*>.*?<\/li>\s*)+/gs, '<ul class="mb-6 space-y-2">$&</ul>');
-
-  // Handle bold and italic (order matters)
-  formatted = formatted
-    .replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em class="italic text-muted-foreground">$1</em>');
-
-  // Handle inline code
-  formatted = formatted.replace(/`([^`]+)`/g, '<code class="bg-muted px-2 py-1 rounded text-sm font-mono text-primary">$1</code>');
-
-  // Handle horizontal rules
-  formatted = formatted.replace(/^---\s*$/gim, '<hr class="my-8 border-t border-muted" />');
-
-  // Split into paragraphs and wrap non-HTML content
-  const lines = formatted.split('\n');
-  const processedLines: string[] = [];
-  let currentParagraph: string[] = [];
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    
-    // Skip empty lines
-    if (line === '') {
-      if (currentParagraph.length > 0) {
-        // Close current paragraph
-        const paragraphContent = currentParagraph.join(' ').trim();
-        if (paragraphContent && !isHtmlElement(paragraphContent)) {
-          processedLines.push(`<p class="mb-6 text-foreground leading-relaxed">${paragraphContent}</p>`);
-        } else if (paragraphContent) {
-          processedLines.push(paragraphContent);
-        }
-        currentParagraph = [];
-      }
-      continue;
-    }
-
-    // If line is already HTML, add it directly
-    if (isHtmlElement(line)) {
-      // First close any open paragraph
-      if (currentParagraph.length > 0) {
-        const paragraphContent = currentParagraph.join(' ').trim();
-        if (!isHtmlElement(paragraphContent)) {
-          processedLines.push(`<p class="mb-6 text-foreground leading-relaxed">${paragraphContent}</p>`);
-        } else {
-          processedLines.push(paragraphContent);
-        }
-        currentParagraph = [];
-      }
-      processedLines.push(line);
-    } else {
-      // Add to current paragraph
-      currentParagraph.push(line);
-    }
-  }
-
-  // Handle any remaining paragraph
-  if (currentParagraph.length > 0) {
-    const paragraphContent = currentParagraph.join(' ').trim();
-    if (paragraphContent && !isHtmlElement(paragraphContent)) {
-      processedLines.push(`<p class="mb-6 text-foreground leading-relaxed">${paragraphContent}</p>`);
-    } else if (paragraphContent) {
-      processedLines.push(paragraphContent);
-    }
-  }
-
-  return processedLines.join('\n');
-}
-
-function isHtmlElement(text: string): boolean {
-  return /^<(h[1-6]|p|div|ul|li|blockquote|hr|strong|em|code)[^>]*>/.test(text.trim());
-}
 
 export default function BlogDisplay({ blog }: { blog: BlogPost }) {
   const [ipoData, setIpoData] = useState<Ipo | null>(null);
@@ -345,12 +255,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
 
           {/* Article Content */}
           <article className="mb-12">
-            <div
-              className="prose prose-lg max-w-none [&>*]:text-foreground [&_h1]:text-foreground [&_h2]:text-foreground [&_h3]:text-foreground [&_p]:text-foreground [&_li]:text-foreground [&_strong]:text-foreground"
-              dangerouslySetInnerHTML={{
-                __html: formatMarkdownContent(blog.content),
-              }}
-            />
+            {blog.content}
           </article>
 
           <Separator className="my-12" />

@@ -531,7 +531,7 @@ export default function IPOs() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleViewBlogs(ipo.slug)}
+                                onClick={() => handleViewBlogs(ipo.slug || '')}
                                 className="h-9 px-3 border-primary/20 hover:bg-primary/10"
                               >
                                 <FileText className="h-4 w-4 mr-1.5 text-primary" />

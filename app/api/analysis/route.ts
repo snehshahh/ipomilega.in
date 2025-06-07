@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { getCollection } from "@/lib/mongo";
-import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis";
+import { connectToDatabase } from "@/lib/mongo";
 
 export async function GET() {
     try {
         
-        const ipos = await getCollection<IpoComprehensiveAnalysis>("ipo_comprehensive_analysis"); 
+        const {db} = await connectToDatabase();
+        const ipos = await db.collection("ipo_comprehensive_analysis").find({}).toArray();
         
-        const ipoList = await ipos.find({}).toArray();
+        const ipoList = ipos || [];
         
         return NextResponse.json({
             message: "Data retrieved successfully",

@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
@@ -11,7 +11,7 @@ import { useSession, signOut } from "@/lib/auth-client";
 import { useState } from "react";
 import { LoginDialog } from "@/components/ui/login";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronDown, LogOut,  TrendingUp } from "lucide-react";
+import { ChevronDown, LogOut, TrendingUp } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +20,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Skeleton } from "@/components/ui/skeleton";
 
 // Geist fonts are now imported directly from the geist package
 const geistSans = GeistSans;
@@ -31,14 +30,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   const handleSignOut = async () => {
     await signOut();
   };
 
-  const isAdmin = session?.user?.role === "admin";
+  const isAdmin = process.env.ADMIN_EMAILS?.split(",").includes(session?.user?.email || "");
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -69,17 +68,13 @@ export default function RootLayout({
 
                 {/* Navigation Links */}
                 <nav className="hidden md:flex items-center space-x-1">
-                  {status === "loading" ? (
-                    <Skeleton className="h-8 w-24 bg-muted/30" />
-                  ) : (
-                    isAdmin && (
-                      <Link
-                        href="/admin"
-                        className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-md hover:bg-muted/50"
-                      >
-                        Admin
-                      </Link>
-                    )
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-md hover:bg-muted/50"
+                    >
+                      Admin
+                    </Link>
                   )}
                   <Link
                     href="/blogs"
@@ -104,12 +99,7 @@ export default function RootLayout({
                 {/* Right Section */}
                 <div className="flex items-center space-x-4">
                   <ThemeToggle />
-                  {status === "loading" ? (
-                    <div className="flex items-center space-x-2">
-                      <Skeleton className="h-10 w-10 rounded-full bg-muted/30" />
-                      <Skeleton className="h-6 w-20 hidden sm:block bg-muted/30" />
-                    </div>
-                  ) : session ? (
+                  {session ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -118,13 +108,13 @@ export default function RootLayout({
                         >
                           <div className="flex items-center space-x-2">
                             <Avatar className="h-7 w-7">
-                              <AvatarImage src={session.user.image || ""} />
+                              <AvatarImage src={session?.user.image || ""} />
                               <AvatarFallback className="text-xs">
-                                {session.user.name?.charAt(0)?.toUpperCase() || "U"}
+                                {session?.user.name?.charAt(0)?.toUpperCase() || "U"}
                               </AvatarFallback>
                             </Avatar>
                             <span className="hidden sm:block text-sm font-medium text-foreground">
-                              {session.user.name}
+                              {session?.user.name}
                             </span>
                             <ChevronDown className="h-4 w-4 text-muted-foreground" />
                           </div>
@@ -138,10 +128,10 @@ export default function RootLayout({
                         <DropdownMenuLabel className="font-normal">
                           <div className="flex flex-col space-y-1">
                             <p className="text-sm font-medium leading-none">
-                              {session.user.name}
+                              {session?.user.name}
                             </p>
                             <p className="text-xs leading-none text-muted-foreground">
-                              {session.user.email}
+                              {session?.user.email}
                             </p>
                           </div>
                         </DropdownMenuLabel>

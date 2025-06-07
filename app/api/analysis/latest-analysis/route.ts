@@ -1,13 +1,13 @@
 
-import { getCollection } from "@/lib/mongo";
-import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis";
+import { connectToDatabase } from "@/lib/mongo";
 import { NextResponse } from "next/server";
 
 export async function GET() {
     try {
-        const analysis = await getCollection<IpoComprehensiveAnalysis>("ipo_comprehensive_analysis"); 
+        const {db} = await connectToDatabase();
+        const analysis = await db.collection("ipo_comprehensive_analysis").find({}).toArray();
         
-        const analysisList = await analysis.find({}).sort({}).toArray();
+        const analysisList = analysis || [];
         const threeAnalysisList = analysisList.slice(0, 3);
             
         return NextResponse.json({

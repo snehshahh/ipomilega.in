@@ -1,13 +1,30 @@
 import { NextResponse } from "next/server";
-import { getCollection } from "@/lib/mongo";
+import { connectToDatabase } from "@/lib/mongo";
 import { ObjectId } from "mongodb";
+
+interface BlogPost {
+    title: string;
+    slug: string;
+    ipo_id: string;
+    content: string;
+    excerpt: string;
+    tags: string[];
+    category: string;
+    status: "draft" | "published";
+    featured_image?: string;
+    meta_description: string;
+    created_at: string;
+    updated_at: string;
+    author: string;
+}
 
 export async function GET() {
     try {
 
-        const ipos = await getCollection<BlogPost>("blogs");
+        const {db} = await connectToDatabase();
+        const ipos = await db.collection("blogs").find({}).toArray();
 
-        const ipoList = await ipos.find({}).toArray();
+        const ipoList = ipos || [];
 
         return NextResponse.json({
             message: "Data retrieved successfully",

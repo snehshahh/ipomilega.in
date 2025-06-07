@@ -1,16 +1,16 @@
 import { Ipo } from "@/app/models/ipo";
-import { getCollection } from "@/lib/mongo";
+import { connectToDatabase } from "@/lib/mongo";
 import { NextResponse } from "next/server";
 
 export async function GET() {
     try {
-        const ipos = await getCollection<Ipo>("ipos"); 
-        
-        const ipoList = await ipos.find({}).toArray();
+        const {db} = await connectToDatabase();
+        const ipos = await db.collection("ipos").find({}).toArray(); 
+        const ipoList = ipos || [];
         const currentMonthInLetter = new Date().toLocaleString("en-US", { month: "long" });
-        const top3Ipos: Ipo[] = [];
-        ipoList.forEach((ipo: Ipo) => {
-            if (ipo.open_date.includes(currentMonthInLetter)) {
+        const top3Ipos: unknown[] = [];
+        ipoList.forEach((ipo: unknown) => {
+            if ((ipo as Ipo).open_date.includes(currentMonthInLetter)) {
                 top3Ipos.push(ipo);
             }
         });

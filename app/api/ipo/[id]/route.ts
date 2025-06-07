@@ -1,15 +1,19 @@
 import { NextResponse } from "next/server";
-import { getCollection } from "@/lib/mongo";
-import { Ipo } from "@/app/models/ipo";
+import { connectToDatabase } from "@/lib/mongo";
 
-export async function GET({ params }: { params: { id: string } }) {
+export async function GET(
+    request: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
+        const id = (await params).id
         
-        const ipos = await getCollection<Ipo>("ipos"); 
+        const {db} = await connectToDatabase();
+        const ipos = await db.collection("ipos").find({}).toArray(); 
         
-        const ipoList = await ipos.find({}).toArray();
+        const ipoList = ipos || [];
 
-        const ipo = ipoList.find((ipo) => ipo._id.toString() === params.id);
+        const ipo = ipoList.find((ipo) => ipo._id.toString() === id);
         
         return NextResponse.json({
             message: "Data retrieved successfully",

@@ -1,4 +1,3 @@
-// app/blogs/[id]/page.tsx
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import BlogDisplay from "./BlogDisplay";
@@ -21,11 +20,10 @@ interface BlogPost {
 
 async function getBlogPost(id: string): Promise<BlogPost | null> {
   try {
-    // Try to fetch by slug first
     const url = new URL(`${process.env.NEXTAUTH_URL}/api/blogs/slug/${id}`);
-    console.log("url",url)
+    console.log("url", url);
     const slugResponse = await fetch(url, {
-      method: 'GET'
+      method: "GET",
     });
 
     if (slugResponse.ok) {
@@ -39,8 +37,13 @@ async function getBlogPost(id: string): Promise<BlogPost | null> {
   }
 }
 
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const blog = await getBlogPost(params.id);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params; // Await the params Promise
+  const blog = await getBlogPost(id);
 
   if (!blog) {
     return {
@@ -73,8 +76,9 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   };
 }
 
-export default async function BlogPage({ params }: { params: { id: string } }) {
-  const blog = await getBlogPost(params.id);
+export default async function BlogPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params; // Await the params Promise
+  const blog = await getBlogPost(id);
 
   if (!blog) {
     notFound();
