@@ -1,21 +1,19 @@
-
-import { connectToDatabase, getCollection } from "@/lib/mongo";
-import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis";
 import { NextResponse } from "next/server";
+import { connectToDatabase, getCollection } from "@/lib/mongo";
 
 export async function GET(request: Request) {
     try {
         const { db } = await connectToDatabase();
         
-        const analysis = await getCollection<IpoComprehensiveAnalysis>("ipo_comprehensive_analysis"); 
+        const blogs = await getCollection<BlogPost>("blogs"); 
         
-        const analysisList = await analysis.find({}).sort({}).toArray();
-        const threeAnalysisList = analysisList.slice(0, 3);
-            
+        const blogList = await blogs.find({}).toArray();
+        const latestBlog = blogList.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+        const threeFeaturedBlogList = blogList.slice(0, 3);
         return NextResponse.json({
             message: "Data retrieved successfully",
             success: true,
-            analysis: threeAnalysisList
+            blogList: threeFeaturedBlogList
         });
     }
     catch (error) {

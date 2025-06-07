@@ -4,14 +4,15 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import Link from "next/link";
+import { Toaster } from "sonner";
 
 // Geist fonts are now imported directly from the geist package
 const geistSans = GeistSans;
 const geistMono = GeistMono;
 
 export const metadata: Metadata = {
-  title: "IPO Dashboard",
-  description: "IPO Management Dashboard",
+  title: "IPO Dekho",
+  description: "IPO Analysis & Investment Platform",
 };
 
 export default function RootLayout({
@@ -33,7 +34,7 @@ export default function RootLayout({
           <header className="border-b">
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
               <Link href="/" className="text-xl font-bold">
-                IPO Dashboard
+                IPO Dekho
               </Link>
               <nav className="flex items-center gap-6">
                 <Link href="/admin" className="hover:underline">
@@ -48,6 +49,7 @@ export default function RootLayout({
           </header>
           <main className="flex-1">
             {children}
+            <Toaster position="top-right" richColors />
           </main>
         </ThemeProvider>
       </body>

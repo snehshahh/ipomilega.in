@@ -9,6 +9,8 @@ interface BlogPost {
     status: 'draft' | 'published';
     featured_image?: string;
     meta_description: string;
+    created_at: string;
+    updated_at: string;
     author: string;
   }
   

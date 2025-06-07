@@ -1,28 +1,84 @@
-"use client"
+// app/blogs/[id]/page.tsx
+import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import BlogDisplay from "./BlogDisplay";
 
-import { notFound } from 'next/navigation';
-import { blogPosts } from '../blogData';
-import { useEffect, useState } from 'react';
-
-export default async function BlogPostPage({ params }: { params: { slug: string } }) {
-  const { slug } = await params
-
-  const [post, setPost] = useState<BlogPost>({} as BlogPost)
-
-  useEffect(() => {
-    const fetchPost = async () => {
-      const response = await fetch(`/api/blogs/slug/${slug}`)
-      const data = await response.json()
-      setPost(data)
-    }
-    fetchPost()
-  }, [])
-
-  return (
-    <div>
-      <h1>{post.title}</h1>
-      <p>{post.content}</p>
-    </div>
-  );
+interface BlogPost {
+  title: string;
+  slug: string;
+  ipo_id: string;
+  content: string;
+  excerpt: string;
+  tags: string[];
+  category: string;
+  status: "draft" | "published";
+  featured_image?: string;
+  meta_description: string;
+  created_at: string;
+  updated_at: string;
+  author: string;
 }
 
+async function getBlogPost(id: string): Promise<BlogPost | null> {
+  try {
+    // Try to fetch by slug first
+    const url = new URL(`${process.env.NEXTAUTH_URL}/api/blogs/slug/${id}`);
+    console.log("url",url)
+    const slugResponse = await fetch(url, {
+      method: 'GET'
+    });
+
+    if (slugResponse.ok) {
+      const data = await slugResponse.json();
+      return data.blog.status === "published" ? data.blog : null;
+    }
+    return null;
+  } catch (error) {
+    console.error("Error fetching blog post:", error);
+    return null;
+  }
+}
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const blog = await getBlogPost(params.id);
+
+  if (!blog) {
+    return {
+      title: "Blog Not Found",
+      description: "The requested blog post could not be found.",
+    };
+  }
+
+  return {
+    title: blog.title,
+    description: blog.meta_description,
+    keywords: blog.tags.join(", "),
+    authors: [{ name: blog.author }],
+    openGraph: {
+      title: blog.title,
+      description: blog.meta_description,
+      type: "article",
+      publishedTime: blog.created_at,
+      modifiedTime: blog.updated_at,
+      authors: [blog.author],
+      tags: blog.tags,
+      images: blog.featured_image ? [{ url: blog.featured_image }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: blog.title,
+      description: blog.meta_description,
+      images: blog.featured_image ? [blog.featured_image] : undefined,
+    },
+  };
+}
+
+export default async function BlogPage({ params }: { params: { id: string } }) {
+  const blog = await getBlogPost(params.id);
+
+  if (!blog) {
+    notFound();
+  }
+
+  return <BlogDisplay blog={blog} />;
+}

@@ -5,7 +5,7 @@ import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysi
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
     try {
-        const { id } = params;
+        const { id } = await params;
         const { db } = await connectToDatabase();
         
         const ipos = await getCollection<IpoComprehensiveAnalysis>("ipo_comprehensive_analysis"); 

@@ -30,6 +30,8 @@ export async function POST(request: Request) {
         const { db } = await connectToDatabase();
 
         const body: BlogPost = await request.json();
+        body.created_at = new Date().toISOString();
+        body.updated_at = new Date().toISOString();
         await db.collection("blogs").insertOne(body);
 
         const slug = body.slug;

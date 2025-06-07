@@ -34,23 +34,14 @@ import {
   Menu,
   X,
   XCircle,
-  LineChart
+  LineChart,
+  PieChart
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
-
-interface Ipo {
-  _id?: string
-  upcoming_ipo_2025?: string
-  ipo_type?: string
-  open_date?: string
-  closing_date?: string
-  price_band?: string
-  ipo_size?: string
-  detail_url?: string
-  rhp_url?: string
-}
+import { Ipo } from "../models/ipo"
+import { toast } from "sonner"
 
 export default function Admin() {
   const [ipoList, setIpoList] = useState<Ipo[]>([])
@@ -65,7 +56,9 @@ export default function Admin() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
-    console.log("Copied to clipboard:", text)
+    toast.success("Copied to clipboard", {
+      description: text,
+    })
   }
 
   const refreshData = () => {
@@ -143,7 +136,7 @@ export default function Admin() {
       value: totalSize,
       change: "+23%",
       description: "Combined issue size",
-      icon: DollarSign,
+      icon: PieChart,
       color: "text-green-600 dark:text-green-400"
     }
   ]
@@ -590,12 +583,23 @@ export default function Admin() {
                                 View
                               </Button>
                             )}
-                            {ipo.rhp_url && (
+                            {ipo.ipo_details.rhp_draft_prospectus_links[0].href&& (
                               <Button
                                 variant="outline"
                                 size="sm"
                                 className="h-9 px-3 border-green-600/20 hover:bg-green-600/10 dark:border-green-400/20 dark:hover:bg-green-400/10"
-                                onClick={() => window.open(ipo.rhp_url!, '_blank')}
+                                onClick={() => window.open(ipo.ipo_details.rhp_draft_prospectus_links[0].href!, '_blank')}
+                              >
+                                <ExternalLink className="h-4 w-4 mr-1.5 text-green-600 dark:text-green-400" />
+                                DHRP
+                              </Button>
+                            )}
+                            {ipo.ipo_details.drhp_draft_prospectus_links[0].href&& (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 px-3 border-green-600/20 hover:bg-green-600/10 dark:border-green-400/20 dark:hover:bg-green-400/10"
+                                onClick={() => window.open(ipo.ipo_details.drhp_draft_prospectus_links[0].href!, '_blank')}
                               >
                                 <ExternalLink className="h-4 w-4 mr-1.5 text-green-600 dark:text-green-400" />
                                 RHP
