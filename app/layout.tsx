@@ -1,6 +1,5 @@
 "use client"
 
-import type { Metadata } from "next";
 import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -12,7 +11,7 @@ import { useSession, signOut } from "@/lib/auth-client";
 import { useState } from "react";
 import { LoginDialog } from "@/components/ui/login";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronDown, User, LogOut, Settings, TrendingUp } from "lucide-react";
+import { ChevronDown, LogOut,  TrendingUp } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,

@@ -41,10 +41,6 @@ export default function IPOs() {
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-    console.log("Copied to clipboard:", text)
-  }
 
   useEffect(() => {
     const filtered = ipoList.filter(ipo =>

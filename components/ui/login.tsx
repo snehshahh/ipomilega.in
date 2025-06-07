@@ -43,7 +43,7 @@ export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
       }
       onClose()
     } catch (error) {
-      toast.error(isLogin ? "Login failed" : "Sign up failed")
+      toast.error(isLogin ? "Login failed `" + error : "Sign up failed `" + error)
     } finally {
       setLoading(false)
     }
@@ -55,7 +55,7 @@ export function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
         provider: "google",
       })
     } catch (error) {
-      toast.error("Google authentication failed")
+      toast.error("Google authentication failed `" + error)
     }
   }
 

@@ -291,16 +291,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
             <Separator className="border-t" />
           </header>
 
-          {/* Featured Image */}
-          {blog.featured_image && (
-            <div className="mb-12">
-              <img
-                src={blog.featured_image}
-                alt={blog.title}
-                className="w-full h-auto rounded-lg shadow-lg border"
-              />
-            </div>
-          )}
+      
 
           {/* IPO Reference Card */}
           {blog.ipo_id && (

@@ -5,20 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
 import {
   Building2,
-  CalendarClock,
-  LineChart,
   TrendingUp,
-  ArrowRight,
   FileText,
   Clock,
-  User,
   ChevronRight,
   Calendar,
   Target,
-  TrendingDown,
 } from "lucide-react";
 import Link from "next/link";
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis";
@@ -188,7 +182,7 @@ export default function AllIPOsPage() {
           </Card>
         ) : (
           <div className="space-y-3">
-            {ipos.map((ipo, index) => (
+            {ipos.map((ipo) => (
               <Link key={ipo._id} href={`/analysis/${ipo.ipo_table_id}`} className="group block">
                 <div className="bg-background/95 backdrop-blur-sm border border-muted/50 rounded-xl p-6 group-hover:shadow-xl group-hover:border-primary/30 transition-all duration-300 hover:scale-[1.01] hover:bg-background/100">
                   <div className="flex items-center justify-between">

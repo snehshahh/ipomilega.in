@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { connectToDatabase, getCollection } from "@/lib/mongo";
-import { Ipo } from "@/app/models/ipo";
+import { getCollection } from "@/lib/mongo";
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis";
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+export async function GET({ params }: { params: { id: string } }) {
     try {
         const { id } = await params;
-        const { db } = await connectToDatabase();
         
         const ipos = await getCollection<IpoComprehensiveAnalysis>("ipo_comprehensive_analysis"); 
         

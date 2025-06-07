@@ -1,8 +1,8 @@
-import { connectToDatabase, getCollection } from "@/lib/mongo";
+import { getCollection } from "@/lib/mongo";
 import { NextResponse } from "next/server";
 import { BlogPost } from "@/app/models/blog";
 
-export async function GET(request: Request, { params }: { params: { slug: string } }) {
+export async function GET({ params }: { params: { slug: string } }) {
     try {
         const { slug } = await params;
         

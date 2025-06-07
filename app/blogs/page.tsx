@@ -2,10 +2,9 @@
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { Calendar, User, ArrowRight, TrendingUp, Clock, Star, BookOpen, Flame, Zap } from "lucide-react"
+import { Calendar, ArrowRight, TrendingUp, Clock, Star, BookOpen, Flame, Zap, User } from "lucide-react"
 import { useState, useEffect } from "react"
 
 interface BlogPost {
@@ -92,7 +91,7 @@ export default function BlogsPage() {
             </div>
             <h2 className={`text-4xl font-bold ${textColor} mb-4`}>No Stories Yet</h2>
             <p className={`text-lg ${mutedText} max-w-xl mx-auto`}>
-              Our team of experts is crafting the best investment insights you'll ever read. Stay tuned for unmatched content!
+              Our team of experts is crafting the best investment insights. Stay tuned for unmatched content!
             </p>
           </div>
         ) : (

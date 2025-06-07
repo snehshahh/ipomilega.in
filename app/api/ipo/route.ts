@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import { connectToDatabase, getCollection } from "@/lib/mongo";
+import { getCollection } from "@/lib/mongo";
 import { Ipo } from "@/app/models/ipo";
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
-        const { db } = await connectToDatabase();
-        
         const ipos = await getCollection<Ipo>("ipos"); 
         
         const ipoList = await ipos.find({}).toArray();

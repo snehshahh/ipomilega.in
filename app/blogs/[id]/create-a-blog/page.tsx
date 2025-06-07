@@ -21,17 +21,12 @@ import {
   Eye,
   ArrowLeft,
   FileText,
-  Calendar,
-  User,
   Tags,
   Building2,
   Loader2,
-  CheckCircle,
-  AlertCircle,
   Upload,
   Image as ImageIcon,
   Type,
-  AlignLeft,
   Bold,
   Italic,
   List,
@@ -64,13 +59,15 @@ interface BlogPost {
 }
 
 export default function CreateBlogPage() {
-  const params = useParams()
-  const router = useRouter()
-  const ipoId = params.id as string
-  const [ipoData, setIpoData] = useState<IpoandAnalysis | null>(null)
-  const [ipoAnalysis, setIpoAnalysis] = useState<IpoComprehensiveAnalysis | null>(null)
-  const [isLoadingIpo, setIsLoadingIpo] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
+  const params = useParams();
+  const router = useRouter();
+  const session = useSession();
+  const ipoId = params.id as string;
+  const [ipoData, setIpoData] = useState<IpoandAnalysis | null>(null);
+  const [isLoadingIpo, setIsLoadingIpo] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [newTag, setNewTag] = useState('');
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [blogPost, setBlogPost] = useState<BlogPost>({
     title: '',
     slug: '',
@@ -81,31 +78,30 @@ export default function CreateBlogPage() {
     status: 'draft',
     meta_description: '',
     author: 'Admin'
-  })
+  });
 
-  const session = useSession()
-  if (!session.data?.user) {
-    return router.push('/unauthorized')
-  }
-  const [newTag, setNewTag] = useState('')
-  const [isPreviewMode, setIsPreviewMode] = useState(false)
+  // Handle redirect if user is not authenticated
+  useEffect(() => {
+    if (session.data && !session.data.user) {
+      router.push('/unauthorized');
+    }
+  }, [session.data, router]);
 
   useEffect(() => {
     const fetchIpoData = async () => {
       try {
-        setIsLoadingIpo(true)
-        const response: any = await fetch(`/api/ipo/${ipoId}`)
-
-        const response2: any = await fetch(`/api/analysis/${ipoId}`)
+        setIsLoadingIpo(true);
+        const response: Response = await fetch(`/api/ipo/${ipoId}`);
+        const response2: Response = await fetch(`/api/analysis/${ipoId}`);
         if (!response.ok || !response2.ok) {
-          throw new Error('Failed to fetch IPO data')
+          throw new Error('Failed to fetch IPO data');
         }
 
-        const data: any = await response.json()
-        const analysisData: any = await response2.json()
-        console.log("ipo data", data.ipos)
-        console.log("analysis data", analysisData.ipos_analysis)
-        setIpoData({ ipo: data.ipos, analysis: analysisData.ipos_analysis })
+        const data: { ipos: Ipo } = await response.json();
+        const analysisData: { ipos_analysis: IpoComprehensiveAnalysis } = await response2.json();
+        console.log("ipo data", data.ipos);
+        console.log("analysis data", analysisData.ipos_analysis);
+        setIpoData({ ipo: data.ipos, analysis: analysisData.ipos_analysis });
 
         if (data.ipos) {
           setBlogPost(prev => ({
@@ -116,20 +112,20 @@ export default function CreateBlogPage() {
             meta_description: `Complete review of ${data.ipos.upcoming_ipo_2025} IPO - Price: ${data.ipos.price_band}, Size: ${data.ipos.ipo_size}. Expert analysis and investment guide.`,
             tags: [data.ipos.upcoming_ipo_2025, data.ipos.ipo_type, 'IPO 2025', 'Stock Market'],
             content: generateInitialContent(data.ipos)
-          }))
+          }));
         }
       } catch (error) {
-        console.error('Error fetching IPO data:', error)
-        toast.error('Failed to load IPO data')
+        console.error('Error fetching IPO data:', error);
+        toast.error('Failed to load IPO data');
       } finally {
-        setIsLoadingIpo(false)
+        setIsLoadingIpo(false);
       }
-    }
+    };
 
     if (ipoId) {
-      fetchIpoData()
+      fetchIpoData();
     }
-  }, [ipoId])
+  }, [ipoId]);
 
   const generateSlug = (title: string) => {
     return title
@@ -137,8 +133,8 @@ export default function CreateBlogPage() {
       .replace(/[^a-z0-9 -]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
-      .trim()
-  }
+      .trim();
+  };
 
   const generateInitialContent = (ipo: Ipo) => {
     // Add null checks to prevent undefined values
@@ -150,103 +146,103 @@ export default function CreateBlogPage() {
     const closeDate = ipo.closing_date ? new Date(ipo.closing_date).toLocaleDateString('en-IN') : 'To be announced';
 
     return `# ${companyName} IPO: Complete Analysis & Investment Guide
-  
-  ## Overview
-  
-  ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marking a significant milestone for the company and presenting an exciting opportunity for investors.
-  
-  ## IPO Details
-  
-  ### Key Information
-  - **Company:** ${companyName}
-  - **IPO Type:** ${ipoType}
-  - **Price Band:** ${priceBand}
-  - **Issue Size:** ${issueSize}
-  - **Open Date:** ${openDate}
-  - **Close Date:** ${closeDate}
-  
-  ## Company Background
-  
-  [Write about the company's history, business model, and market position]
-  
-  ## Financial Analysis
-  
-  ### Revenue & Profitability
-  [Add financial highlights and key metrics]
-  
-  ### Growth Prospects
-  [Discuss future growth opportunities and market potential]
-  
-  ## IPO Analysis
-  
-  ### Valuation
-  [Analyze the IPO pricing and valuation metrics]
-  
-  ### Use of Proceeds
-  [Explain how the company plans to use the IPO funds]
-  
-  ### Risk Factors
-  [Highlight key risks investors should consider]
-  
-  ## Investment Recommendation
-  
-  ### Pros
-  - [List positive factors]
-  
-  ### Cons
-  - [List concerns or risks]
-  
-  ### Final Verdict
-  [Provide your investment recommendation]
-  
-  ## How to Apply
-  
-  [Include step-by-step guide for IPO application]
-  
-  ## Conclusion
-  
-  [Summarize key points and final thoughts]
-  
-  ---
-  
-  *This analysis is for informational purposes only and should not be considered as investment advice. Please consult with a financial advisor before making investment decisions.*`
-  }
+
+## Overview
+
+${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marking a significant milestone for the company and presenting an exciting opportunity for investors.
+
+## IPO Details
+
+### Key Information
+- **Company:** ${companyName}
+- **IPO Type:** ${ipoType}
+- **Price Band:** ${priceBand}
+- **Issue Size:** ${issueSize}
+- **Open Date:** ${openDate}
+- **Close Date:** ${closeDate}
+
+## Company Background
+
+[Write about the company's history, business model, and market position]
+
+## Financial Analysis
+
+### Revenue & Profitability
+[Add financial highlights and key metrics]
+
+### Growth Prospects
+[Discuss future growth opportunities and market potential]
+
+## IPO Analysis
+
+### Valuation
+[Analyze the IPO pricing and valuation metrics]
+
+### Use of Proceeds
+[Explain how the company plans to use the IPO funds]
+
+### Risk Factors
+[Highlight key risks investors should consider]
+
+## Investment Recommendation
+
+### Pros
+- [List positive factors]
+
+### Cons
+- [List concerns or risks]
+
+### Final Verdict
+[Provide your investment recommendation]
+
+## How to Apply
+
+[Include step-by-step guide for IPO application]
+
+## Conclusion
+
+[Summarize key points and final thoughts]
+
+---
+
+*This analysis is for informational purposes only and should not be considered as investment advice. Please consult with a financial advisor before making investment decisions.*`;
+  };
 
   const handleInputChange = (field: keyof BlogPost, value: string | string[]) => {
     setBlogPost(prev => ({
       ...prev,
       [field]: value
-    }))
+    }));
 
     // Auto-generate slug from title
     if (field === 'title' && typeof value === 'string') {
       setBlogPost(prev => ({
         ...prev,
         slug: generateSlug(value)
-      }))
+      }));
     }
-  }
+  };
 
   const addTag = () => {
     if (newTag.trim() && !blogPost.tags.includes(newTag.trim())) {
       setBlogPost(prev => ({
         ...prev,
         tags: [...prev.tags, newTag.trim()]
-      }))
-      setNewTag('')
+      }));
+      setNewTag('');
     }
-  }
+  };
 
   const removeTag = (tagToRemove: string) => {
     setBlogPost(prev => ({
       ...prev,
       tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }))
-  }
+    }));
+  };
 
   const handleSave = async (status: 'draft' | 'published') => {
     try {
-      setIsSaving(true)
+      setIsSaving(true);
 
       const payload = {
         ...blogPost,
@@ -254,7 +250,7 @@ export default function CreateBlogPage() {
         ipo_id: ipoId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }
+      };
 
       const response = await fetch('/api/blogs', {
         method: 'POST',
@@ -262,68 +258,66 @@ export default function CreateBlogPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to save blog post')
+        throw new Error('Failed to save blog post');
       }
 
-      const data = await response.json()
-
       if (status === 'published') {
-        toast.success('Blog post published successfully!')
+        toast.success('Blog post published successfully!');
       } else {
-        toast.success('Draft saved successfully!')
+        toast.success('Draft saved successfully!');
       }
 
       // Redirect to blog management or view page
-      router.push(`/admin`)
+      router.push(`/admin`);
 
     } catch (error) {
-      console.error('Error saving blog post:', error)
-      toast.error('Failed to save blog post')
+      console.error('Error saving blog post:', error);
+      toast.error('Failed to save blog post');
     } finally {
-      setIsSaving(false)
+      setIsSaving(false);
     }
-  }
+  };
 
   const insertFormatting = (format: string) => {
-    const textarea = document.getElementById('content-textarea') as HTMLTextAreaElement
-    if (!textarea) return
+    const textarea = document.getElementById('content-textarea') as HTMLTextAreaElement;
+    if (!textarea) return;
 
-    const start = textarea.selectionStart
-    const end = textarea.selectionEnd
-    const selectedText = textarea.value.substring(start, end)
-    let replacement = ''
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+    let replacement = '';
 
     switch (format) {
       case 'bold':
-        replacement = `**${selectedText || 'bold text'}**`
-        break
+        replacement = `**${selectedText || 'bold text'}**`;
+        break;
       case 'italic':
-        replacement = `*${selectedText || 'italic text'}*`
-        break
+        replacement = `*${selectedText || 'italic text'}*`;
+        break;
       case 'heading':
-        replacement = `## ${selectedText || 'Heading'}`
-        break
+        replacement = `## ${selectedText || 'Heading'}`;
+        break;
       case 'list':
-        replacement = `- ${selectedText || 'List item'}`
-        break
+        replacement = `- ${selectedText || 'List item'}`;
+        break;
       case 'quote':
-        replacement = `> ${selectedText || 'Quote'}`
-        break
+        replacement = `> ${selectedText || 'Quote'}`;
+        break;
       case 'link':
-        replacement = `[${selectedText || 'Link text'}](url)`
-        break
+        replacement = `[${selectedText || 'Link text'}](url)`;
+        break;
     }
 
     const newContent =
       textarea.value.substring(0, start) +
       replacement +
-      textarea.value.substring(end)
+      textarea.value.substring(end);
 
-    setBlogPost(prev => ({ ...prev, content: newContent }))
-  }
+    setBlogPost(prev => ({ ...prev, content: newContent }));
+  };
 
   if (isLoadingIpo) {
     return (
@@ -336,7 +330,7 @@ export default function CreateBlogPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -688,5 +682,5 @@ export default function CreateBlogPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

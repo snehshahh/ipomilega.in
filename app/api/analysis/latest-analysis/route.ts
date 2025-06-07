@@ -1,12 +1,10 @@
 
-import { connectToDatabase, getCollection } from "@/lib/mongo";
+import { getCollection } from "@/lib/mongo";
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis";
 import { NextResponse } from "next/server";
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
-        const { db } = await connectToDatabase();
-        
         const analysis = await getCollection<IpoComprehensiveAnalysis>("ipo_comprehensive_analysis"); 
         
         const analysisList = await analysis.find({}).sort({}).toArray();
