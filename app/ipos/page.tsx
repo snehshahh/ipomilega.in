@@ -30,8 +30,6 @@ import { cn } from "@/lib/utils"
 import { Ipo } from "../models/ipo"
 import { sortIPOsByOpeningDate } from "@/lib/dates"
 
-
-
 export default function IPOs() {
   const [ipoList, setIpoList] = useState<Ipo[]>([])
   const router = useRouter()
@@ -41,7 +39,6 @@ export default function IPOs() {
   const [filteredIpos, setFilteredIpos] = useState<Ipo[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
-
 
   useEffect(() => {
     const filtered = ipoList.filter(ipo =>
@@ -353,11 +350,11 @@ export default function IPOs() {
                           <div className="text-muted-foreground mb-1 text-xs">Open Date</div>
                           <div className="flex items-center gap-1.5">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                            {ipo.open_date && !isNaN(new Date(ipo.open_date).getTime())
-                              ? new Date(ipo.open_date).toLocaleDateString('en-IN', {
-                                day: '2-digit',
-                                month: 'short',
-                              })
+                            {ipo.open_date && !ipo.open_date.toLowerCase().includes('tba')
+                              ? new Date(`2000-${ipo.open_date}`).toLocaleDateString('en-IN', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                })
                               : 'TBA'}
                           </div>
                         </div>
@@ -365,11 +362,11 @@ export default function IPOs() {
                           <div className="text-muted-foreground mb-1 text-xs">Close Date</div>
                           <div className="flex items-center gap-1.5">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                            {ipo.closing_date && !isNaN(new Date(ipo.closing_date).getTime())
-                              ? new Date(ipo.closing_date).toLocaleDateString('en-IN', {
-                                day: '2-digit',
-                                month: 'short',
-                              })
+                            {ipo.closing_date && !ipo.closing_date.toLowerCase().includes('tba')
+                              ? new Date(`2000-${ipo.closing_date}`).toLocaleDateString('en-IN', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                })
                               : 'TBA'}
                           </div>
                         </div>
@@ -390,7 +387,6 @@ export default function IPOs() {
                       </div>
 
                       <div className="flex items-center gap-2 pt-3 flex-wrap">
-
                         {ipo.detail_url && (
                           <Button
                             variant="outline"
@@ -446,74 +442,81 @@ export default function IPOs() {
                 <table className="w-full">
                   <thead className="bg-muted/20">
                     <tr className="border-b border-t">
-                      <th className="font-semibold text-left p-4 min-w-[200px] text-foreground">Company</th>
-                      <th className="font-semibold text-left p-4 min-w-[100px] text-foreground">Type</th>
-                      <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Open Date</th>
-                      <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Close Date</th>
-                      <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Price Band</th>
-                      <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Issue Size</th>
-                      <th className="font-semibold text-left p-4 min-w-[280px] text-foreground">Actions</th>
+                      <th className="font-semibold text-left p-3 min-w-[200px] text-sm text-foreground">Company</th>
+                      <th className="font-semibold text-left p-3 min-w-[100px] text-sm text-foreground">Type</th>
+                      <th className="font-semibold text-left p-3 min-w-[120px] text-sm text-foreground">Open Date</th>
+                      <th className="font-semibold text-left p-3 min-w-[120px] text-sm text-foreground">Close Date</th>
+                      <th className="font-semibold text-right p-3 min-w-[120px] text-sm text-foreground">Price Band</th>
+                      <th className="font-semibold text-right p-3 min-w-[120px] text-sm text-foreground">Issue Size</th>
+                      <th className="font-semibold text-left p-3 min-w-[280px] text-sm text-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentIpos.map((ipo, index) => (
-                      <tr key={ipo._id?.toString() || index} className="group hover:bg-muted/30 transition-colors border-b">
-                        <td className="font-medium p-4">
+                      <tr
+                        key={ipo._id?.toString() || index}
+                        className="group hover:bg-muted/30 transition-colors border-b"
+                      >
+                        <td className="p-3">
                           <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                              <Building2 className="h-5 w-5 text-primary" />
+                              <Building2 className="h-4 w-4 text-primary" />
                             </div>
                             <div className="min-w-0">
-                              <div className="font-medium truncate text-foreground">{ipo.upcoming_ipo_2025 || 'Unnamed IPO'}</div>
-                              <div className="text-sm text-muted-foreground">ID: {ipo._id?.toString().slice(-6) || 'N/A'}</div>
+                              <div className="font-medium text-sm truncate text-foreground">
+                                {ipo.upcoming_ipo_2025 || 'Unnamed IPO'}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                ID: {ipo._id?.toString().slice(-6) || 'N/A'}
+                              </div>
                             </div>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <Badge variant={ipo.ipo_type === 'Mainboard' ? 'default' : 'secondary'} className="font-medium">
+                        <td className="p-3">
+                          <Badge
+                            variant={ipo.ipo_type === 'Mainboard' ? 'default' : 'secondary'}
+                            className="text-xs font-medium"
+                          >
                             {ipo.ipo_type || 'N/A'}
                           </Badge>
                         </td>
-                        <td className="p-4">
+                        <td className="p-3">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                             <span className="text-sm text-foreground">
-                              {ipo.open_date && !isNaN(new Date(ipo.open_date).getTime())
-                                ? new Date(ipo.open_date).toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric',
-                                })
+                              {ipo.open_date && !ipo.open_date.toLowerCase().includes('tba')
+                                ? new Date(`2000-${ipo.open_date}`).toLocaleDateString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                  })
                                 : 'TBA'}
                             </span>
                           </div>
                         </td>
-                        <td className="p-4">
+                        <td className="p-3">
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                             <span className="text-sm text-foreground">
-                              {ipo.closing_date && !isNaN(new Date(ipo.closing_date).getTime())
-                                ? new Date(ipo.closing_date).toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric',
-                                })
+                              {ipo.closing_date && !ipo.closing_date.toLowerCase().includes('tba')
+                                ? new Date(`2000-${ipo.closing_date}`).toLocaleDateString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                  })
                                 : 'TBA'}
                             </span>
                           </div>
                         </td>
-                        <td className="p-4">
-                          <div className="font-medium text-foreground">{ipo.price_band || 'TBA'}</div>
+                        <td className="p-3 text-right">
+                          <div className="font-medium text-sm text-foreground">{ipo.price_band || 'TBA'}</div>
                         </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
+                        <td className="p-3 text-right">
+                          <div className="flex items-center gap-2 justify-end">
                             <DollarSign className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            <span className="font-medium text-foreground">{ipo.ipo_size || 'TBA'}</span>
+                            <span className="font-medium text-sm text-foreground">{ipo.ipo_size || 'TBA'}</span>
                           </div>
                         </td>
-                        <td className="p-4">
+                        <td className="p-3">
                           <div className="flex items-center gap-2 flex-wrap">
-
                             {ipo.detail_url && (
                               <Button
                                 variant="outline"
@@ -536,11 +539,11 @@ export default function IPOs() {
                                 RHP
                               </Button>
                             )}
-                            {ipo.slug && (
+                            {ipo._id && (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => handleViewBlogs(ipo.slug || '')}
+                                onClick={() => handleViewBlogs(ipo._id!)}
                                 className="h-9 px-3 border-primary/20 hover:bg-primary/10"
                               >
                                 <FileText className="h-4 w-4 mr-1.5 text-primary" />
@@ -568,11 +571,11 @@ export default function IPOs() {
 
               {/* Pagination Controls */}
               {totalPages > 1 && (
-                <CardContent className="py-4 p-4 sm:p-6 border-t bg-muted/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-sm text-muted-foreground order-2 sm:order-1">
+                <CardContent className="py-4 p-4 border-t bg-muted/30 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="text-sm text-muted-foreground">
                     Showing {startIndex + 1} to {Math.min(endIndex, filteredIpos.length)} of {filteredIpos.length} IPOs
                   </div>
-                  <div className="flex items-center gap-2 order-1 sm:order-2">
+                  <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
@@ -580,7 +583,7 @@ export default function IPOs() {
                       disabled={currentPage === 1}
                       className="h-10 px-4 border-primary/20 hover:bg-primary/10"
                     >
-                      <ChevronLeft className="h-5 w-5 text-primary" />
+                      <ChevronLeft className="h-5 w-5" />
                       <span className="hidden sm:inline ml-1">Previous</span>
                     </Button>
                     <div className="flex items-center gap-1">
@@ -590,7 +593,7 @@ export default function IPOs() {
                           <span key={page}>
                             {idx > 0 && page - arr[idx - 1] > 1 && <span className="px-2 text-muted-foreground">...</span>}
                             <Button
-                              variant={currentPage === page ? "default" : "outline"}
+                              variant={currentPage === page ? 'default' : 'outline'}
                               size="sm"
                               onClick={() => handlePageChange(page)}
                               className="h-10 w-10 border-primary/20 hover:bg-primary/10"
@@ -605,7 +608,7 @@ export default function IPOs() {
                       placeholder="Go to page"
                       defaultValue={currentPage}
                       onKeyDown={handleGoToPage}
-                      className="w-24 h-10 px-3 text-center bg-background/50"
+                      className="w-24 h-10 px-3 text-center sm:text-sm"
                       min={1}
                       max={totalPages}
                     />
@@ -617,7 +620,7 @@ export default function IPOs() {
                       className="h-10 px-4 border-primary/20 hover:bg-primary/10"
                     >
                       <span className="hidden sm:inline mr-1">Next</span>
-                      <ChevronRight className="h-5 w-5 text-primary" />
+                      <ChevronRight className="h-5 w-5" />
                     </Button>
                   </div>
                 </CardContent>
