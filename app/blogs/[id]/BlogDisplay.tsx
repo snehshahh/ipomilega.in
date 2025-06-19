@@ -21,6 +21,7 @@ import {
   MessageCircle,
   Heart,
 } from "lucide-react";
+import MarkdownRenderer from "@/components/MarkDown";
 
 interface BlogPost {
   title: string;
@@ -113,7 +114,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                 Back to Blogs
               </Link>
             </Button>
-            
+
             <div className="flex items-center space-x-2">
               <Button
                 variant="ghost"
@@ -201,7 +202,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
             <Separator className="border-t" />
           </header>
 
-      
+
 
           {/* IPO Reference Card */}
           {blog.ipo_id && (
@@ -255,7 +256,10 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
 
           {/* Article Content */}
           <article className="mb-12">
-            {blog.content}
+            <MarkdownRenderer
+              content={blog.content}
+              className="prose-headings:scroll-mt-20"
+            />
           </article>
 
           <Separator className="my-12" />
@@ -304,7 +308,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card className="bg-muted/30 border group hover:bg-muted/50 transition-all duration-300">
                 <CardContent className="pt-6 text-center">
                   <div className="text-muted-foreground mb-4">

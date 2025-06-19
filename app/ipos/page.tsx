@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
 import { Ipo } from "../models/ipo"
+import { sortIPOsByOpeningDate } from "@/lib/dates"
 
 
 
@@ -47,20 +48,28 @@ export default function IPOs() {
       ipo.upcoming_ipo_2025?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ipo.ipo_type?.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    setFilteredIpos(filtered)
+    
+    // Sort filtered IPOs by opening date in descending order
+    const sortedFiltered = sortIPOsByOpeningDate(filtered, 'desc')
+    
+    setFilteredIpos(sortedFiltered)
     setCurrentPage(1)
   }, [searchQuery, ipoList])
-
+  
   useEffect(() => {
     const fetchIpos = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch('/api/ipo')
+        const response = await fetch('/api/admin')
         if (!response.ok) {
           throw new Error('Failed to fetch IPO data')
         }
         const data = await response.json()
-        setIpoList(data.ipos)
+        
+        // Sort IPOs by opening date when setting initial data
+        const sortedIpos = sortIPOsByOpeningDate(data.ipos, 'desc')
+        
+        setIpoList(sortedIpos)
       } catch (error) {
         console.error('Error fetching IPO data:', error)
         setError('Failed to load IPO data')
@@ -346,9 +355,9 @@ export default function IPOs() {
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             {ipo.open_date && !isNaN(new Date(ipo.open_date).getTime())
                               ? new Date(ipo.open_date).toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                })
+                                day: '2-digit',
+                                month: 'short',
+                              })
                               : 'TBA'}
                           </div>
                         </div>
@@ -358,9 +367,9 @@ export default function IPOs() {
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             {ipo.closing_date && !isNaN(new Date(ipo.closing_date).getTime())
                               ? new Date(ipo.closing_date).toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                })
+                                day: '2-digit',
+                                month: 'short',
+                              })
                               : 'TBA'}
                           </div>
                         </div>
@@ -471,10 +480,10 @@ export default function IPOs() {
                             <span className="text-sm text-foreground">
                               {ipo.open_date && !isNaN(new Date(ipo.open_date).getTime())
                                 ? new Date(ipo.open_date).toLocaleDateString('en-IN', {
-                                    day: '2-digit',
-                                    month: 'short',
-                                    year: 'numeric',
-                                  })
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                })
                                 : 'TBA'}
                             </span>
                           </div>
@@ -485,10 +494,10 @@ export default function IPOs() {
                             <span className="text-sm text-foreground">
                               {ipo.closing_date && !isNaN(new Date(ipo.closing_date).getTime())
                                 ? new Date(ipo.closing_date).toLocaleDateString('en-IN', {
-                                    day: '2-digit',
-                                    month: 'short',
-                                    year: 'numeric',
-                                  })
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                })
                                 : 'TBA'}
                             </span>
                           </div>
@@ -504,7 +513,7 @@ export default function IPOs() {
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-2 flex-wrap">
-                        
+
                             {ipo.detail_url && (
                               <Button
                                 variant="outline"

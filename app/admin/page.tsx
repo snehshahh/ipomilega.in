@@ -29,18 +29,30 @@ import {
   X,
   XCircle,
   LineChart,
-  PieChart
+  PieChart,
+  Edit
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
-import { Ipo } from "../models/ipo"
+import { Blog, Ipo } from "../models/ipo"
 import { toast } from "sonner"
 import Link from "next/link"
 import { useSession } from "@/lib/auth-client"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 export default function Admin() {
+  const { data: session } = useSession();
+
   const [ipoList, setIpoList] = useState<Ipo[]>([])
+  const [blogList, setBlogList] = useState<Blog[]>([])
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -68,6 +80,14 @@ export default function Admin() {
     router.push(`/blogs/${ipoId}/create-a-blog`)
   }
 
+  const handleEditBlog = (blogId: string) => {
+    window.open(`/blogs/edit-a-blog/${blogId}`, '_blank')
+  }
+
+  const getBlogsForIpo = (ipoId: string) => {
+    return blogList.filter(blog => blog.ipo_id === ipoId)
+  }
+
   useEffect(() => {
     const filtered = ipoList.filter(ipo =>
       ipo.upcoming_ipo_2025?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -87,6 +107,7 @@ export default function Admin() {
         }
         const data = await response.json()
         setIpoList(data.ipos)
+        setBlogList(data.blog)
       } catch (error) {
         console.error('Error fetching IPO data:', error)
         setError('Failed to load IPO data')
@@ -141,10 +162,6 @@ export default function Admin() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
   const currentIpos = filteredIpos.slice(startIndex, endIndex)
-  const { data: session } = useSession();
-  if (!session?.user || !(["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(session?.user?.email || ""))) {
-    return router.push('/unauthorized')
-  }
 
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -481,15 +498,30 @@ export default function Admin() {
                           </Button>
                         )}
                         {ipo._id && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleBlogClick(ipo._id!)}
-                            className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
-                          >
-                            <PenTool className="h-4 w-4 mr-1.5 text-primary" />
-                            Blog
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                              >
+                                <PenTool className="h-4 w-4 mr-1.5 text-primary" />
+                                Blog
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleBlogClick(ipo._id!)}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Write New Blog
+                              </DropdownMenuItem>
+                              {getBlogsForIpo(ipo._id!).map((blog) => (
+                                <DropdownMenuItem key={blog._id} onClick={() => handleEditBlog(blog._id!)}>
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit: {blog.title?.substring(0, 30)}...
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         )}
                       </div>
                     </div>
@@ -614,15 +646,30 @@ export default function Admin() {
                               </Button>
                             )}
                             {ipo._id && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleBlogClick(ipo._id!)}
-                                className="h-9 px-3 border-primary/20 hover:bg-primary/10"
-                              >
-                                <PenTool className="h-4 w-4 mr-1.5 text-primary" />
-                                Blog
-                              </Button>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                                  >
+                                    <PenTool className="h-4 w-4 mr-1.5 text-primary" />
+                                    Blog
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => handleBlogClick(ipo._id!)}>
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    Write New Blog
+                                  </DropdownMenuItem>
+                                  {getBlogsForIpo(ipo._id!).map((blog) => (
+                                    <DropdownMenuItem key={blog._id} onClick={() => handleEditBlog(blog._id!)}>
+                                      <Edit className="h-4 w-4 mr-2" />
+                                      Edit: {blog.title?.substring(0, 30)}...
+                                    </DropdownMenuItem>
+                                  ))}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             )}
                             {ipo._id && (
                               <Button

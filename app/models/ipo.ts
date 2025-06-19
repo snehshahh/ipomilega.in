@@ -1,3 +1,21 @@
+export interface Blog {
+  _id: string
+  title: string
+  slug: string
+  content: string
+  excerpt: string
+  tags: string[]
+  category: string
+  status: string
+  meta_description: string
+  featured_image?: string
+  author: string
+  ipo_id: string
+  created_at: string
+  updated_at: string
+}
+
+
 export interface Ipo {
     _id: string;
     upcoming_ipo_2025: string;
@@ -15,7 +33,15 @@ export interface Ipo {
     ipo_details: IpoDetails;
     ipo_market_lot: IpoMarketLot[],
     promoters: string;
+    nii_sr:string;
+    qib_sr:string;
+    rii_sr:string;
+    subscription_date_range:string;
+    subscription_scraped_at:string;
+    subscription_status:string;
+    total_sr:string;
     rhp_url: string;
+    blog?: Blog;
 }
 
 export interface FinancialReport {
