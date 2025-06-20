@@ -39,6 +39,7 @@ import Link from "next/link"
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis"
 import { Ipo } from "@/app/models/ipo"
 import { useSession } from "@/lib/auth-client"
+import MarkdownRenderer from "@/components/MarkDown"
 
 interface IpoandAnalysis {
   ipo: Ipo;
@@ -66,6 +67,7 @@ export default function CreateBlogPage() {
   const [ipoData, setIpoData] = useState<IpoandAnalysis | null>(null);
   const [isLoadingIpo, setIsLoadingIpo] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [slugExists, setSlugExists] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [blogPost, setBlogPost] = useState<BlogPost>({
@@ -242,6 +244,13 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
 
   const handleSave = async (status: 'draft' | 'published') => {
     try {
+      const slug = await fetch(`/api/blogs/slug/exists/${blogPost.slug}`);
+      const data = await slug.json();
+      if (data.exists) {
+        setSlugExists(true);
+        toast.error('Blog with this slug already exists');
+        return;
+      }
       setIsSaving(true);
 
       const payload = {
@@ -463,6 +472,11 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                         className="font-mono text-sm"
                       />
                     </div>
+                    {slugExists && (
+                      <div className="">
+                        <p className="text-red-500">Slug already exists</p>
+                      </div>
+                    )}
 
                     {/* Excerpt */}
                     <div className="space-y-2">
@@ -546,7 +560,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                   <div className="prose prose-lg max-w-none">
                     <h1>{blogPost.title}</h1>
                     <p className="text-muted-foreground italic">{blogPost.excerpt}</p>
-                    <div className="whitespace-pre-wrap">{blogPost.content}</div>
+                    <MarkdownRenderer content={blogPost.content} />
                   </div>
                 )}
               </CardContent>
@@ -561,22 +575,6 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                 <CardTitle className="text-lg">Publishing</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Status</Label>
-                  <Select
-                    value={blogPost.status}
-                    onValueChange={(value) => handleInputChange('status', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div className="space-y-2">
                   <Label>Category</Label>
                   <Select

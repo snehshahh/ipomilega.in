@@ -57,14 +57,13 @@ export default function IPOs() {
     const fetchIpos = async () => {
       try {
         setIsLoading(true)
-        const response = await fetch('/api/admin')
+        const response = await fetch('/api/ipo')
         if (!response.ok) {
           throw new Error('Failed to fetch IPO data')
         }
         const data = await response.json()
-        
-        // Sort IPOs by opening date when setting initial data
-        const sortedIpos = sortIPOsByOpeningDate(data.ipos, 'desc')
+        console.log("Data",data);
+        const sortedIpos = sortIPOsByOpeningDate(data.data.all, 'desc')
         
         setIpoList(sortedIpos)
       } catch (error) {

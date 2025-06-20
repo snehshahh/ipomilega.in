@@ -110,6 +110,7 @@ export default function Home() {
       try {
         const response = await fetch("/api/blogs/featured");
         const data = await response.json();
+        console.log("featured blogs", data.blogList);
         setFeaturedBlogs(data.blogList);
       } catch (error) {
         console.error("Error fetching blogs:", error);
@@ -140,9 +141,10 @@ export default function Home() {
     async function fetchUpcomingIPOs() {
       setLoadingIPOs(true);
       try {
-        const response = await fetch("/api/ipo/upcoming");
+        const response = await fetch("/api/ipo");
         const data = await response.json();
-        setUpcomingIPOs(data.ipos);
+        console.log("upcoming ipos", data.data.upcoming);
+        setUpcomingIPOs(data.data.upcoming.slice(0, 3));
       } catch (error) {
         console.error("Error fetching IPOs:", error);
       } finally {

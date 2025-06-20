@@ -7,11 +7,13 @@ export async function GET() {
         const blogs = await db.collection("blogs").find({}).toArray();
         
         const blogList = blogs || [];
+        const sortedBlogList = blogList.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        const publishedBlogs = sortedBlogList.filter(blog => blog.status === 'published');
         
         return NextResponse.json({
             message: "Data retrieved successfully",
             success: true,
-            blogs: blogList
+            blogs: publishedBlogs
         });
     }
     catch (error) {

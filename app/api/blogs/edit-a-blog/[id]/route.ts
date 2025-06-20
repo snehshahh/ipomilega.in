@@ -65,6 +65,7 @@ export async function PUT(
 ) {
     try {
         const id = (await params).id
+        const body = await request.json();
         const { db } = await connectToDatabase();
         const blogs = await db.collection("blogs").find({}).toArray();
         const blogList = blogs || []
@@ -75,7 +76,7 @@ export async function PUT(
                 success: false,
             }, { status: 404 });
         }
-        await db.collection("blogs").updateOne({ _id: new ObjectId(id) }, { $set: { ...blog } });
+        await db.collection("blogs").updateOne({ _id: new ObjectId(id) }, { $set: { ...body } });
         return NextResponse.json({
             message: "Blog updated successfully",
             success: true,

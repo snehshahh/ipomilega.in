@@ -22,7 +22,7 @@ export async function GET() {
     try {
 
         const {db} = await connectToDatabase();
-        const ipos = await db.collection("blogs").find({}).toArray();
+        const ipos = await db.collection("blogs").find({ sort: { created_at: -1 }}).toArray();
 
         const ipoList = ipos || [];
 

@@ -38,18 +38,10 @@ import { cn } from "@/lib/utils"
 import { Blog, Ipo } from "../models/ipo"
 import { toast } from "sonner"
 import Link from "next/link"
-import { useSession } from "@/lib/auth-client"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { sortIPOsByOpeningDate } from "@/lib/dates"
 
 export default function Admin() {
-  const { data: session } = useSession();
 
   const [ipoList, setIpoList] = useState<Ipo[]>([])
   const [blogList, setBlogList] = useState<Blog[]>([])
@@ -93,7 +85,9 @@ export default function Admin() {
       ipo.upcoming_ipo_2025?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       ipo.ipo_type?.toLowerCase().includes(searchQuery.toLowerCase())
     )
-    setFilteredIpos(filtered)
+    const sortedFiltered = sortIPOsByOpeningDate(filtered, 'desc')
+
+    setFilteredIpos(sortedFiltered)
     setCurrentPage(1)
   }, [searchQuery, ipoList])
 
@@ -566,12 +560,11 @@ export default function Admin() {
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                             <span className="text-sm text-foreground">
-                              {ipo.open_date && !isNaN(new Date(ipo.open_date).getTime())
-                                ? new Date(ipo.open_date).toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric'
-                                })
+                              {ipo.open_date && !ipo.open_date.toLowerCase().includes('tba')
+                                ? new Date(`2000-${ipo.open_date}`).toLocaleDateString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                  })
                                 : 'TBA'}
                             </span>
                           </div>
@@ -580,12 +573,11 @@ export default function Admin() {
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                             <span className="text-sm text-foreground">
-                              {ipo.closing_date && !isNaN(new Date(ipo.closing_date).getTime())
-                                ? new Date(ipo.closing_date).toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                  year: 'numeric'
-                                })
+                              {ipo.closing_date && !ipo.closing_date.toLowerCase().includes('tba')
+                                ? new Date(`2000-${ipo.closing_date}`).toLocaleDateString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                  })
                                 : 'TBA'}
                             </span>
                           </div>

@@ -42,6 +42,7 @@ import { Blog } from "@/app/models/ipo"
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis"
 import { Ipo } from "@/app/models/ipo"
 import { useSession } from "@/lib/auth-client"
+import MarkdownRenderer from "@/components/MarkDown"
 
 interface IpoandAnalysis {
   ipo: Ipo;
@@ -70,9 +71,8 @@ export default function EditBlog({ blog }: { blog: Blog }) {
   const router = useRouter();
   const session = useSession();
   const blogId = blog._id || params.id || '';
-  
+
   const [ipoData, setIpoData] = useState<IpoandAnalysis | null>(null);
-  const [isLoadingIpo, setIsLoadingIpo] = useState(false);
   const [isLoadingBlog, setIsLoadingBlog] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [newTag, setNewTag] = useState('');
@@ -115,7 +115,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
         }
 
         setOriginalBlog(blogData);
-        
+
         // Convert blog data to BlogPost format
         setBlogPost({
           id: blogData._id,
@@ -136,7 +136,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
 
         // Fetch IPO data if ipo_id exists
         if (blogData.ipo_id) {
-          setIsLoadingIpo(true);
+          setIsLoadingBlog(true);
           try {
             const [ipoResponse, analysisResponse] = await Promise.all([
               fetch(`/api/ipo/${blogData.ipo_id}`),
@@ -146,16 +146,16 @@ export default function EditBlog({ blog }: { blog: Blog }) {
             if (ipoResponse.ok && analysisResponse.ok) {
               const ipoData = await ipoResponse.json();
               const analysisData = await analysisResponse.json();
-              
-              setIpoData({ 
-                ipo: ipoData.ipos, 
-                analysis: analysisData.ipos_analysis 
+
+              setIpoData({
+                ipo: ipoData.ipos,
+                analysis: analysisData.ipos_analysis
               });
             }
           } catch (error) {
-            console.log('IPO data not available or failed to load');
+            console.log('IPO data not available or failed to load' , error);
           } finally {
-            setIsLoadingIpo(false);
+            setIsLoadingBlog(false);
           }
         }
 
@@ -357,7 +357,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
             </div>
             <div className="flex items-center space-x-3">
               <Button
-                variant="outline" 
+                variant="outline"
                 size="sm"
                 onClick={() => setIsPreviewMode(!isPreviewMode)}
               >
@@ -569,8 +569,13 @@ export default function EditBlog({ blog }: { blog: Blog }) {
                   /* Preview Mode */
                   <div className="prose prose-lg max-w-none">
                     <h1>{blogPost.title}</h1>
-                    <p className="text-muted-foreground italic">{blogPost.excerpt}</p>
-                    <div className="whitespace-pre-wrap">{blogPost.content}</div>
+                    <p className="text-muted-foreground italssic">{blogPost.excerpt}</p>
+                    <article className="mb-12">
+                      <MarkdownRenderer
+                        content={blogPost.content}
+                        className="prose-headings:scroll-mt-20"
+                      />
+                    </article>
                   </div>
                 )}
               </CardContent>
@@ -585,22 +590,6 @@ export default function EditBlog({ blog }: { blog: Blog }) {
                 <CardTitle className="text-lg">Publishing</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Status</Label>
-                  <Select
-                    value={blogPost.status}
-                    onValueChange={(value) => handleInputChange('status', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="published">Published</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div className="space-y-2">
                   <Label>Category</Label>
                   <Select
@@ -700,9 +689,9 @@ export default function EditBlog({ blog }: { blog: Blog }) {
                   <ImageIcon className="h-4 w-4 mr-2" />
                   Add Featured Image
                 </Button>
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
+                <Button
+                  variant="destructive"
+                  size="sm"
                   className="w-full justify-start"
                   onClick={handleDelete}
                 >
