@@ -22,6 +22,8 @@ import {
   Heart,
 } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkDown";
+import { useRouter } from "next/navigation";
+import { Ipo } from "@/app/models/ipo";
 
 interface BlogPost {
   title: string;
@@ -32,30 +34,20 @@ interface BlogPost {
   tags: string[];
   category: string;
   status: "draft" | "published";
-  featured_image?: string;
+  image_url?: string;
   meta_description: string;
   created_at: string;
   updated_at: string;
   author: string;
 }
 
-interface Ipo {
-  _id: string;
-  ipo_table_id?: string;
-  upcoming_ipo_2025: string;
-  ipo_type?: string;
-  image_url?: string;
-  ipo_details: {
-    ipo_price_band?: string;
-    issue_size?: string;
-  };
-}
 
 export default function BlogDisplay({ blog }: { blog: BlogPost }) {
   const [ipoData, setIpoData] = useState<Ipo | null>(null);
   const [isLoadingIpo, setIsLoadingIpo] = useState(false);
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (blog.ipo_id) {
@@ -64,8 +56,9 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
         try {
           const response = await fetch(`/api/ipo/${blog.ipo_id}`);
           if (response.ok) {
-            const data: Ipo = await response.json();
-            setIpoData(data);
+            const data = await response.json();
+            setIpoData(data.ipos);
+            console.log(ipoData);
           }
         } catch (error) {
           console.error("Error fetching IPO data:", error);
@@ -116,7 +109,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
             </Button>
 
             <div className="flex items-center space-x-2">
-              <Button
+              {/* <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsLiked(!isLiked)}
@@ -131,7 +124,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                 className={isBookmarked ? "text-primary" : "text-muted-foreground"}
               >
                 <BookmarkPlus className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
-              </Button>
+              </Button> */}
               <Button variant="ghost" size="sm" onClick={handleShare} className="text-muted-foreground">
                 <Share2 className="h-4 w-4" />
               </Button>
@@ -145,10 +138,10 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
           {/* Article Header */}
           <header className="mb-12">
             {/* Featured Image */}
-            {blog.featured_image && (
+            {blog.image_url && (
               <div className="relative mb-8 rounded-xl overflow-hidden shadow-lg">
                 <img
-                  src={blog.featured_image}
+                  src={blog.image_url}
                   alt={blog.title}
                   className="w-full h-[400px] object-cover"
                 />
@@ -193,10 +186,10 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                   <Clock className="h-4 w-4 mr-2" />
                   <span>{readingTime} min read</span>
                 </div>
-                <div className="flex items-center">
+                {/* <div className="flex items-center">
                   <Eye className="h-4 w-4 mr-2" />
                   <span>1.2k views</span>
-                </div>
+                </div> */}
               </div>
 
               <div className="flex items-center space-x-2">
@@ -204,10 +197,10 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                   <Share2 className="h-4 w-4 mr-2" />
                   Share
                 </Button>
-                <Button variant="outline" size="sm">
+                {/* <Button variant="outline" size="sm">
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Comment
-                </Button>
+                </Button> */}
               </div>
             </div>
 
@@ -250,8 +243,6 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                           <span className="bg-muted px-2 py-1 rounded">
                             {ipoData.ipo_type || "IPO"}
                           </span>
-                          <span>•</span>
-                          <span>{ipoData.ipo_details?.ipo_price_band || "Price TBA"}</span>
                           <span>•</span>
                           <span>{ipoData.ipo_details?.issue_size || "Size TBA"}</span>
                         </div>
@@ -301,7 +292,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                   <Share2 className="h-4 w-4 mr-2" />
                   Share Article
                 </Button>
-                <Button
+                {/* <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setIsBookmarked(!isBookmarked)}
@@ -309,7 +300,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                 >
                   <BookmarkPlus className="h-4 w-4 mr-2" />
                   {isBookmarked ? "Saved" : "Save"}
-                </Button>
+                </Button> */}
               </div>
             </div>
           </footer>
@@ -330,7 +321,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
               </Card>
 
               <Card className="bg-muted/30 border group hover:bg-muted/50 transition-all duration-300">
-                <CardContent className="pt-6 text-center">
+                <CardContent className="pt-6 text-center" onClick={() => router.push("/ipos")}>
                   <div className="text-muted-foreground mb-4">
                     <Building2 className="h-12 w-12 mx-auto opacity-50" />
                   </div>

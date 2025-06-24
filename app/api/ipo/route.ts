@@ -122,6 +122,12 @@ export async function GET() {
             const nameB = b.upcoming_ipo_2025 || '';
             return nameA.localeCompare(nameB);
         });
+
+        const analysisList = await db.collection("ipo_comprehensive_analysis").find({}).toArray();
+        const analysis = analysisList || [];
+        const blogsList = await db.collection("blogs").find({}).toArray()
+        const blogs = blogsList || [];
+        
         
         
          
@@ -133,7 +139,9 @@ export async function GET() {
                 live: sortedLiveIpos,
                 past: sortedPastIpos,
                 tba: sortedTbaIpos, // IPOs with dates to be announced
-                all: ipoList
+                all: ipoList,
+                analysis: analysis,
+                blogs: blogs
             },
             counts: {
                 upcoming: sortedUpcomingIpos.length,

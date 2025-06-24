@@ -25,20 +25,32 @@ import {
   LineChart,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
-import { Ipo } from "../models/ipo"
+import { Blog, Ipo } from "../models/ipo"
 import { sortIPOsByOpeningDate } from "@/lib/dates"
+import { IpoComprehensiveAnalysis } from "../models/ipo_comprehensive_analysis"
 
 export default function IPOs() {
   const [ipoList, setIpoList] = useState<Ipo[]>([])
+  const [blogList, setBlogList] = useState<Blog[]>([])
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
+  const[analysisList, setAnalysisList] = useState<IpoComprehensiveAnalysis[]>([])
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [filteredIpos, setFilteredIpos] = useState<Ipo[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
+
+  // Function to get random blogs for an IPO (up to 3)
+  const getRandomBlogsForIpo = (ipoId: string) => {
+    const blogs = blogList.filter(blog => blog.ipo_id === ipoId)
+    if (blogs.length === 0) return []
+    // Shuffle array and take up to 3
+    return blogs
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 3)
+  }
 
   useEffect(() => {
     const filtered = ipoList.filter(ipo =>
@@ -52,7 +64,7 @@ export default function IPOs() {
     setFilteredIpos(sortedFiltered)
     setCurrentPage(1)
   }, [searchQuery, ipoList])
-  
+
   useEffect(() => {
     const fetchIpos = async () => {
       try {
@@ -62,10 +74,11 @@ export default function IPOs() {
           throw new Error('Failed to fetch IPO data')
         }
         const data = await response.json()
-        console.log("Data",data);
         const sortedIpos = sortIPOsByOpeningDate(data.data.all, 'desc')
-        
         setIpoList(sortedIpos)
+        // Assuming blogs are available in the API response, similar to admin page
+        setBlogList(data.data.blogs || [])
+        setAnalysisList(data.data.analysis || [])
       } catch (error) {
         console.error('Error fetching IPO data:', error)
         setError('Failed to load IPO data')
@@ -80,6 +93,11 @@ export default function IPOs() {
   const mainboardCount = ipoList.filter(ipo => ipo.ipo_type === 'Mainboard').length
   const smeCount = ipoList.filter(ipo => ipo.ipo_type === 'SME').length
   const totalSize = ipoList.length > 0 ? `${ipoList.length * 1500}+ Cr` : '0 Cr'
+
+  const analysisexist = (ipoId: string) => {
+    const analysis = analysisList.find(analysis => analysis.ipo_table_id === ipoId)
+    return analysis ? true : false
+  }
 
   const dashboardStats = [
     {
@@ -139,12 +157,14 @@ export default function IPOs() {
     }
   }
 
-  const handleViewBlogs = (ipoId: string) => {
-    router.push(`/blogs/${ipoId}`)
-  }
+
 
   const handleViewAnalysis = (ipoId: string) => {
     router.push(`/analysis/${ipoId}`)
+  }
+
+  const goToBlog = (blog: Blog) => {
+    router.push(`/blogs/${blog.slug}`)
   }
 
   if (isLoading) {
@@ -208,9 +228,6 @@ export default function IPOs() {
                 </div>
               </div>
             </div>
-            <div className="flex items-center space-x-2">
-              <ThemeToggle />
-            </div>
           </div>
         </div>
       </div>
@@ -266,7 +283,7 @@ export default function IPOs() {
                   </Button>
                 )}
               </div>
-              <div className="flex gap-2">
+              {/* <div className="flex gap-2">
                 <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-10 sm:h-12 border-primary/20 hover:bg-primary/10">
                   <Filter className="h-5 w-5 mr-2 text-primary" />
                   <span className="hidden sm:inline">Filter</span>
@@ -275,13 +292,13 @@ export default function IPOs() {
                   <Download className="h-5 w-5 mr-2 text-primary" />
                   <span className="hidden sm:inline">Export</span>
                 </Button>
-              </div>
+              </div> */}
             </div>
           </CardContent>
         </Card>
 
         {/* IPO Table */}
-        <Card className="border-0 bg-background/60 backdrop-blur-sm overflow-hidden">
+        <Card className="col-12 border-0 bg-background/60 backdrop-blur-sm overflow-hidden">
           <CardHeader className="bg-muted/30 border-b p-4 sm:p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -331,9 +348,17 @@ export default function IPOs() {
                     <div key={ipo._id?.toString() || index} className="p-4 sm:p-5 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3 min-w-0 flex-1">
-                          <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
-                            <Building2 className="h-5 w-5 text-primary" />
-                          </div>
+                          {ipo.image_url ? (
+                            <img
+                              src={ipo.image_url}
+                              alt={`${ipo.upcoming_ipo_2025} logo`}
+                              className="h-8 w-8 object-contain rounded flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
+                              <Building2 className="h-5 w-5 text-primary" />
+                            </div>
+                          )}
                           <div className="min-w-0 flex-1">
                             <div className="font-medium text-base truncate text-foreground">{ipo.upcoming_ipo_2025 || 'Unnamed IPO'}</div>
                             <div className="text-sm text-muted-foreground">ID: {ipo._id?.toString().slice(-6) || 'N/A'}</div>
@@ -349,24 +374,28 @@ export default function IPOs() {
                           <div className="text-muted-foreground mb-1 text-xs">Open Date</div>
                           <div className="flex items-center gap-1.5">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                            {ipo.open_date && !ipo.open_date.toLowerCase().includes('tba')
-                              ? new Date(`2000-${ipo.open_date}`).toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                })
-                              : 'TBA'}
+                            <span className="text-sm text-foreground">
+                              {ipo.open_date && !ipo.open_date.toLowerCase().includes('tba')
+                                ? new Date(`2000-${ipo.open_date}`).toLocaleDateString('en-IN', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                  })
+                                : 'TBA'}
+                            </span>
                           </div>
                         </div>
                         <div>
                           <div className="text-muted-foreground mb-1 text-xs">Close Date</div>
                           <div className="flex items-center gap-1.5">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                            {ipo.closing_date && !ipo.closing_date.toLowerCase().includes('tba')
-                              ? new Date(`2000-${ipo.closing_date}`).toLocaleDateString('en-IN', {
-                                  day: '2-digit',
-                                  month: 'short',
-                                })
-                              : 'TBA'}
+                            <span className="text-sm text-foreground">
+                              {ipo.closing_date && !ipo.closing_date.toLowerCase().includes('tba')
+                                ? new Date(`2000-${ipo.closing_date}`).toLocaleDateString('en-IN', {
+                                    day: '2-digit',
+                                    month: 'short',
+                                  })
+                                : 'TBA'}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -386,17 +415,6 @@ export default function IPOs() {
                       </div>
 
                       <div className="flex items-center gap-2 pt-3 flex-wrap">
-                        {ipo.detail_url && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
-                            onClick={() => window.open(ipo.detail_url!, '_blank')}
-                          >
-                            <ExternalLink className="h-4 w-4 mr-1.5 text-primary" />
-                            Details
-                          </Button>
-                        )}
                         {ipo.rhp_url && (
                           <Button
                             variant="outline"
@@ -408,7 +426,7 @@ export default function IPOs() {
                             RHP
                           </Button>
                         )}
-                        {ipo._id && (
+                        {/* {ipo._id && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -418,8 +436,8 @@ export default function IPOs() {
                             <FileText className="h-4 w-4 mr-1.5 text-primary" />
                             View Blogs
                           </Button>
-                        )}
-                        {ipo._id && (
+                        )} */}
+                        {ipo._id && analysisexist(ipo._id) && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -431,6 +449,35 @@ export default function IPOs() {
                           </Button>
                         )}
                       </div>
+
+                      {/* Top Articles Section */}
+                      {ipo._id && getRandomBlogsForIpo(ipo._id).length > 0 && (
+                        <div className="pt-4">
+                          <h3 className="text-sm font-semibold text-foreground mb-2">Top Articles</h3>
+                          <div className="space-y-2">
+                            {getRandomBlogsForIpo(ipo._id).map((blog) => (
+                              <Card key={blog._id} className="border-0 bg-background/30 hover:bg-background/50 transition-colors">
+                                <CardContent className="p-3">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-foreground truncate">{blog.title || 'Untitled Blog'}</p>
+                                      <p className="text-xs text-muted-foreground line-clamp-2">{blog.content?.substring(0, 100) || 'No content available'}...</p>
+                                    </div>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => goToBlog(blog)}
+                                      className="ml-2"
+                                    >
+                                      <FileText className="h-4 w-4 text-primary" />
+                                    </Button>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -448,6 +495,7 @@ export default function IPOs() {
                       <th className="font-semibold text-right p-3 min-w-[120px] text-sm text-foreground">Price Band</th>
                       <th className="font-semibold text-right p-3 min-w-[120px] text-sm text-foreground">Issue Size</th>
                       <th className="font-semibold text-left p-3 min-w-[280px] text-sm text-foreground">Actions</th>
+                      <th className="font-semibold text-left p-3 min-w-[300px] text-sm text-foreground">Top Articles</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -458,9 +506,17 @@ export default function IPOs() {
                       >
                         <td className="p-3">
                           <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                              <Building2 className="h-4 w-4 text-primary" />
-                            </div>
+                            {ipo.image_url ? (
+                              <img
+                                src={ipo.image_url}
+                                alt={`${ipo.upcoming_ipo_2025} logo`}
+                                className="h-8 w-8 object-contain rounded flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
+                                <Building2 className="h-4 w-4 text-primary" />
+                              </div>
+                            )}
                             <div className="min-w-0">
                               <div className="font-medium text-sm truncate text-foreground">
                                 {ipo.upcoming_ipo_2025 || 'Unnamed IPO'}
@@ -516,17 +572,6 @@ export default function IPOs() {
                         </td>
                         <td className="p-3">
                           <div className="flex items-center gap-2 flex-wrap">
-                            {ipo.detail_url && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-9 px-3 border-primary/20 hover:bg-primary/10"
-                                onClick={() => window.open(ipo.detail_url!, '_blank')}
-                              >
-                                <ExternalLink className="h-4 w-4 mr-1.5 text-primary" />
-                                Details
-                              </Button>
-                            )}
                             {ipo.rhp_url && (
                               <Button
                                 variant="outline"
@@ -538,7 +583,7 @@ export default function IPOs() {
                                 RHP
                               </Button>
                             )}
-                            {ipo._id && (
+                            {/* {ipo._id && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -548,8 +593,8 @@ export default function IPOs() {
                                 <FileText className="h-4 w-4 mr-1.5 text-primary" />
                                 View Blogs
                               </Button>
-                            )}
-                            {ipo._id && (
+                            )} */}
+                            {ipo._id && ipo.ipo_details?.face_value && (
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -561,6 +606,34 @@ export default function IPOs() {
                               </Button>
                             )}
                           </div>
+                        </td>
+                        <td className="p-3">
+                          {ipo._id && getRandomBlogsForIpo(ipo._id).length > 0 ? (
+                            <div className="space-y-2">
+                              {getRandomBlogsForIpo(ipo._id).map((blog) => (
+                                <Card key={blog._id} className="border-0 bg-background/30 hover:bg-background/50 transition-colors">
+                                  <CardContent className="p-3">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-foreground truncate">{blog.title || 'Untitled Blog'}</p>
+                                        <p className="text-xs text-muted-foreground line-clamp-2">{blog.content?.substring(0, 100) || 'No content available'}...</p>
+                                      </div>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => goToBlog(blog)}
+                                        className="ml-2"
+                                      >
+                                        <FileText className="h-4 w-4 text-primary" />
+                                      </Button>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-muted-foreground">No articles available</p>
+                          )}
                         </td>
                       </tr>
                     ))}

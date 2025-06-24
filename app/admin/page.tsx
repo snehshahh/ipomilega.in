@@ -9,9 +9,6 @@ import {
   Copy,
   ExternalLink,
   Search,
-  Filter,
-  Download,
-  RefreshCw,
   Building2,
   Calendar,
   DollarSign,
@@ -31,7 +28,8 @@ import {
   PieChart,
   Edit,
   Upload,
-  ChevronLeft
+  ChevronLeft,
+  RefreshCw
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
@@ -371,39 +369,27 @@ export default function Admin() {
           ))}
         </div>
 
-        {/* Search and Filter Bar */}
+        {/* Search Bar */}
         <Card className="border-0 bg-background/60 backdrop-blur-sm">
           <CardContent className="p-4 sm:p-6">
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  placeholder="Search IPOs by company name or type..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 pr-10 bg-background/50 text-sm sm:text-base h-10 sm:h-12"
-                />
-                {searchQuery && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6"
-                  >
-                    <XCircle className="h-4 w-4 text-muted-foreground" />
-                  </Button>
-                )}
-              </div>
-              <div className="flex gap-2 w-full sm:w-auto">
-                <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-10 sm:h-12 border-primary/20 hover:bg-primary/10">
-                  <Filter className="h-4 w-4 mr-2 text-primary" />
-                  <span className="sm:inline">Filter</span>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input
+                placeholder="Search IPOs by company name or type..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10 bg-background/50 text-sm sm:text-base h-10 sm:h-12"
+              />
+              {searchQuery && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6"
+                >
+                  <XCircle className="h-4 w-4 text-muted-foreground" />
                 </Button>
-                <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-10 sm:h-12 border-primary/20 hover:bg-primary/10">
-                  <Download className="h-4 w-4 mr-2 text-primary" />
-                  <span className="sm:inline">Export</span>
-                </Button>
-              </div>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -526,7 +512,7 @@ export default function Admin() {
                       </div>
 
                       <div className="flex items-center gap-2 pt-3 flex-wrap">
-                        {ipo._id && (
+                        {ipo._id && !ipo.image_url && (
                           <label className="flex items-center">
                             <input
                               type="file"
@@ -702,7 +688,7 @@ export default function Admin() {
                           </td>
                           <td className="p-4">
                             <div className="flex items-center gap-2 flex-wrap">
-                              {ipo._id && (
+                              {ipo._id && !ipo.image_url && (
                                 <label className="flex items-center">
                                   <input
                                     type="file"

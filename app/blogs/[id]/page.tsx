@@ -21,7 +21,6 @@ interface BlogPost {
 async function getBlogPost(id: string): Promise<BlogPost | null> {
   try {
     const url = new URL(`${process.env.NEXTAUTH_URL}/api/blogs/slug/${id}`);
-    console.log("url", url);
     const slugResponse = await fetch(url, {
       method: "GET",
     });
