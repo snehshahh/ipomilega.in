@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -58,7 +58,7 @@ interface BlogPost {
   tags: string[];
   category: string;
   status: 'draft' | 'published';
-  featured_image?: string;
+  image_url?: string;
   meta_description: string;
   author: string;
   ipo_id?: string;
@@ -71,18 +71,20 @@ export default function EditBlog({ blog }: { blog: Blog }) {
   const router = useRouter();
   const session = useSession();
   const blogId = blog._id || params.id || '';
-
   const [ipoData, setIpoData] = useState<IpoandAnalysis | null>(null);
   const [isLoadingBlog, setIsLoadingBlog] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [originalBlog, setOriginalBlog] = useState<Blog | null>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [blogPost, setBlogPost] = useState<BlogPost>({
     title: '',
     slug: '',
     content: '',
     excerpt: '',
+    image_url: '',
     tags: [],
     category: 'IPO Analysis',
     status: 'draft',
@@ -126,7 +128,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
           tags: blogData.tags || [],
           category: blogData.category || 'IPO Analysis',
           status: blogData.status as 'draft' | 'published',
-          featured_image: blogData.featured_image,
+          image_url: blogData.image_url,
           meta_description: blogData.meta_description || '',
           author: blogData.author || 'Admin',
           ipo_id: blogData.ipo_id,
@@ -136,7 +138,6 @@ export default function EditBlog({ blog }: { blog: Blog }) {
 
         // Fetch IPO data if ipo_id exists
         if (blogData.ipo_id) {
-          setIsLoadingBlog(true);
           try {
             const [ipoResponse, analysisResponse] = await Promise.all([
               fetch(`/api/ipo/${blogData.ipo_id}`),
@@ -153,12 +154,9 @@ export default function EditBlog({ blog }: { blog: Blog }) {
               });
             }
           } catch (error) {
-            console.log('IPO data not available or failed to load' , error);
-          } finally {
-            setIsLoadingBlog(false);
+            console.log('IPO data not available or failed to load', error);
           }
         }
-
       } catch (error) {
         console.error('Error loading blog data:', error);
         toast.error('Failed to load blog data');
@@ -186,12 +184,17 @@ export default function EditBlog({ blog }: { blog: Blog }) {
       [field]: value
     }));
 
-    // Auto-generate slug from title
     if (field === 'title' && typeof value === 'string') {
       setBlogPost(prev => ({
         ...prev,
         slug: generateSlug(value)
       }));
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedImage(e.target.files[0]);
     }
   };
 
@@ -216,6 +219,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
     try {
       setIsSaving(true);
 
+      // Update blog post
       const payload = {
         ...blogPost,
         status: status || blogPost.status,
@@ -235,6 +239,48 @@ export default function EditBlog({ blog }: { blog: Blog }) {
         throw new Error('Failed to update blog post');
       }
 
+      // Upload image if selected
+      let imageUrl = blogPost.image_url;
+      if (selectedImage && blogPost.id) {
+        const formData = new FormData();
+        formData.append('file', selectedImage);
+        formData.append('documentId', blogPost.id);
+        formData.append('folder', 'blogs');
+        formData.append('collection','blogs');
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload image');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        if (uploadResult.success) {
+          imageUrl = uploadResult.url;
+
+          // Update blog post with new image URL
+          const imageUpdateResponse = await fetch(`/api/blogs/edit-a-blog/${blogPost.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ featured_image: imageUrl, updated_at: new Date().toISOString() }),
+          });
+
+          if (!imageUpdateResponse.ok) {
+            throw new Error('Failed to update blog post with image URL');
+          }
+
+          setBlogPost(prev => ({
+            ...prev,
+            featured_image: imageUrl
+          }));
+        }
+      }
+
       const finalStatus = status || blogPost.status;
       if (finalStatus === 'published') {
         toast.success('Blog post updated and published successfully!');
@@ -242,7 +288,6 @@ export default function EditBlog({ blog }: { blog: Blog }) {
         toast.success('Blog post updated successfully!');
       }
 
-      // Redirect to admin or blog view
       router.push('/admin');
 
     } catch (error) {
@@ -568,8 +613,15 @@ export default function EditBlog({ blog }: { blog: Blog }) {
                 ) : (
                   /* Preview Mode */
                   <div className="prose prose-lg max-w-none">
+                    {blogPost.image_url && (
+                      <img
+                        src={blogPost.image_url}
+                        alt="Featured image"
+                        className="w-full max-h-96 object-cover rounded-lg mb-6"
+                      />
+                    )}
                     <h1>{blogPost.title}</h1>
-                    <p className="text-muted-foreground italssic">{blogPost.excerpt}</p>
+                    <p className="text-muted-foreground italic">{blogPost.excerpt}</p>
                     <article className="mb-12">
                       <MarkdownRenderer
                         content={blogPost.content}
@@ -681,14 +733,27 @@ export default function EditBlog({ blog }: { blog: Blog }) {
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Image
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <ImageIcon className="h-4 w-4 mr-2" />
-                  Add Featured Image
+                  {selectedImage || blogPost.image_url ? 'Change Featured Image' : 'Add Featured Image'}
                 </Button>
+                {selectedImage && (
+                  <div className="text-sm text-muted-foreground">
+                    Selected: {selectedImage.name}
+                  </div>
+                )}
                 <Button
                   variant="destructive"
                   size="sm"

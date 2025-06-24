@@ -1,4 +1,5 @@
 "use client"
+
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { Badge } from "@/components/ui/badge"
@@ -21,6 +22,7 @@ interface BlogPost {
   ipo_id: string
   created_at: string
   updated_at: string
+  image_url?: string
 }
 
 export default function BlogsPage() {
@@ -78,7 +80,6 @@ export default function BlogsPage() {
             <p className={`text-xl ${mutedText} mt-6 py-11 max-w-3xl mx-auto leading-relaxed`}>
               Discover the ultimate source for IPO analysis, market trends, and investment strategies. Our expert-crafted blogs are the best—delivering cutting-edge insights to fuel your financial success.
             </p>
-            
           </div>
         </div>
       </div>
@@ -106,7 +107,16 @@ export default function BlogsPage() {
                 
                 <Link href={`/blogs/${featuredPost.slug}`} className="group block">
                   <div className={`relative overflow-hidden rounded-2xl ${cardBg} ${borderColor} border-2 group-hover:shadow-xl group-hover:border-primary transition-all duration-500`}>
-                    <div className="absolute inset-0 bg-gradient-to-r from-muted/50 to-transparent z-10"></div>
+                    {featuredPost.image_url && (
+                      <div className="relative h-64 md:h-96">
+                        <img
+                          src={featuredPost.image_url}
+                          alt={featuredPost.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                      </div>
+                    )}
                     <div className="relative z-20 p-8 md:p-12">
                       <div className="flex items-center space-x-4 mb-6">
                         <Badge className={`${borderColor} ${textColor} ${secondaryBg} px-4 py-1 text-sm font-medium`}>
@@ -165,6 +175,16 @@ export default function BlogsPage() {
                   {regularPosts.map((blog, index) => (
                     <Link key={blog._id} href={`/blogs/${blog.slug}`} className="group block">
                       <article className={`relative overflow-hidden rounded-xl ${cardBg} ${borderColor} border group-hover:shadow-2xl group-hover:border-primary transition-all duration-500 transform group-hover:-translate-y-2`}>
+                        {blog.image_url && (
+                          <div className="relative h-48">
+                            <img
+                              src={blog.image_url}
+                              alt={blog.title}
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                          </div>
+                        )}
                         {/* Article Number */}
                         <div className="absolute top-4 left-4 z-10">
                           <div className={`w-10 h-10 rounded-full ${secondaryBg} flex items-center justify-center text-sm font-bold ${textColor}`}>
@@ -173,7 +193,7 @@ export default function BlogsPage() {
                         </div>
                         
                         {/* Content */}
-                        <div className="p-6 pt-16">
+                        <div className={`p-6 ${blog.image_url ? 'pt-8' : 'pt-16'}`}>
                           <div className="flex items-center space-x-3 mb-4">
                             <Badge variant="outline" className={`${borderColor} ${textColor} text-sm px-3 py-1`}>
                               {getCategoryIcon(blog.category)}

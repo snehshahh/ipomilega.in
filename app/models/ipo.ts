@@ -8,7 +8,7 @@ export interface Blog {
   category: string
   status: string
   meta_description: string
-  featured_image?: string
+  image_url?: string
   author: string
   ipo_id: string
   created_at: string
@@ -28,6 +28,7 @@ export interface Ipo {
     detail_url: string;
     scraped_at: string;
     about: string;
+    image_url: string;
     financial_report: FinancialReport[];
     ipo_dates: IpoDates;
     ipo_details: IpoDetails;

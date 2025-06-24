@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -22,7 +22,6 @@ import {
   Activity,
   Shield,
   Star,
-  ChevronLeft,
   ChevronRight,
   PenTool,
   Menu,
@@ -30,7 +29,9 @@ import {
   XCircle,
   LineChart,
   PieChart,
-  Edit
+  Edit,
+  Upload,
+  ChevronLeft
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
@@ -42,7 +43,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { sortIPOsByOpeningDate } from "@/lib/dates"
 
 export default function Admin() {
-
   const [ipoList, setIpoList] = useState<Ipo[]>([])
   const [blogList, setBlogList] = useState<Blog[]>([])
   const router = useRouter()
@@ -78,6 +78,57 @@ export default function Admin() {
 
   const getBlogsForIpo = (ipoId: string) => {
     return blogList.filter(blog => blog.ipo_id === ipoId)
+  }
+
+  const handleLogoUpload = async (e: ChangeEvent<HTMLInputElement>, ipoId: string) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const extension = file.name.split('.').pop()?.toLowerCase()
+    if (!extension) {
+      toast.error("Invalid file format")
+      return
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Only image files (JPEG, PNG, GIF, WebP) are allowed")
+      return
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File size exceeds 10MB limit")
+      return
+    }
+
+    const newFileName = `${ipoId}.${extension}`
+    const formData = new FormData()
+    formData.append('file', new File([file], newFileName, { type: file.type }))
+    formData.append('folder', 'logo')
+    formData.append('documentId', ipoId)
+    formData.append('collection', 'ipos')
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await response.json()
+
+      if (data.success) {
+        setIpoList(prev =>
+          prev.map(ipo =>
+            ipo._id === ipoId ? { ...ipo, image_url: data.url } : ipo
+          )
+        )
+        toast.success("Logo uploaded successfully")
+      } else {
+        toast.error(data.error || "Failed to upload logo")
+      }
+    } catch (error) {
+      toast.error("Error uploading logo")
+      console.error('Upload error:', error)
+    }
   }
 
   useEffect(() => {
@@ -274,19 +325,24 @@ export default function Admin() {
 
           {/* Mobile Menu */}
           {isMobileMenuOpen && (
-            <div className={cn(
-              "mt-4 pt-4 border-t sm:hidden overflow-hidden transition-all duration-300 ease-in-out",
-              isMobileMenuOpen ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
-            )}>
+            <div className="mt-4 pt-4 border-t sm:hidden">
               <div className="flex flex-col space-y-3">
                 <Button variant="outline" size="lg" onClick={refreshData} className="justify-start border-primary/20 hover:bg-primary/10">
                   <RefreshCw className="h-5 w-5 mr-2 text-primary" />
                   Refresh Data
                 </Button>
-                <Button size="lg" className="justify-start bg-primary hover:bg-primary/90">
-                  <Plus className="h-5 w-5 mr-2" />
-                  Add New IPO
-                </Button>
+                <Link href="https://colab.research.google.com/drive/1AQs8gK3j-R0jAiXf487OxM9rokYA-wQV" target="_blank">
+                  <Button variant="outline" size="lg" className="justify-start border-primary/20 hover:bg-primary/10 w-full">
+                    <Plus className="h-5 w-5 mr-2 text-primary" />
+                    Add New IPOs
+                  </Button>
+                </Link>
+                <Link href="https://colab.research.google.com/drive/1ta4iMO-VU87QWxDpRUA_a0IsVrKXp4Mg" target="_blank">
+                  <Button variant="outline" size="lg" className="justify-start border-primary/20 hover:bg-primary/10 w-full">
+                    <Plus className="h-5 w-5 mr-2 text-primary" />
+                    Create New Analysis
+                  </Button>
+                </Link>
               </div>
             </div>
           )}
@@ -295,10 +351,10 @@ export default function Admin() {
 
       <div className="container mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Dashboard Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {dashboardStats.map((stat, index) => (
             <Card key={index} className="group hover:shadow-lg transition-all duration-300 sm:hover:scale-105 border-0 bg-background/60 backdrop-blur-sm">
-              <CardContent className="pt-5 sm:pt-6 p-4 sm:p-6">
+              <CardContent className="p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <stat.icon className={cn("h-6 w-6 sm:h-8 sm:w-8", stat.color, "group-hover:scale-110 transition-transform")} />
                   <Badge variant="secondary" className="text-xs font-medium bg-green-600/10 text-green-600 dark:bg-green-400/10 dark:text-green-400">
@@ -317,7 +373,7 @@ export default function Admin() {
 
         {/* Search and Filter Bar */}
         <Card className="border-0 bg-background/60 backdrop-blur-sm">
-          <CardContent className="pt-5 sm:pt-6 p-4 sm:p-6">
+          <CardContent className="p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -338,14 +394,14 @@ export default function Admin() {
                   </Button>
                 )}
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full sm:w-auto">
                 <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-10 sm:h-12 border-primary/20 hover:bg-primary/10">
-                  <Filter className="h-5 w-5 mr-2 text-primary" />
-                  <span className="hidden sm:inline">Filter</span>
+                  <Filter className="h-4 w-4 mr-2 text-primary" />
+                  <span className="sm:inline">Filter</span>
                 </Button>
                 <Button variant="outline" size="sm" className="flex-1 sm:flex-none h-10 sm:h-12 border-primary/20 hover:bg-primary/10">
-                  <Download className="h-5 w-5 mr-2 text-primary" />
-                  <span className="hidden sm:inline">Export</span>
+                  <Download className="h-4 w-4 mr-2 text-primary" />
+                  <span className="sm:inline">Export</span>
                 </Button>
               </div>
             </div>
@@ -397,21 +453,29 @@ export default function Admin() {
           ) : (
             <>
               {/* Mobile Card View */}
-              <div className="block sm:hidden">
+              <div className="block lg:hidden">
                 <div className="divide-y divide-border">
                   {currentIpos.map((ipo, index) => (
                     <div key={ipo._id?.toString() || index} className="p-4 sm:p-5 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3 min-w-0 flex-1">
-                          <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
-                            <Building2 className="h-5 w-5 text-primary" />
-                          </div>
+                          {ipo.image_url ? (
+                            <img
+                              src={ipo.image_url}
+                              alt={`${ipo.upcoming_ipo_2025} logo`}
+                              className="h-8 w-8 object-contain rounded flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
+                              <Building2 className="h-4 w-4 text-primary" />
+                            </div>
+                          )}
                           <div className="min-w-0 flex-1">
-                            <div className="font-medium text-base truncate text-foreground">{ipo.upcoming_ipo_2025 || 'Unnamed IPO'}</div>
-                            <div className="text-sm text-muted-foreground">ID: {ipo._id?.toString().slice(-6) || 'N/A'}</div>
+                            <div className="font-medium text-sm sm:text-base truncate text-foreground">{ipo.upcoming_ipo_2025 || 'Unnamed IPO'}</div>
+                            <div className="text-xs sm:text-sm text-muted-foreground">ID: {ipo._id?.toString().slice(-6) || 'N/A'}</div>
                           </div>
                         </div>
-                        <Badge variant={ipo.ipo_type === 'Mainboard' ? 'default' : 'secondary'} className="text-xs font-medium">
+                        <Badge variant={ipo.ipo_type === 'Mainboard' ? 'default' : 'secondary'} className="text-xs font-medium flex-shrink-0">
                           {ipo.ipo_type || 'N/A'}
                         </Badge>
                       </div>
@@ -420,25 +484,29 @@ export default function Admin() {
                         <div>
                           <div className="text-muted-foreground mb-1 text-xs">Open Date</div>
                           <div className="flex items-center gap-1.5">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            {ipo.open_date && !isNaN(new Date(ipo.open_date).getTime())
-                              ? new Date(ipo.open_date).toLocaleDateString('en-IN', {
-                                day: '2-digit',
-                                month: 'short'
-                              })
-                              : 'TBA'}
+                            <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                            <span className="text-xs">
+                              {ipo.open_date && !isNaN(new Date(ipo.open_date).getTime())
+                                ? new Date(ipo.open_date).toLocaleDateString('en-IN', {
+                                  day: '2-digit',
+                                  month: 'short'
+                                })
+                                : 'TBA'}
+                            </span>
                           </div>
                         </div>
                         <div>
                           <div className="text-muted-foreground mb-1 text-xs">Close Date</div>
                           <div className="flex items-center gap-1.5">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            {ipo.closing_date && !isNaN(new Date(ipo.closing_date).getTime())
-                              ? new Date(ipo.closing_date).toLocaleDateString('en-IN', {
-                                day: '2-digit',
-                                month: 'short'
-                              })
-                              : 'TBA'}
+                            <Calendar className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                            <span className="text-xs">
+                              {ipo.closing_date && !isNaN(new Date(ipo.closing_date).getTime())
+                                ? new Date(ipo.closing_date).toLocaleDateString('en-IN', {
+                                  day: '2-digit',
+                                  month: 'short'
+                                })
+                                : 'TBA'}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -446,26 +514,47 @@ export default function Admin() {
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <div className="text-muted-foreground mb-1 text-xs">Price Band</div>
-                          <div className="font-medium text-foreground">{ipo.price_band || 'TBA'}</div>
+                          <div className="font-medium text-foreground text-xs">{ipo.price_band || 'TBA'}</div>
                         </div>
                         <div>
                           <div className="text-muted-foreground mb-1 text-xs">Issue Size</div>
                           <div className="flex items-center gap-1.5">
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium text-foreground">{ipo.ipo_size || 'TBA'}</span>
+                            <DollarSign className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                            <span className="font-medium text-foreground text-xs">{ipo.ipo_size || 'TBA'}</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 pt-3 flex-wrap">
                         {ipo._id && (
+                          <label className="flex items-center">
+                            <input
+                              type="file"
+                              accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                              onChange={(e) => handleLogoUpload(e, ipo._id!)}
+                              className="hidden"
+                            />
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-2 text-xs border-primary/20 hover:bg-primary/10"
+                              asChild
+                            >
+                              <span>
+                                <Upload className="h-3 w-3 mr-1 text-primary" />
+                                Logo
+                              </span>
+                            </Button>
+                          </label>
+                        )}
+                        {ipo._id && (
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                            className="h-8 px-2 text-xs border-primary/20 hover:bg-primary/10"
                             onClick={() => copyToClipboard(ipo._id!)}
                           >
-                            <Copy className="h-4 w-4 mr-1.5 text-primary" />
+                            <Copy className="h-3 w-3 mr-1 text-primary" />
                             ID
                           </Button>
                         )}
@@ -473,10 +562,10 @@ export default function Admin() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                            className="h-8 px-2 text-xs border-primary/20 hover:bg-primary/10"
                             onClick={() => window.open(ipo.detail_url!, '_blank')}
                           >
-                            <Eye className="h-4 w-4 mr-1.5 text-primary" />
+                            <Eye className="h-3 w-3 mr-1 text-primary" />
                             View
                           </Button>
                         )}
@@ -484,10 +573,10 @@ export default function Admin() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-9 px-3 text-sm border-green-600/20 hover:bg-green-600/10 dark:border-green-400/20 dark:hover:bg-green-400/10"
+                            className="h-8 px-2 text-xs border-green-600/20 hover:bg-green-600/10 dark:border-green-400/20 dark:hover:bg-green-400/10"
                             onClick={() => window.open(ipo.rhp_url!, '_blank')}
                           >
-                            <ExternalLink className="h-4 w-4 mr-1.5 text-green-600 dark:text-green-400" />
+                            <ExternalLink className="h-3 w-3 mr-1 text-green-600 dark:text-green-400" />
                             RHP
                           </Button>
                         )}
@@ -497,9 +586,9 @@ export default function Admin() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                                className="h-8 px-2 text-xs border-primary/20 hover:bg-primary/10"
                               >
-                                <PenTool className="h-4 w-4 mr-1.5 text-primary" />
+                                <PenTool className="h-3 w-3 mr-1 text-primary" />
                                 Blog
                               </Button>
                             </DropdownMenuTrigger>
@@ -517,6 +606,17 @@ export default function Admin() {
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
+                        {ipo._id && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 px-2 text-xs border-primary/20 hover:bg-primary/10"
+                            onClick={() => router.push(`/ipo_analysis/${ipo._id}`)}
+                          >
+                            <LineChart className="h-3 w-3 mr-1 text-red-600 dark:text-red-400" />
+                            Analysis
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -524,221 +624,255 @@ export default function Admin() {
               </div>
 
               {/* Desktop Table View */}
-              <div className="hidden sm:block overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-muted/20">
-                    <tr className="border-b border-t">
-                      <th className="font-semibold text-left p-4 min-w-[200px] text-foreground">Company</th>
-                      <th className="font-semibold text-left p-4 min-w-[100px] text-foreground">Type</th>
-                      <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Open Date</th>
-                      <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Close Date</th>
-                      <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Price Band</th>
-                      <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Issue Size</th>
-                      <th className="font-semibold text-left p-4 min-w-[280px] text-foreground">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {currentIpos.map((ipo, index) => (
-                      <tr key={ipo._id?.toString() || index} className="group hover:bg-muted/30 transition-colors border-b">
-                        <td className="font-medium p-4">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
-                              <Building2 className="h-5 w-5 text-primary" />
+              <div className="hidden lg:block">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[1000px]">
+                    <thead className="bg-muted/20">
+                      <tr className="border-b border-t">
+                        <th className="font-semibold text-left p-4 min-w-[200px] text-foreground">Company</th>
+                        <th className="font-semibold text-left p-4 min-w-[100px] text-foreground">Type</th>
+                        <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Open Date</th>
+                        <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Close Date</th>
+                        <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Price Band</th>
+                        <th className="font-semibold text-left p-4 min-w-[120px] text-foreground">Issue Size</th>
+                        <th className="font-semibold text-left p-4 min-w-[300px] text-foreground">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {currentIpos.map((ipo, index) => (
+                        <tr key={ipo._id?.toString() || index} className="group hover:bg-muted/30 transition-colors border-b">
+                          <td className="font-medium p-4">
+                            <div className="flex items-center gap-3">
+                              {ipo.image_url ? (
+                                <img
+                                  src={ipo.image_url}
+                                  alt={`${ipo.upcoming_ipo_2025} logo`}
+                                  className="h-8 w-8 object-contain rounded flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors flex-shrink-0">
+                                  <Building2 className="h-5 w-5 text-primary" />
+                                </div>
+                              )}
+                              <div className="min-w-0">
+                                <div className="font-medium truncate text-foreground">{ipo.upcoming_ipo_2025 || 'Unnamed IPO'}</div>
+                                <div className="text-sm text-muted-foreground">ID: {ipo._id?.toString().slice(-6) || 'N/A'}</div>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <div className="font-medium truncate text-foreground">{ipo.upcoming_ipo_2025 || 'Unnamed IPO'}</div>
-                              <div className="text-sm text-muted-foreground">ID: {ipo._id?.toString().slice(-6) || 'N/A'}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <Badge variant={ipo.ipo_type === 'Mainboard' ? 'default' : 'secondary'} className="font-medium">
-                            {ipo.ipo_type || 'N/A'}
-                          </Badge>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            <span className="text-sm text-foreground">
-                              {ipo.open_date && !ipo.open_date.toLowerCase().includes('tba')
-                                ? new Date(`2000-${ipo.open_date}`).toLocaleDateString('en-IN', {
+                          </td>
+                          <td className="p-4">
+                            <Badge variant={ipo.ipo_type === 'Mainboard' ? 'default' : 'secondary'} className="font-medium">
+                              {ipo.ipo_type || 'N/A'}
+                            </Badge>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="text-sm text-foreground">
+                                {ipo.open_date && !ipo.open_date.toLowerCase().includes('tba')
+                                  ? new Date(`2000-${ipo.open_date}`).toLocaleDateString('en-IN', {
                                     day: 'numeric',
                                     month: 'short',
                                   })
-                                : 'TBA'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            <span className="text-sm text-foreground">
-                              {ipo.closing_date && !ipo.closing_date.toLowerCase().includes('tba')
-                                ? new Date(`2000-${ipo.closing_date}`).toLocaleDateString('en-IN', {
+                                  : 'TBA'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="text-sm text-foreground">
+                                {ipo.closing_date && !ipo.closing_date.toLowerCase().includes('tba')
+                                  ? new Date(`2000-${ipo.closing_date}`).toLocaleDateString('en-IN', {
                                     day: 'numeric',
                                     month: 'short',
                                   })
-                                : 'TBA'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="font-medium text-foreground">{ipo.price_band || 'TBA'}</div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                            <span className="font-medium text-foreground">{ipo.ipo_size || 'TBA'}</span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {ipo._id && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-9 px-3 border-primary/20 hover:bg-primary/10"
-                                onClick={() => copyToClipboard(ipo._id!)}
-                              >
-                                <Copy className="h-4 w-4 mr-1.5 text-primary" />
-                                ID
-                              </Button>
-                            )}
-                            {ipo.detail_url && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-9 px-3 border-primary/20 hover:bg-primary/10"
-                                onClick={() => window.open(ipo.detail_url!, '_blank')}
-                              >
-                                <Eye className="h-4 w-4 mr-1.5 text-primary" />
-                                View
-                              </Button>
-                            )}
-                            {ipo.ipo_details.rhp_draft_prospectus_links[0].href && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-9 px-3 border-green-600/20 hover:bg-green-600/10 dark:border-green-400/20 dark:hover:bg-green-400/10"
-                                onClick={() => window.open(ipo.ipo_details.rhp_draft_prospectus_links[0].href!, '_blank')}
-                              >
-                                <ExternalLink className="h-4 w-4 mr-1.5 text-green-600 dark:text-green-400" />
-                                DHRP
-                              </Button>
-                            )}
-                            {ipo.ipo_details.drhp_draft_prospectus_links[0].href && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-9 px-3 border-green-600/20 hover:bg-green-600/10 dark:border-green-400/20 dark:hover:bg-green-400/10"
-                                onClick={() => window.open(ipo.ipo_details.drhp_draft_prospectus_links[0].href!, '_blank')}
-                              >
-                                <ExternalLink className="h-4 w-4 mr-1.5 text-green-600 dark:text-green-400" />
-                                RHP
-                              </Button>
-                            )}
-                            {ipo._id && (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
+                                  : 'TBA'}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="font-medium text-foreground">{ipo.price_band || 'TBA'}</div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                              <span className="font-medium text-foreground">{ipo.ipo_size || 'TBA'}</span>
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {ipo._id && (
+                                <label className="flex items-center">
+                                  <input
+                                    type="file"
+                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                    onChange={(e) => handleLogoUpload(e, ipo._id!)}
+                                    className="hidden"
+                                  />
                                   <Button
                                     variant="outline"
                                     size="sm"
                                     className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                                    asChild
                                   >
-                                    <PenTool className="h-4 w-4 mr-1.5 text-primary" />
-                                    Blog
+                                    <span>
+                                      <Upload className="h-4 w-4 mr-1.5 text-primary" />
+                                      Logo
+                                    </span>
                                   </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => handleBlogClick(ipo._id!)}>
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Write New Blog
-                                  </DropdownMenuItem>
-                                  {getBlogsForIpo(ipo._id!).map((blog) => (
-                                    <DropdownMenuItem key={blog._id} onClick={() => handleEditBlog(blog._id!)}>
-                                      <Edit className="h-4 w-4 mr-2" />
-                                      Edit: {blog.title?.substring(0, 30)}...
+                                </label>
+                              )}
+                              {ipo._id && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                                  onClick={() => copyToClipboard(ipo._id!)}
+                                >
+                                  <Copy className="h-4 w-4 mr-1.5 text-primary" />
+                                  ID
+                                </Button>
+                              )}
+                              {ipo.detail_url && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                                  onClick={() => window.open(ipo.detail_url!, '_blank')}
+                                >
+                                  <Eye className="h-4 w-4 mr-1.5 text-primary" />
+                                  View
+                                </Button>
+                              )}
+                              {ipo.ipo_details?.rhp_draft_prospectus_links?.[0]?.href && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-3 text-sm border-green-600/20 hover:bg-green-600/10 dark:border-green-400/20 dark:hover:bg-green-400/10"
+                                  onClick={() => window.open(ipo.ipo_details.rhp_draft_prospectus_links[0].href!, '_blank')}
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-1.5 text-green-600 dark:text-green-400" />
+                                  DHRP
+                                </Button>
+                              )}
+                              {ipo.ipo_details?.drhp_draft_prospectus_links?.[0]?.href && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-3 text-sm border-green-600/20 hover:bg-green-600/10 dark:border-green-400/20 dark:hover:bg-green-400/10"
+                                  onClick={() => window.open(ipo.ipo_details.drhp_draft_prospectus_links[0].href!, '_blank')}
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-1.5 text-green-600 dark:text-green-400" />
+                                  RHP
+                                </Button>
+                              )}
+                              {ipo._id && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                                    >
+                                      <PenTool className="h-4 w-4 mr-1.5 text-primary" />
+                                      Blog
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => handleBlogClick(ipo._id!)}>
+                                      <Plus className="h-4 w-4 mr-2" />
+                                      Write New Blog
                                     </DropdownMenuItem>
-                                  ))}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )}
-                            {ipo._id && (
-                              <Button
-                                size="sm"
-                                onClick={() => router.push(`/analysis/${ipo._id}`)}
-                                className="h-9 px-3 border-primary/20 hover:bg-primary/10"
-                              >
-                                <LineChart className="h-4 w-4 mr-1.5 text-red-600 dark:text-red-400" />
-                                Analysis
-                              </Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                                    {getBlogsForIpo(ipo._id!).map((blog) => (
+                                      <DropdownMenuItem key={blog._id} onClick={() => handleEditBlog(blog._id!)}>
+                                        <Edit className="h-4 w-4 mr-2" />
+                                        Edit: {blog.title?.substring(0, 30)}...
+                                      </DropdownMenuItem>
+                                    ))}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
+                              {ipo._id && (
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
+                                  onClick={() => router.push(`/ipo_analysis/${ipo._id}`)}
+                                >
+                                  <LineChart className="h-4 w-4 mr-1.5 text-red-600 dark:text-red-400" />
+                                  Analysis
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* Pagination Controls */}
               {totalPages > 1 && (
-                <CardContent className="py-4 p-4 sm:p-6 border-t bg-muted/30 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-sm text-muted-foreground order-2 sm:order-1">
-                    Showing {startIndex + 1} to {Math.min(endIndex, filteredIpos.length)} of {filteredIpos.length} IPOs
-                  </div>
-                  <div className="flex items-center gap-2 order-1 sm:order-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage - 1)}
-                      disabled={currentPage === 1}
-                      className="h-10 px-4 border-primary/20 hover:bg-primary/10"
-                    >
-                      <ChevronLeft className="h-5 w-5 text-primary" />
-                      <span className="hidden sm:inline ml-1">Previous</span>
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1)
-                        .filter(page =>
-                          totalPages <= 5 ||
-                          page === 1 ||
-                          page === totalPages ||
-                          (page >= currentPage - 1 && page <= currentPage + 1)
-                        )
-                        .map((page, idx, arr) => (
-                          <span key={page}>
-                            {idx > 0 && page - arr[idx - 1] > 1 && <span className="px-2 text-muted-foreground">...</span>}
-                            <Button
-                              variant={currentPage === page ? "default" : "outline"}
-                              size="sm"
-                              onClick={() => handlePageChange(page)}
-                              className="h-10 w-10 border-primary/20 hover:bg-primary/10"
-                            >
-                              {page}
-                            </Button>
-                          </span>
-                        ))}
+                <CardContent className="py-4 p-4 sm:p-6 border-t bg-muted/30">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="text-sm text-muted-foreground order-2 sm:order-1">
+                      Showing {startIndex + 1} to {Math.min(endIndex, filteredIpos.length)} of {filteredIpos.length} IPOs
                     </div>
-                    <Input
-                      type="number"
-                      placeholder="Go to page"
-                      defaultValue={currentPage}
-                      onKeyDown={handleGoToPage}
-                      className="w-24 h-10 px-3 text-center bg-background/50"
-                      min={1}
-                      max={totalPages}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(currentPage + 1)}
-                      disabled={currentPage === totalPages}
-                      className="h-10 px-4 border-primary/20 hover:bg-primary/10"
-                    >
-                      <span className="hidden sm:inline mr-1">Next</span>
-                      <ChevronRight className="h-5 w-5 text-primary" />
-                    </Button>
+                    <div className="flex items-center gap-2 order-1 sm:order-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="h-10 px-3 border-primary/20 hover:bg-primary/10"
+                      >
+                        <ChevronLeft className="h-5 w-5 text-primary" />
+                        <span className="hidden sm:inline ml-1">Previous</span>
+                      </Button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1)
+                          .filter(page =>
+                            totalPages <= 5 ||
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - 1 && page <= currentPage + 1)
+                          )
+                          .map((page, idx, arr) => (
+                            <span key={page}>
+                              {idx > 0 && page - arr[idx - 1] > 1 && <span className="px-2 text-muted-foreground">...</span>}
+                              <Button
+                                variant={currentPage === page ? "default" : "outline"}
+                                size="sm"
+                                onClick={() => handlePageChange(page)}
+                                className="h-10 w-10 border-primary/20 hover:bg-primary/10"
+                              >
+                                {page}
+                              </Button>
+                            </span>
+                          ))}
+                      </div>
+                      <Input
+                        type="number"
+                        placeholder="Go to page"
+                        defaultValue={currentPage}
+                        onKeyDown={handleGoToPage}
+                        className="w-24 h-10 px-3 text-center bg-background/50"
+                        min={1}
+                        max={totalPages}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="h-10 px-4 border-primary/20 hover:bg-primary/10"
+                      >
+                        <span className="hidden sm:inline mr-1">Next</span>
+                        <ChevronRight className="h-5 w-5 text-primary" />
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               )}

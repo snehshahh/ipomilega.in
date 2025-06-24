@@ -44,12 +44,12 @@ interface Ipo {
   ipo_table_id?: string;
   upcoming_ipo_2025: string;
   ipo_type?: string;
+  image_url?: string;
   ipo_details: {
     ipo_price_band?: string;
     issue_size?: string;
   };
 }
-
 
 export default function BlogDisplay({ blog }: { blog: BlogPost }) {
   const [ipoData, setIpoData] = useState<Ipo | null>(null);
@@ -144,6 +144,18 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
         <div className="max-w-4xl mx-auto">
           {/* Article Header */}
           <header className="mb-12">
+            {/* Featured Image */}
+            {blog.featured_image && (
+              <div className="relative mb-8 rounded-xl overflow-hidden shadow-lg">
+                <img
+                  src={blog.featured_image}
+                  alt={blog.title}
+                  className="w-full h-[400px] object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+              </div>
+            )}
+
             {/* Category and Tags */}
             <div className="flex items-center gap-2 mb-6 flex-wrap">
               <Badge variant="default" className="px-4 py-2 text-sm font-medium bg-primary text-background">
@@ -202,8 +214,6 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
             <Separator className="border-t" />
           </header>
 
-
-
           {/* IPO Reference Card */}
           {blog.ipo_id && (
             <Card className="mb-12 bg-muted/30 border border-muted">
@@ -217,11 +227,21 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                     </div>
                   </div>
                 ) : ipoData ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="p-3 rounded-lg bg-primary/10 border">
-                        <Building2 className="h-6 w-6 text-primary" />
-                      </div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="flex items-start space-x-4">
+                      {ipoData.image_url ? (
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-md">
+                          <img
+                            src={ipoData.image_url}
+                            alt={ipoData.upcoming_ipo_2025}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="p-3 rounded-lg bg-primary/10 border">
+                          <Building2 className="h-6 w-6 text-primary" />
+                        </div>
+                      )}
                       <div>
                         <h3 className="font-semibold text-lg text-foreground mb-1">
                           {ipoData.upcoming_ipo_2025}

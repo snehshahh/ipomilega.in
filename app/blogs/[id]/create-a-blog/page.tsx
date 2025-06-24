@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -54,9 +54,10 @@ interface BlogPost {
   tags: string[];
   category: string;
   status: 'draft' | 'published';
-  featured_image?: string;
+  image_url?: string;
   meta_description: string;
   author: string;
+  _id?: string;
 }
 
 export default function CreateBlogPage() {
@@ -70,6 +71,8 @@ export default function CreateBlogPage() {
   const [slugExists, setSlugExists] = useState(false);
   const [newTag, setNewTag] = useState('');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [blogPost, setBlogPost] = useState<BlogPost>({
     title: '',
     slug: '',
@@ -101,8 +104,6 @@ export default function CreateBlogPage() {
 
         const data: { ipos: Ipo } = await response.json();
         const analysisData: { ipos_analysis: IpoComprehensiveAnalysis } = await response2.json();
-        console.log("ipo data", data.ipos);
-        console.log("analysis data", analysisData.ipos_analysis);
         setIpoData({ ipo: data.ipos, analysis: analysisData.ipos_analysis });
 
         if (data.ipos) {
@@ -139,7 +140,6 @@ export default function CreateBlogPage() {
   };
 
   const generateInitialContent = (ipo: Ipo) => {
-    // Add null checks to prevent undefined values
     const companyName = ipo.upcoming_ipo_2025 || 'Company Name';
     const ipoType = ipo.ipo_type || 'IPO Type';
     const priceBand = ipo.price_band || 'To be announced';
@@ -216,12 +216,17 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
       [field]: value
     }));
 
-    // Auto-generate slug from title
     if (field === 'title' && typeof value === 'string') {
       setBlogPost(prev => ({
         ...prev,
         slug: generateSlug(value)
       }));
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedImage(e.target.files[0]);
     }
   };
 
@@ -244,6 +249,9 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
 
   const handleSave = async (status: 'draft' | 'published') => {
     try {
+      setIsSaving(true);
+
+      // Check if slug exists
       const slug = await fetch(`/api/blogs/slug/exists/${blogPost.slug}`);
       const data = await slug.json();
       if (data.exists) {
@@ -251,8 +259,8 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
         toast.error('Blog with this slug already exists');
         return;
       }
-      setIsSaving(true);
 
+      // Save blog post first
       const payload = {
         ...blogPost,
         status,
@@ -273,13 +281,54 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
         throw new Error('Failed to save blog post');
       }
 
+      const blogResponse = await response.json();
+      const blogId = blogResponse.data?._id;
+
+      // Upload image if selected
+      let imageUrl = blogPost.image_url;
+      if (selectedImage && blogId) {
+        const formData = new FormData();
+        formData.append('file', selectedImage);
+        formData.append('documentId', blogId);
+        formData.append('folder', 'blogs');
+        formData.append('collection', 'blogs');
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload image');
+        }
+
+        const uploadResult = await uploadResponse.json();
+        if (uploadResult.success) {
+          imageUrl = uploadResult.url;
+
+          // Update blog post with image URL
+          await fetch(`/api/blogs/${blogId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ image_url: imageUrl }),
+          });
+
+          setBlogPost(prev => ({
+            ...prev,
+            image_url: imageUrl,
+            _id: blogId
+          }));
+        }
+      }
+
       if (status === 'published') {
         toast.success('Blog post published successfully!');
       } else {
         toast.success('Draft saved successfully!');
       }
 
-      // Redirect to blog management or view page
       router.push(`/admin`);
 
     } catch (error) {
@@ -509,7 +558,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                           onClick={() => insertFormatting('italic')}
                         >
                           <Italic className="h-4 w-4" />
-                        </Button>
+                          </Button>
                         <Button
                           type="button"
                           variant="ghost"
@@ -558,6 +607,13 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                 ) : (
                   /* Preview Mode */
                   <div className="prose prose-lg max-w-none">
+                    {blogPost.image_url && (
+                      <img
+                        src={blogPost.image_url}
+                        alt="Featured image"
+                        className="w-full max-h-96 object-cover rounded-lg mb-6"
+                      />
+                    )}
                     <h1>{blogPost.title}</h1>
                     <p className="text-muted-foreground italic">{blogPost.excerpt}</p>
                     <MarkdownRenderer content={blogPost.content} />
@@ -666,14 +722,27 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                 <CardTitle className="text-lg">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                <Button variant="outline" size="sm" className="w-full justify-start">
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload Image
-                </Button>
-                <Button variant="outline" size="sm" className="w-full justify-start">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full justify-start"
+                  onClick={() => fileInputRef.current?.click()}
+                >
                   <ImageIcon className="h-4 w-4 mr-2" />
-                  Add Featured Image
+                  {selectedImage ? 'Change Featured Image' : 'Add Featured Image'}
                 </Button>
+                {selectedImage && (
+                  <div className="text-sm text-muted-foreground">
+                    Selected: {selectedImage.name}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

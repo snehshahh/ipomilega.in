@@ -51,13 +51,13 @@ export async function generateMetadata({
       modifiedTime: blog.updated_at,
       authors: [blog.author],
       tags: blog.tags,
-      images: blog.featured_image ? [{ url: blog.featured_image }] : undefined,
+      images: blog.image_url ? [{ url: blog.image_url }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: blog.title,
       description: blog.meta_description,
-      images: blog.featured_image ? [blog.featured_image] : undefined,
+      images: blog.image_url ? [blog.image_url] : undefined,
     },
   };
 }
