@@ -23,13 +23,21 @@ export async function GET() {
 
         const {db} = await connectToDatabase();
         const ipos = await db.collection("blogs").find({ sort: { created_at: -1 }}).toArray();
+        const ipo_analysis = await db.collection("categories").find({category: "IPO Analysis",status: "published"}).toArray();
+        const company_review = await db.collection("categories").find({category: "Company Review",status: "published"}).toArray();
+        const market_news = await db.collection("categories").find({category: "Market News",status: "published"}).toArray();
+        const investment_guide = await db.collection("categories").find({category: "Investment Guide",status: "published"}).toArray();
 
         const ipoList = ipos || [];
 
         return NextResponse.json({
             message: "Data retrieved successfully",
             success: true,
-            ipos: ipoList
+            ipos: ipoList,
+            ipo_analysis: ipo_analysis,
+            company_review: company_review,
+            market_news: market_news,
+            investment_guide: investment_guide
         });
     }
     catch (error) {

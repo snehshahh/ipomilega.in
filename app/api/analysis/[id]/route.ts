@@ -8,17 +8,21 @@ export async function GET(
 ) {
     try {
         const id = (await params).id
-        const {db} = await connectToDatabase();
+        const { db } = await connectToDatabase();
         const ipos = await db.collection("ipo_comprehensive_analysis").find({}).toArray();
-
+        const ipotable = await db.collection("ipos").find({}).toArray();
         const ipoList = ipos || [];
 
         const ipo = ipoList.find((ipo) => ipo.ipo_table_id === id);
 
+        const ipoTable = ipotable.find((ipo) => ipo._id.toString() === id);
+        const logo = ipoTable?.image_url;
+
         return NextResponse.json({
             message: "Data retrieved successfully",
             success: true,
-            ipos_analysis: ipo
+            ipos_analysis: ipo,
+            logo: logo
         });
     }
     catch (error) {

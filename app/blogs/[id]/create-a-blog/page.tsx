@@ -24,7 +24,6 @@ import {
   Tags,
   Building2,
   Loader2,
-  Upload,
   Image as ImageIcon,
   Type,
   Bold,
@@ -40,6 +39,7 @@ import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysi
 import { Ipo } from "@/app/models/ipo"
 import { useSession } from "@/lib/auth-client"
 import MarkdownRenderer from "@/components/MarkDown"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface IpoandAnalysis {
   ipo: Ipo;
@@ -608,11 +608,10 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                   /* Preview Mode */
                   <div className="prose prose-lg max-w-none">
                     {blogPost.image_url && (
-                      <img
-                        src={blogPost.image_url}
-                        alt="Featured image"
-                        className="w-full max-h-96 object-cover rounded-lg mb-6"
-                      />
+                      <Avatar>
+                        <AvatarImage src={blogPost.image_url} alt="Featured image" />
+                        <AvatarFallback>IP</AvatarFallback>
+                      </Avatar>
                     )}
                     <h1>{blogPost.title}</h1>
                     <p className="text-muted-foreground italic">{blogPost.excerpt}</p>
@@ -652,8 +651,8 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                 <div className="space-y-2">
                   <Label>Author</Label>
                   <Input
-                    value={blogPost.author}
-                    onChange={(e) => handleInputChange('author', e.target.value)}
+                    value={session?.data?.user?.name}
+                    readOnly
                     placeholder="Author name"
                   />
                 </div>

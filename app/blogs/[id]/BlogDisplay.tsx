@@ -13,17 +13,14 @@ import {
   User,
   ArrowLeft,
   Share2,
-  BookmarkPlus,
   Building2,
   TrendingUp,
   Clock,
-  Eye,
-  MessageCircle,
-  Heart,
 } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkDown";
 import { useRouter } from "next/navigation";
 import { Ipo } from "@/app/models/ipo";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface BlogPost {
   title: string;
@@ -45,8 +42,8 @@ interface BlogPost {
 export default function BlogDisplay({ blog }: { blog: BlogPost }) {
   const [ipoData, setIpoData] = useState<Ipo | null>(null);
   const [isLoadingIpo, setIsLoadingIpo] = useState(false);
-  const [isBookmarked, setIsBookmarked] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  // const [isBookmarked, setIsBookmarked] = useState(false);
+  // const [isLiked, setIsLiked] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -58,7 +55,6 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
           if (response.ok) {
             const data = await response.json();
             setIpoData(data.ipos);
-            console.log(ipoData);
           }
         } catch (error) {
           console.error("Error fetching IPO data:", error);
@@ -140,11 +136,10 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
             {/* Featured Image */}
             {blog.image_url && (
               <div className="relative mb-8 rounded-xl overflow-hidden shadow-lg">
-                <img
-                  src={blog.image_url}
-                  alt={blog.title}
-                  className="w-full h-[400px] object-cover"
-                />
+                <Avatar>
+                  <AvatarImage src={blog.image_url} alt={blog.title} />
+                  <AvatarFallback>IP</AvatarFallback>
+                </Avatar>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               </div>
             )}
@@ -224,11 +219,10 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                     <div className="flex items-start space-x-4">
                       {ipoData.image_url ? (
                         <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-md">
-                          <img
-                            src={ipoData.image_url}
-                            alt={ipoData.upcoming_ipo_2025}
-                            className="w-full h-full object-cover"
-                          />
+                          <Avatar>
+                            <AvatarImage src={ipoData.image_url} alt={ipoData.upcoming_ipo_2025} />
+                            <AvatarFallback>IP</AvatarFallback>
+                          </Avatar>
                         </div>
                       ) : (
                         <div className="p-3 rounded-lg bg-primary/10 border">

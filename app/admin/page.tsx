@@ -39,6 +39,7 @@ import { toast } from "sonner"
 import Link from "next/link"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { sortIPOsByOpeningDate } from "@/lib/dates"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function Admin() {
   const [ipoList, setIpoList] = useState<Ipo[]>([])
@@ -446,11 +447,10 @@ export default function Admin() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3 min-w-0 flex-1">
                           {ipo.image_url ? (
-                            <img
-                              src={ipo.image_url}
-                              alt={`${ipo.upcoming_ipo_2025} logo`}
-                              className="h-8 w-8 object-contain rounded flex-shrink-0"
-                            />
+                            <Avatar>
+                              <AvatarImage src={ipo.image_url} alt={`${ipo.upcoming_ipo_2025} logo`} />
+                              <AvatarFallback>IP</AvatarFallback>
+                            </Avatar>
                           ) : (
                             <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
                               <Building2 className="h-4 w-4 text-primary" />
@@ -597,7 +597,7 @@ export default function Admin() {
                             variant="outline"
                             size="sm"
                             className="h-8 px-2 text-xs border-primary/20 hover:bg-primary/10"
-                            onClick={() => router.push(`/ipo_analysis/${ipo._id}`)}
+                            onClick={() => router.push(`/analysis/${ipo._id}`)}
                           >
                             <LineChart className="h-3 w-3 mr-1 text-red-600 dark:text-red-400" />
                             Analysis
@@ -630,11 +630,10 @@ export default function Admin() {
                           <td className="font-medium p-4">
                             <div className="flex items-center gap-3">
                               {ipo.image_url ? (
-                                <img
-                                  src={ipo.image_url}
-                                  alt={`${ipo.upcoming_ipo_2025} logo`}
-                                  className="h-8 w-8 object-contain rounded flex-shrink-0"
-                                />
+                                <Avatar>
+                                  <AvatarImage src={ipo.image_url} alt={`${ipo.upcoming_ipo_2025} logo`} />
+                                  <AvatarFallback>IP</AvatarFallback>
+                                </Avatar>
                               ) : (
                                 <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors flex-shrink-0">
                                   <Building2 className="h-5 w-5 text-primary" />
@@ -784,7 +783,7 @@ export default function Admin() {
                                   variant="outline"
                                   size="sm"
                                   className="h-9 px-3 text-sm border-primary/20 hover:bg-primary/10"
-                                  onClick={() => router.push(`/ipo_analysis/${ipo._id}`)}
+                                  onClick={() => router.push(`/analysis/${ipo._id}`)}
                                 >
                                   <LineChart className="h-4 w-4 mr-1.5 text-red-600 dark:text-red-400" />
                                   Analysis

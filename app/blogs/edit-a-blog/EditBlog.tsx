@@ -24,7 +24,6 @@ import {
   Tags,
   Building2,
   Loader2,
-  Upload,
   Image as ImageIcon,
   Type,
   Bold,
@@ -43,6 +42,7 @@ import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysi
 import { Ipo } from "@/app/models/ipo"
 import { useSession } from "@/lib/auth-client"
 import MarkdownRenderer from "@/components/MarkDown"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 interface IpoandAnalysis {
   ipo: Ipo;
@@ -246,7 +246,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
         formData.append('file', selectedImage);
         formData.append('documentId', blogPost.id);
         formData.append('folder', 'blogs');
-        formData.append('collection','blogs');
+        formData.append('collection', 'blogs');
 
         const uploadResponse = await fetch('/api/upload', {
           method: 'POST',
@@ -444,33 +444,33 @@ export default function EditBlog({ blog }: { blog: Blog }) {
           {/* Main Content */}
           <div className="lg:col-span-3 space-y-6">
             {/* Blog Info Card */}
-            <Card className="border-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 backdrop-blur-sm">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-lg bg-primary/10">
-                      <FileText className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-lg">Blog Post Details</h3>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {originalBlog?.created_at ? new Date(originalBlog.created_at).toLocaleDateString() : 'Unknown'}
-                        </span>
-                        <span>•</span>
-                        <span>Status: {blogPost.status}</span>
-                        <span>•</span>
-                        <span>Category: {blogPost.category}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <Badge variant={blogPost.status === 'published' ? 'default' : 'secondary'}>
-                    {blogPost.status}
-                  </Badge>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <FileText className="h-5 w-5 text-primary" />
                 </div>
-              </CardContent>
-            </Card>
+                <div>
+                  <h3 className="font-semibold text-lg">Blog Post Details</h3>
+                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {originalBlog?.created_at ? new Date(originalBlog.created_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }) : 'Unknown'}
+                    </span>
+                    <span>•</span>
+                    <span>Status: {blogPost.status}</span>
+                    <span>•</span>
+                    <span>Category: {blogPost.category}</span>
+                  </div>
+                </div>
+              </div>
+              <Badge variant={blogPost.status === 'published' ? 'default' : 'secondary'}>
+                {blogPost.status}
+              </Badge>
+            </div>
 
             {/* IPO Reference Card */}
             {ipoData && (
@@ -478,9 +478,12 @@ export default function EditBlog({ blog }: { blog: Blog }) {
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
-                      <div className="p-2 rounded-lg bg-primary/10">
-                        <Building2 className="h-5 w-5 text-primary" />
-                      </div>
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={ipoData.ipo.image_url || undefined} alt={ipoData.ipo.upcoming_ipo_2025} />
+                        <AvatarFallback>
+                          <Building2 className="h-5 w-5 text-primary" />
+                        </AvatarFallback>
+                      </Avatar>
                       <div>
                         <h3 className="font-semibold text-lg">{ipoData.ipo.upcoming_ipo_2025}</h3>
                         <div className="flex items-center space-x-4 text-sm text-muted-foreground">
@@ -497,7 +500,6 @@ export default function EditBlog({ blog }: { blog: Blog }) {
                 </CardContent>
               </Card>
             )}
-
             {/* Blog Editor */}
             <Card className="border-0 bg-background/60 backdrop-blur-sm">
               <CardHeader>
@@ -614,11 +616,10 @@ export default function EditBlog({ blog }: { blog: Blog }) {
                   /* Preview Mode */
                   <div className="prose prose-lg max-w-none">
                     {blogPost.image_url && (
-                      <img
-                        src={blogPost.image_url}
-                        alt="Featured image"
-                        className="w-full max-h-96 object-cover rounded-lg mb-6"
-                      />
+                      <Avatar>
+                        <AvatarImage src={blogPost.image_url} alt="Featured image" />
+                        <AvatarFallback>IP</AvatarFallback>
+                      </Avatar>
                     )}
                     <h1>{blogPost.title}</h1>
                     <p className="text-muted-foreground italic">{blogPost.excerpt}</p>

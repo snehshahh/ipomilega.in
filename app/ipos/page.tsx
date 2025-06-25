@@ -8,8 +8,6 @@ import { Input } from "@/components/ui/input"
 import {
   ExternalLink,
   Search,
-  Filter,
-  Download,
   Building2,
   Calendar,
   DollarSign,
@@ -29,6 +27,7 @@ import { cn } from "@/lib/utils"
 import { Blog, Ipo } from "../models/ipo"
 import { sortIPOsByOpeningDate } from "@/lib/dates"
 import { IpoComprehensiveAnalysis } from "../models/ipo_comprehensive_analysis"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export default function IPOs() {
   const [ipoList, setIpoList] = useState<Ipo[]>([])
@@ -349,11 +348,10 @@ export default function IPOs() {
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3 min-w-0 flex-1">
                           {ipo.image_url ? (
-                            <img
-                              src={ipo.image_url}
-                              alt={`${ipo.upcoming_ipo_2025} logo`}
-                              className="h-8 w-8 object-contain rounded flex-shrink-0"
-                            />
+                            <Avatar>
+                              <AvatarImage src={ipo.image_url} alt={`${ipo.upcoming_ipo_2025} logo`} />
+                              <AvatarFallback>IP</AvatarFallback>
+                            </Avatar>
                           ) : (
                             <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
                               <Building2 className="h-5 w-5 text-primary" />
@@ -507,11 +505,10 @@ export default function IPOs() {
                         <td className="p-3">
                           <div className="flex items-center gap-3">
                             {ipo.image_url ? (
-                              <img
-                                src={ipo.image_url}
-                                alt={`${ipo.upcoming_ipo_2025} logo`}
-                                className="h-8 w-8 object-contain rounded flex-shrink-0"
-                              />
+                              <Avatar>
+                                <AvatarImage src={ipo.image_url} alt={`${ipo.upcoming_ipo_2025} logo`} />
+                                <AvatarFallback>IP</AvatarFallback>
+                              </Avatar>
                             ) : (
                               <div className="p-2 rounded-lg bg-primary/10 group-hover:bg-primary/20 transition-colors">
                                 <Building2 className="h-4 w-4 text-primary" />
