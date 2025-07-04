@@ -59,23 +59,20 @@ export async function GET() {
             return dateB.getTime() - dateA.getTime();
         });
         
-        // Get top 3 from each category
-        const top3UpcomingIpos = sortedUpcomingIpos.slice(0, 3);
-        const top3LiveIpos = sortedLiveIpos.slice(0, 3);
-        const top3PastIpos = sortedPastIpos.slice(0, 3);
+        
         
         return NextResponse.json({
             message: "Data retrieved successfully",
             success: true,
             data: {
-                upcoming: top3UpcomingIpos,
-                live: top3LiveIpos,
-                past: top3PastIpos
+                upcoming: sortedUpcomingIpos,
+                live: sortedLiveIpos,
+                past: sortedPastIpos
             },
             counts: {
-                upcoming: upcomingIpos.length,
-                live: liveIpos.length,
-                past: pastIpos.length
+                upcoming: sortedUpcomingIpos.length,
+                live: sortedLiveIpos.length,
+                past: sortedPastIpos.length
             }
         });
     }

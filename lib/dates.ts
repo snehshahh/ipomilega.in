@@ -1,6 +1,6 @@
 import { Ipo } from "@/app/models/ipo";
 
-function parseIPODate(dateString: string): Date {
+export function parseIPODate(dateString: string): Date {
   if (!dateString || dateString.toLowerCase().includes('t')) {
     return new Date('1900-01-01'); // Fallback for TBA or invalid dates
   }
