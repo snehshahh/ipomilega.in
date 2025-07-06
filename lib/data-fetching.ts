@@ -3,10 +3,10 @@ import { HomePageData } from '@/app/types/homepage';
 export async function getHomePageData(): Promise<HomePageData> {
   try {
     const [ipoResponse, blogResponse] = await Promise.all([
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/ipo`, {
+      fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/ipo`, {
         cache: 'no-store',
       }),
-      fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/blogs/featured`, {
+      fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/blogs/featured`, {
         cache: 'no-store',
       }),
     ]);
