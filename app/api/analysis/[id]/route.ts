@@ -16,7 +16,8 @@ export async function GET(
         const ipo = ipoList.find((ipo) => ipo.ipo_table_id === id);
 
         const ipoTable = ipotable.find((ipo) => ipo._id.toString() === id);
-        const logo = ipoTable?.image_url;
+        const logo = ipoTable?.image_url || "";
+        console.log(ipoTable);
 
         return NextResponse.json({
             message: "Data retrieved successfully",

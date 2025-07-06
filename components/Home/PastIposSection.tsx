@@ -9,10 +9,10 @@ import { PastIpoCard } from './IpoCard';
 export function PastIposSection({ ipos, count }: IpoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  
+
   // Responsive items per page
   const [itemsPerPage, setItemsPerPage] = useState(3);
-  
+
   // Handle responsive items per page
   useEffect(() => {
     const handleResize = () => {
@@ -57,26 +57,33 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
   }, [itemsPerPage]);
 
   return (
-    <section className="py-12 sm:py-16 lg:py-24 bg-gray-50">
+    <section className="py-6 sm:py-8 lg:py-12">
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8 lg:mb-12">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 flex items-center justify-center sm:justify-start gap-2 lg:gap-3">
-              <div className="flex items-center relative">
+          <div className="flex items-center justify-center sm:justify-start gap-4 lg:gap-6">
+            {/* Red pulsing dot in separate div */}
+            <div className="flex items-center relative">
                 <span className="text-yellow-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>&lt;</span>
                 <span className="text-yellow-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.2s' }}>&lt;</span>
                 <span className="text-yellow-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.4s' }}>&lt;</span>
               </div>
-              Past IPOs
-            </h2>
-            <style jsx>{`
+
+            {/* Title and description stacked */}
+            <div className="flex flex-col">
+              <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 font-ibm-plex" style={{ fontWeight: '700' }}>
+                Past IPOs
+              </h3>
+              <style jsx>{`
               @keyframes slideLeft {
                 0%, 100% { transform: translateX(0px); opacity: 1; }
                 50% { transform: translateX(-8px); opacity: 0.7; }
               }
             `}</style>
-            <p className="text-gray-600 text-sm sm:text-base font-medium">Review completed IPO opportunities</p>
+              <p className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex" style={{ fontWeight: '400' }}>
+                Review completed IPO opportunities
+              </p>
+            </div>
           </div>
           <Link
             href="/ipos?filter=past"
@@ -119,7 +126,7 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
                           className="transition-all duration-300 hover:scale-105 w-full max-w-sm"
                         >
                           <div className="h-full rounded-lg overflow-hidden bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
-                            <PastIpoCard ipo={ipo.ipo} analysis={ipo.analysis || null}/>
+                            <PastIpoCard ipo={ipo.ipo} analysis={ipo.analysis || null} />
                           </div>
                         </div>
                       ))}
@@ -147,11 +154,10 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
                     <button
                       key={index}
                       onClick={() => setCurrentIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                        index === currentIndex
+                      className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentIndex
                           ? 'bg-blue-600 scale-125 shadow-md'
                           : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
-                      }`}
+                        }`}
                       aria-label={`Go to slide ${index + 1}`}
                     />
                   ))}

@@ -39,12 +39,18 @@ export default function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nunito:ital,wght@0,200..1000;1,200..1000&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Suravaram&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="container mx-auto px-6 py-3">
-            <div className="flex h-14 items-center justify-between">
+        <header className="fixed font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
+          <div className="container mx-auto px-6 py-2">
+            <div className="flex h-12 items-center justify-between">
               {/* Logo Section */}
               <Link
                 href="/"
@@ -53,7 +59,7 @@ export default function RootLayout({
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <TrendingUp className="h-4 w-4" />
                 </div>
-                <span className="text-xl font-bold text-primary tracking-tight">
+                <span className="text-xl font-bold text-black tracking-tight drop-shadow-lg">
                   IPO Milega
                 </span>
               </Link>
@@ -63,26 +69,26 @@ export default function RootLayout({
                 {isAdmin && (
                   <Link
                     href="/admin"
-                    className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-md hover:bg-muted/50"
+                    className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-white rounded-md hover:bg-white/10 backdrop-blur-sm"
                   >
                     Admin
                   </Link>
                 )}
                 <Link
                   href="/blogs"
-                  className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-md hover:bg-muted/50"
+                  className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-white rounded-md hover:bg-white/10 backdrop-blur-sm"
                 >
                   Blogs
                 </Link>
                 <Link
                   href="/ipos"
-                  className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-md hover:bg-muted/50"
+                  className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-white rounded-md hover:bg-white/10 backdrop-blur-sm"
                 >
                   IPOs
                 </Link>
                 <Link
                   href="/analysis"
-                  className="relative px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground rounded-md hover:bg-muted/50"
+                  className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-white rounded-md hover:bg-white/10 backdrop-blur-sm"
                 >
                   Analysis
                 </Link>
@@ -95,7 +101,7 @@ export default function RootLayout({
                     <DropdownMenuTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="relative h-10 w-auto px-3 rounded-full hover:bg-muted/50 transition-colors"
+                        className="relative h-10 w-auto px-3 rounded-full hover:bg-white/10 transition-colors backdrop-blur-sm"
                       >
                         <div className="flex items-center space-x-2">
                           <Avatar className="h-7 w-7">
@@ -104,15 +110,15 @@ export default function RootLayout({
                               {session?.user.name?.charAt(0)?.toUpperCase() || "U"}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="hidden sm:block text-sm font-medium text-foreground">
+                          <span className="hidden sm:block text-sm font-medium text-black">
                             {session?.user.name}
                           </span>
-                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                          <ChevronDown className="h-4 w-4 text-black/60" />
                         </div>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
-                      className="w-56 mt-2"
+                      className="w-56 mt-2 backdrop-blur-md bg-white/90 dark:bg-gray-900/90"
                       align="end"
                       forceMount
                     >
@@ -139,7 +145,7 @@ export default function RootLayout({
                 ) : (
                   <Button
                     onClick={() => setShowLoginDialog(true)}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 rounded-full font-medium transition-all hover:shadow-md"
+                    className="bg-white/20 hover:bg-white/30 text-black border border-white/30 px-6 py-2 rounded-full font-medium transition-all hover:shadow-md backdrop-blur-sm"
                   >
                     Sign In
                   </Button>

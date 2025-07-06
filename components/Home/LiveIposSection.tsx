@@ -1,4 +1,4 @@
-// LiveIposSection.tsx - Updated with bottom navigation and larger pulse
+// LiveIposSection.tsx - Fixed font issues and alignment with animated text
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,10 +12,10 @@ import { LiveIpoCard } from './IpoCard';
 export function LiveIposSection({ ipos, count }: IpoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  
+
   // Responsive items per page
   const [itemsPerPage, setItemsPerPage] = useState(3);
-  
+
   // Handle responsive items per page
   useEffect(() => {
     const handleResize = () => {
@@ -60,26 +60,32 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
   }, [itemsPerPage]);
 
   return (
-    <div 
-      className="bg-gradient-to-br from-gray-50 to-white"
+    <div
+      className="bg-gradient-to-br"
     >
       {/* Hero Section - Responsive heights and spacing */}
       <section className="min-h-screen flex items-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-0">
-        <div className="max-w-7xl mx-auto w-full">
+        <div className="max-w-6xl mx-auto w-full">
           <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
             {/* Text Content */}
             <div className="text-center lg:text-left space-y-4 sm:space-y-6">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl leading-tight font-black">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight font-black font-dm-serif">
                 Know The{' '}
-                <span className="text-red-500 font-black">Risk.</span>
+                <span className="text-[#B4292E] font-black font-dm-serif inline-block animate-slideDown opacity-0 animation-delay-100">
+                  Risk.
+                </span>
                 <br />
                 Predict The{' '}
-                <span className="text-green-500 font-black">Return.</span>
+                <span className="text-[#00914D] font-black font-dm-serif inline-block animate-slideDown opacity-0 animation-delay-300">
+                  Return.
+                </span>
                 <br />
                 Invest{' '}
-                <span className="text-yellow-500 font-black">Smarter.</span>
+                <span className="text-[#D59527] font-black font-dm-serif inline-block animate-slideDown opacity-0 animation-delay-500">
+                  Smarter.
+                </span>
               </h1>
-              <p className="text-sm sm:text-base lg:text-lg text-black leading-relaxed font-medium max-w-2xl mx-auto lg:mx-0">
+              <p className="text-sm sm:text-base lg:text-lg text-black leading-relaxed font-medium max-w-2xl mx-auto lg:mx-0 font-ibm-plex" style={{ fontWeight: '400' }}>
                 IPO Milega helps you make informed IPO decisions by showing real-time risk levels and predicting returns based on your investment.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-sm sm:max-w-md mx-auto lg:mx-0">
@@ -91,22 +97,21 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                 </Link>
                 <Link
                   href="/analysis"
-                  className="text-white bg-blue-600 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors text-center text-sm sm:text-base"
+                  className="text-blue-600 border border-blue-600 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-bold hover:bg-blue-60 0 hover:text-white-600 transition-colors text-center text-sm sm:text-base"
                 >
-                  Try Return Predictor
-                </Link>
+                  Chances Of Allotment                </Link>
               </div>
             </div>
-            
+
             {/* Hero Image */}
             <div className="flex justify-center order-first lg:order-last">
               <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
-                <Image 
-                  src={heroSection} 
-                  alt="Hero Section" 
-                  width={500} 
-                  height={500} 
-                  className="w-full h-auto" 
+                <Image
+                  src={heroSection}
+                  alt="Hero Section"
+                  width={300}
+                  height={300}
+                  className="w-full h-auto"
                   priority
                 />
               </div>
@@ -116,16 +121,30 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
       </section>
 
       {/* Live IPOs Section - Better spacing and responsive layout */}
-      <section className="py-12 sm:py-16 lg:py-24">
+      <section className="py-6 sm:py-8 lg:py-12">
         {/* Header */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8 lg:mb-12">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="text-center sm:text-left">
-              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 flex items-center justify-center sm:justify-start gap-2 lg:gap-3">
-                <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-red-500 rounded-full animate-pulse shadow-lg"></span>
-                Live IPOs
-              </h2>
-              <p className="text-gray-600 text-sm sm:text-base font-medium">Current IPOs open for Investment</p>
+              <div className="flex items-center justify-center sm:justify-start gap-4 lg:gap-6">
+                {/* Red pulsing dot in separate div */}
+                <div className="relative flex items-center justify-center">
+                  {/* Outer pulsing border - made larger and more prominent */}
+                  <div className="absolute w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10 bg-red-500 rounded-full animate-pulse opacity-25 border-2 border-red-500"></div>
+                  {/* Inner pulsing dot */}
+                  <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-red-500 rounded-full animate-pulse shadow-lg"></span>
+                </div>
+
+                {/* Title and description stacked */}
+                <div className="flex flex-col">
+                  <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 font-ibm-plex" style={{ fontWeight: '700' }}>
+                    Live IPOs
+                  </h3>
+                  <p className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex" style={{ fontWeight: '400' }}>
+                    Current IPOs open for Investment
+                  </p>
+                </div>
+              </div>
             </div>
             <Link
               href="/ipos?filter=live"
@@ -138,7 +157,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
         </div>
 
         {/* IPOs Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           {ipos.length === 0 ? (
             <div className="flex items-center justify-center py-8 sm:py-12">
               <div className="text-center py-6 sm:py-8 lg:py-12 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 max-w-sm sm:max-w-md w-full mx-4">
@@ -196,11 +215,10 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                       <button
                         key={index}
                         onClick={() => setCurrentIndex(index)}
-                        className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                          index === currentIndex
-                            ? 'bg-blue-600 scale-125 shadow-md'
-                            : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
-                        }`}
+                        className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentIndex
+                          ? 'bg-blue-600 scale-125 shadow-md'
+                          : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
+                          }`}
                         aria-label={`Go to slide ${index + 1}`}
                       />
                     ))}
@@ -220,6 +238,36 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
           )}
         </div>
       </section>
+
+      {/* Custom Styles */}
+      <style jsx>{`
+        @keyframes slideDown {
+          0% {
+            transform: translateY(-30px);
+            opacity: 0;
+          }
+          100% {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+
+        .animate-slideDown {
+          animation: slideDown 0.6s ease-out forwards;
+        }
+
+        .animation-delay-300 {
+          animation-delay: 0.3s;
+        }
+
+        .animation-delay-600 {
+          animation-delay: 0.6s;
+        }
+
+        .animation-delay-900 {
+          animation-delay: 0.9s;
+        }
+      `}</style>
     </div>
   );
 }

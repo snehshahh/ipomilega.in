@@ -1,4 +1,5 @@
 // app/page.tsx - Main Homepage Component
+import AnimatedBackground from '@/components/Home/Bg';
 import { BlogSection } from '@/components/Home/BlogSection';
 import { CtaSection } from '@/components/Home/CtaSection';
 import { Footer } from '@/components/Home/Footer';
@@ -70,17 +71,24 @@ export const metadata: Metadata = {
   },
 };
 
+
 export default async function HomePage() {
   const homeData = await getHomePageData();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
-      <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
-      <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
-      <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
-      <BlogSection blogs={homeData.blogList} />
-      <CtaSection />
-      <Footer />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Animated Mesh Background */}
+      <AnimatedBackground />
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen" style={{ marginLeft: '120px', marginRight: '120px' }}>
+        <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
+        <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
+        <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
+        <BlogSection blogs={homeData.blogList} />
+        <CtaSection />
+        <Footer />
+      </div>
     </div>
   );
 }
