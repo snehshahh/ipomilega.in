@@ -119,7 +119,7 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
               >
                 {Array.from({ length: totalPages }).map((_, pageIndex) => (
                   <div key={pageIndex} className="w-full flex-shrink-0 px-2">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-items-center">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-items-center py-5">
                       {ipos.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage).map((ipo: HomePageIpoProps) => (
                         <div
                           key={ipo._id}

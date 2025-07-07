@@ -1,11 +1,10 @@
 import React from 'react';
-import { Clock, TrendingUp, Calendar, CheckCircle } from 'lucide-react';
+import { TrendingUp, Calendar, CheckCircle } from 'lucide-react';
 import { Ipo } from '@/app/models/ipo';
 import { IpoComprehensiveAnalysis } from '@/app/models/ipo_comprehensive_analysis';
 import { Card, CardContent, CardHeader } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import Image from 'next/image';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface IpoCardProps {
@@ -47,7 +46,7 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
   const riskBorderColor = getRiskBorderColor(riskScore);
 
   return (
-    <Card className={`w-full w-max-[96] h-auto max-h-[495px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} >
+    <Card className={`w-[384px] h-[495px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-[60px] h-5">
           <div className="flex gap-2">
@@ -145,7 +144,7 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
   const riskBorderColor = getRiskBorderColor(riskScore);
 
   return (
-    <Card className={`w-full w-max-[96] h-auto max-h-[495px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} >
+    <Card className={`w-[384px] h-[495px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-[60px] h-5">
           <div className="flex gap-2">
@@ -233,7 +232,7 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
   const riskBorderColor = getRiskBorderColor(riskScore);
 
   return (
-    <Card className={`w-full w-max-[96] h-auto max-h-[495px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} >
+    <Card className={`w-[384px] h-[495px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-[60px] h-5">
           <div className="flex gap-2">

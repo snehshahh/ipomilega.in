@@ -81,7 +81,7 @@ export default async function HomePage() {
       <AnimatedBackground />
 
       {/* Content */}
-      <div className="relative z-10 min-h-screen" >
+      <div className="relative z-10 min-h-screen">
         <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
         <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
         <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
