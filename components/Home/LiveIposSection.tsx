@@ -1,4 +1,4 @@
-// LiveIposSection.tsx - Updated with extended hero background
+// LiveIposSection.tsx - Fixed mesh SVG background
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,10 +12,10 @@ import { LiveIpoCard } from './IpoCard';
 export function LiveIposSection({ ipos, count }: IpoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  
+
   // Responsive items per page
   const [itemsPerPage, setItemsPerPage] = useState(3);
-  
+
   // Handle responsive items per page
   useEffect(() => {
     const handleResize = () => {
@@ -64,7 +64,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
       {/* Extended Background Container */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Hero background that extends into Live IPO section */}
-        <div 
+        <div
           className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-50"
           style={{
             height: 'calc(100vh + 50vh)', // Full hero height + half of Live IPO section
@@ -77,13 +77,14 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
             `
           }}
         />
-        
-        {/* Extended Hero Image */}
-        <div 
+
+        {/* Extended Hero Image - FIXED */}
+        <div
           className="absolute top-0 right-0 w-full h-full pointer-events-none"
           style={{
             height: 'calc(100vh + 50vh)', // Match the background height
-            background: `url('/HeroSection.svg') no-repeat`,
+            backgroundImage: `url(${heroSection.src})`, // Use mesh.src instead of './mesh.svg'
+            backgroundRepeat: 'no-repeat',
             backgroundSize: 'contain',
             backgroundPosition: 'center right',
             opacity: 0.1,
@@ -128,16 +129,16 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                   </Link>
                 </div>
               </div>
-              
+
               {/* Hero Image */}
               <div className="flex justify-center order-first lg:order-last">
                 <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
-                  <Image 
-                    src={heroSection} 
-                    alt="Hero Section" 
-                    width={500} 
-                    height={500} 
-                    className="w-full h-auto relative z-10" 
+                  <Image
+                    src={heroSection}
+                    alt="Hero Section"
+                    width={500}
+                    height={500}
+                    className="w-full h-auto relative z-10"
                     priority
                   />
                 </div>
@@ -149,24 +150,28 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
         {/* Live IPOs Section - Better spacing and responsive layout */}
         <section className="py-12 sm:py-16 lg:py-24 relative">
           {/* Transition overlay for smooth color change */}
-          <div 
+          <div
             className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-gray-50"
             style={{
               top: '50%', // Start the transition at 50% of the section height
             }}
           />
-          
+
           {/* Section Content */}
           <div className="relative z-10">
             {/* Header */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="text-center sm:text-left">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 flex items-center justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
-                    <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-red-500 rounded-full animate-pulse shadow-lg"></span>
-                    Live IPOs
+                  <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 font-ibm-plex">
+                    <div className="flex items-center justify-center sm:justify-start gap-2 lg:gap-3">
+                      <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-red-500 rounded-full animate-pulse shadow-lg"></span>
+                      <div>
+                        <div>Live IPOs</div>
+                        <div className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex">Current IPOs open for Investment</div>
+                      </div>
+                    </div>
                   </h2>
-                  <p className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex">Current IPOs open for Investment</p>
                 </div>
                 <Link
                   href="/ipos?filter=live"
@@ -237,11 +242,10 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                           <button
                             key={index}
                             onClick={() => setCurrentIndex(index)}
-                            className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                              index === currentIndex
-                                ? 'bg-blue-600 scale-125 shadow-md'
-                                : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
-                            }`}
+                            className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentIndex
+                              ? 'bg-red-600 scale-125 shadow-md'
+                              : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
+                              }`}
                             aria-label={`Go to slide ${index + 1}`}
                           />
                         ))}
@@ -251,7 +255,6 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                       <button
                         onClick={nextSlide}
                         className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
-                        aria-label="Next IPOs"
                       >
                         <ChevronRight className="w-5 h-5" />
                       </button>

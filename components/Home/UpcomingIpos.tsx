@@ -62,21 +62,23 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="text-center sm:text-left">
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 flex items-center justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
-              <div className="relative flex items-center justify-center">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 flex items-start justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
+              <div className="flex items-center justify-center mt-4">
                 <span className="text-green-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideRight_1.5s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>&gt;</span>
                 <span className="text-green-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideRight_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.2s' }}>&gt;</span>
                 <span className="text-green-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideRight_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.4s' }}>&gt;</span>
               </div>
-              Upcoming IPOs
+              <div>
+                <div>Upcoming IPOs</div>
+                <div className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex">Get ready for these upcoming opportunities</div>
+              </div>
             </h2>
             <style jsx>{`
-              @keyframes slideRight {
-                0%, 100% { transform: translateX(0px); opacity: 1; }
-                50% { transform: translateX(8px); opacity: 0.7; }
-              }
+                @keyframes slideRight {
+                  0%, 100% { transform: translateX(0px); opacity: 1; }
+                  50% { transform: translateX(8px); opacity: 0.7; }
+                }
             `}</style>
-            <p className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex">Get ready for these upcoming opportunities</p>
           </div>
           <Link
             href="/ipos?filter=upcoming"
@@ -147,11 +149,10 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
                     <button
                       key={index}
                       onClick={() => setCurrentIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                        index === currentIndex
-                          ? 'bg-blue-600 scale-125 shadow-md'
+                      className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentIndex
+                          ? 'bg-green-600 scale-125 shadow-md'
                           : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
-                      }`}
+                        }`}
                       aria-label={`Go to slide ${index + 1}`}
                     />
                   ))}
