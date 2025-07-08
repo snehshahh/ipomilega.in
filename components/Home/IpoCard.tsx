@@ -46,7 +46,7 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
   const riskBorderColor = getRiskBorderColor(riskScore);
 
   return (
-    <Card className={`w-[384px] h-[415px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} >
+    <Card className={`w-[384px] h-[415px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px',border:'none',boxShadow:'none' }} >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-[60px] h-5">
           <div className="flex gap-2">
@@ -144,7 +144,7 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
   const riskBorderColor = getRiskBorderColor(riskScore);
 
   return (
-    <Card className={`w-[384px] h-[415px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} >
+    <Card className={`w-[384px] h-[415px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px',border:'none',boxShadow:'none'}}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-[60px] h-5">
           <div className="flex gap-2">
@@ -232,7 +232,7 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
   const riskBorderColor = getRiskBorderColor(riskScore);
 
   return (
-    <Card className={`w-[384px] h-[415px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} >
+    <Card className={`w-[384px] h-[415px] border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px',border:'none',boxShadow:'none' }} >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-[60px] h-5">
           <div className="flex gap-2">
