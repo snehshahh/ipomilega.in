@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { HomePageIpoProps, IpoSectionProps } from '@/app/types/homepage';
 import { PastIpoCard } from './IpoCard';
 
@@ -57,40 +57,33 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
   }, [itemsPerPage]);
 
   return (
-    <section className="py-6 sm:py-8 lg:py-12">
+    <section className="py-12 sm:py-16 lg:py-24 relative">
       {/* Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8 lg:mb-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center justify-center sm:justify-start gap-4 lg:gap-6">
-            {/* Red pulsing dot in separate div */}
-            <div className="flex items-center relative">
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 flex items-center justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
+              <div className="flex items-center relative">
                 <span className="text-yellow-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>&lt;</span>
                 <span className="text-yellow-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.2s' }}>&lt;</span>
                 <span className="text-yellow-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.4s' }}>&lt;</span>
               </div>
-
-            {/* Title and description stacked */}
-            <div className="flex flex-col">
-              <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 font-ibm-plex" style={{ fontWeight: '700' }}>
-                Past IPOs
-              </h3>
-              <style jsx>{`
+              Past IPOs
+            </h2>
+            <style jsx>{`
               @keyframes slideLeft {
                 0%, 100% { transform: translateX(0px); opacity: 1; }
                 50% { transform: translateX(-8px); opacity: 0.7; }
               }
             `}</style>
-              <p className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex" style={{ fontWeight: '400' }}>
-                Review completed IPO opportunities
-              </p>
-            </div>
+            <p className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex">Review completed IPO opportunities</p>
           </div>
           <Link
             href="/ipos?filter=past"
-            className="text-blue-600 hover:text-blue-700 font-bold flex items-center justify-center sm:justify-start space-x-2 group text-sm sm:text-base bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all duration-200 self-center sm:self-auto"
+            className="text-[#0073E6] font-ibm-plex hover:text-[#0073E6] font-bold flex items-center justify-center sm:justify-start space-x-2 group text-sm sm:text-base bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all duration-200 self-center sm:self-auto"
           >
             <span>View All ({count})</span>
-            <span className="text-sm group-hover:translate-x-1 transition-transform">&gt;</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       </div>
@@ -99,10 +92,10 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {ipos.length === 0 ? (
           <div className="flex items-center justify-center py-8 sm:py-12">
-            <div className="text-center py-6 sm:py-8 lg:py-12 bg-white rounded-xl shadow-sm border border-gray-100 max-w-sm sm:max-w-md w-full mx-4">
+            <div className="text-center py-6 sm:py-8 lg:py-12 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 max-w-sm sm:max-w-md w-full mx-4">
               <CalendarDays className="w-10 sm:w-12 h-10 sm:h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-base sm:text-lg font-medium">No past IPOs at the moment</p>
-              <p className="text-gray-400 text-sm mt-2">Check back soon for new opportunities!</p>
+              <p className="text-gray-500 text-base sm:text-lg font-medium font-ibm-plex">No past IPOs at the moment</p>
+              <p className="text-gray-400 text-sm mt-2 font-ibm-plex">Check back soon for new opportunities!</p>
             </div>
           </div>
         ) : (
@@ -154,10 +147,11 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
                     <button
                       key={index}
                       onClick={() => setCurrentIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentIndex
+                      className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                        index === currentIndex
                           ? 'bg-blue-600 scale-125 shadow-md'
                           : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
-                        }`}
+                      }`}
                       aria-label={`Go to slide ${index + 1}`}
                     />
                   ))}
