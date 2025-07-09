@@ -87,6 +87,7 @@ export default async function HomePage() {
         <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
         <BlogSection blogs={homeData.blogList} />
         <CtaSection />
+        <hr className="border-gray-200  w-[60%] mx-auto" />
         <Footer />
       </div>
     </div>

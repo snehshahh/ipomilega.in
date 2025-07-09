@@ -12,7 +12,7 @@ interface BlogCardProps {
 export function BlogCard({ blog }: BlogCardProps) {
   return (
     <Link href={`/blogs/${blog.slug}`} className="group block">
-      <Card className=" h-[424px] p-3 bg-background rounded-lg group-hover:shadow-lg transition-all duration-300 hover:scale-[1.02] overflow-hidden" style={{ borderRadius: '8px',borderTop:'none',borderLeft:'none',borderRight:'none',borderBottom:'5px solid #0073E6',boxShadow:'none' }}>
+      <Card className=" h-[424px] p-3 bg-background rounded-lg group-hover:shadow-lg transition-all duration-300 hover:scale-[1.02] overflow-hidden" style={{ borderRadius: '8px',borderTop:'none',borderLeft:'none',borderRight:'none',borderBottom:'10px solid #0073E6',boxShadow:'none' }}>
         {/* Header Image */}
         <div className="relative rounded-t-lg h-[calc(250px-5px)] bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center p-2">
           {blog.image_url ? (

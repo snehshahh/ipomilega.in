@@ -25,16 +25,16 @@ const getInitials = (name: string) => {
 
 // Utility function to get risk border color
 const getRiskBorderColor = (riskScore: number) => {
-  if (riskScore <= 3) return 'border-b-green-500';
-  if (riskScore <= 6) return 'border-b-yellow-500';
-  return 'border-b-red-500';
+  if (riskScore <= 3) return 'border-b-[#00914D]';
+  if (riskScore <= 6) return 'border-b-[#D59527]';
+  return 'border-b-[#B4292E]';
 };
 
 // Utility function to get risk text color (no background)
 const getRiskTextColor = (riskScore: number) => {
-  if (riskScore <= 3) return 'text-green-500';
-  if (riskScore <= 6) return 'text-yellow-500';
-  return 'text-red-500';
+  if (riskScore <= 3) return 'text-[#00914D]';
+  if (riskScore <= 6) return 'text-[#D59527]';
+  return 'text-[#B4292E]';
 };
 
 // Utility function to get risk border color for elements
@@ -56,9 +56,9 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
   };
 
   const getRiskTextColorForElements = (riskScore: number) => {
-    if (riskScore <= 3) return 'text-green-500';
-    if (riskScore <= 6) return 'text-yellow-500';
-    return 'text-red-500';
+    if (riskScore <= 3) return 'text-[#00914D]';
+    if (riskScore <= 6) return 'text-[#D59527]';
+    return 'text-[#B4292E]';
   };
 
   const daysUntilClosing = getDaysUntilClosing();
@@ -68,7 +68,7 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
 
 
   return (
-    <Card className={`w-[384px] h-full border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }} >
+    <Card className={`w-[384px] h-full border-b-6 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }} >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-[60px] h-5">
           <div className="flex gap-2">
@@ -85,7 +85,7 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
       <CardContent className="space-y-4">
         <div className="flex flex-col items-left justify-left">
           <div className="flex flex-row items-center justify-left gap-3">
-            <Avatar className="w-12 h-12">
+            <Avatar className="w-16 h-16">
               {
                 ipo?.image_url ? (
                   <AvatarImage src={ipo.image_url} />
@@ -107,21 +107,21 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
             <div className="w-full py-3">
               <h3 className="text-md text-gray-800 flex items-left space-x-1 font-semibold mb-1">
                 <Calendar className="w-4 h-4 mt-1 text-gray-600" />
-                <span className="text-md font-medium font-ibm-plex">Timeline</span>
+                <span className="text-md font-medium font-ibm-plex" style={{ fontWeight: '600' }}>Timeline</span>
               </h3>
               <div className="text-left flex flex-row items-left justify-between gap-2">
-                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '500' }}>Opening Date</span>
+                <span className="font-normal block font-ibm-plex" style={{ fontWeight: '400' }}>Opening Date</span>
                 <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>{ipo?.open_date || 'TBA'}</span>
               </div>
               <div className="text-left flex flex-row items-left justify-between gap-2">
-                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '500' }}>Closing Date</span>
+                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>Closing Date</span>
                 <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>{ipo?.closing_date || 'TBA'}</span>
               </div>
             </div>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 mt-4">
-          <div className="text-center p-2 rounded-lg border border-green-200 shadow-sm">
+          <div className="text-center p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
             <h4 className="text-xs font-medium mb-1">Expected GMP</h4>
             <div className="flex items-center justify-center space-x-1">
               <TrendingUp className="w-4 h-4 text-green-500" />
@@ -161,7 +161,7 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
   const riskTextColor = getRiskTextColor(riskScore);
 
   return (
-    <Card className={`w-[384px] h-full border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }}>
+    <Card className={`w-[384px] h-full border-b-6 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-[60px] h-5">
           <div className="flex gap-2">
@@ -178,7 +178,7 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
       <CardContent className="space-y-4">
         <div className="flex flex-col items-left justify-left">
           <div className="flex flex-row items-center justify-left gap-3">
-            <Avatar className="w-12 h-12">
+            <Avatar className="w-16 h-16">
               {
                 ipo?.image_url ? (
                   <AvatarImage src={ipo.image_url} />
@@ -200,14 +200,14 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
             <div className="w-full py-3">
               <h3 className="text-md text-gray-800 flex items-left space-x-1 font-semibold mb-1">
                 <Calendar className="w-4 h-4 mt-1 text-gray-600" />
-                <span className="text-md font-medium font-ibm-plex">Timeline</span>
+                <span className="text-md font-medium font-ibm-plex" style={{ fontWeight: '600' }}>Timeline</span>
               </h3>
               <div className="text-left flex flex-row items-left justify-between gap-2">
-                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '500' }}>Expected Opening Date</span>
+                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>Expected Opening Date</span>
                 <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>{ipo?.open_date || 'TBA'}</span>
               </div>
               <div className="text-left flex flex-row items-left justify-between gap-2">
-                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '500' }}>Expected Closing Date</span>
+                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>Expected Closing Date</span>
                 <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>{ipo?.closing_date || 'TBA'}</span>
               </div>
             </div>
@@ -243,7 +243,8 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
   const riskTextColor = getRiskTextColor(riskScore);
 
   return (
-    <Card className={`w-[384px] h-full border-b-4 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }} >
+    <Card className={`w-[384px] h-full border-b-6
+     ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }} >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-[60px] h-5">
           <div className="flex gap-2">
@@ -260,7 +261,7 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
       <CardContent className="space-y-4">
         <div className="flex flex-col items-left justify-left">
           <div className="flex flex-row items-center justify-left gap-3">
-            <Avatar className="w-12 h-12">
+            <Avatar className="w-16 h-16">
               {
                 ipo?.image_url ? (
                   <AvatarImage src={ipo.image_url} />

@@ -5,26 +5,21 @@ import Link from 'next/link';
 
 export function BlogSection({ blogs }: { blogs: Blog[] }) {
     return (
-        <section className="py-6 sm:py-8 lg:py-12">
+        <section className="py-10 sm:py-16 lg:py-24">
             {/* Header */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6 sm:mb-8 lg:mb-12">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
-                    <div className="flex items-center justify-center sm:justify-start gap-4 lg:gap-6">
-                        {/* Animated arrows like in UpcomingIpos */}
-                        <div className="relative flex items-center justify-center">
-                            <PenBox className="w-4 h-4 text-gray-600" />
-                        </div>
-
-                        {/* Title and description stacked */}
-                        <div className="flex flex-col">
-                            <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 font-ibm-plex" style={{ fontWeight: '700' }}>
-                                Blogs
-                            </h3>
-                            <p className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex" style={{ fontWeight: '400' }}>
-                                IPO Recap: What&apos;s Closed, What&apos;s Gained
-                            </p>
-                        </div>
+                    <div className="text-center sm:text-left">
+                        <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 font-ibm-plex">
+                            <div className="flex items-center justify-center sm:justify-start gap-2 lg:gap-3">
+                                <PenBox className="w-8 h-8 text-gray-600" />
+                                <div>
+                                    <div>Blogs</div>
+                                    <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">IPO Recap: What&apos;s Closed, What&apos;s Gained</div>
+                                </div>
+                            </div>
+                        </h2>
                     </div>
                     <Link
                         href="/blogs"

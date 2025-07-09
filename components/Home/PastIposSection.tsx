@@ -57,20 +57,20 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
   }, [itemsPerPage]);
 
   return (
-    <section className="py-12 sm:py-16 lg:py-24 relative">
+    <section className="py-10 sm:py-16 lg:py-24 relative">
       {/* Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="text-center sm:text-left">
             <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 flex items-start justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
               <div className="flex items-center justify-center mt-4">
-                <span className="text-yellow-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>&lt;</span>
-                <span className="text-yellow-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.2s' }}>&lt;</span>
-                <span className="text-yellow-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.4s' }}>&lt;</span>
+                <span className="text-[#D59527] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>&lt;</span>
+                <span className="text-[#D59527] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.2s' }}>&lt;</span>
+                <span className="text-[#D59527] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.4s' }}>&lt;</span>
               </div>
               <div>
                 <div>Past IPOs</div>
-                <div className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex">Review completed IPO opportunities</div>
+                <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">Review completed IPO opportunities</div>
               </div>
             </h2>
             <style jsx>{`
@@ -82,7 +82,7 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
           </div>
           <Link
             href="/ipos?filter=past"
-            className="text-[#0073E6] font-ibm-plex hover:text-[#0073E6] font-bold flex items-center justify-center sm:justify-start space-x-2 group text-sm sm:text-base bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all duration-200 self-center sm:self-auto"
+            className="text-[#D59527] font-ibm-plex hover:text-[#D59527] font-bold flex items-center justify-center sm:justify-start space-x-2 group text-sm sm:text-base bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all duration-200 self-center sm:self-auto"
           >
             <span>View All ({count})</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -150,7 +150,7 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
                       key={index}
                       onClick={() => setCurrentIndex(index)}
                       className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentIndex
-                          ? 'bg-yellow-400 scale-125 shadow-md'
+                          ? 'bg-[#D59527] scale-125 shadow-md'
                           : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
                         }`}
                       aria-label={`Go to slide ${index + 1}`}

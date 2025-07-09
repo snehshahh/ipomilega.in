@@ -1,7 +1,7 @@
-// LiveIposSection.tsx - Fixed mesh SVG background
+// LiveIposSection.tsx - Fixed responsive gradient background
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { HomePageIpoProps, IpoSectionProps } from '@/app/types/homepage';
@@ -12,6 +12,10 @@ import { LiveIpoCard } from './IpoCard';
 export function LiveIposSection({ ipos, count }: IpoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [liveIpoSectionHeight, setLiveIpoSectionHeight] = useState(0);
+  
+  // Refs for measuring heights
+  const liveIpoSectionRef = useRef<HTMLDivElement>(null);
 
   // Responsive items per page
   const [itemsPerPage, setItemsPerPage] = useState(3);
@@ -32,6 +36,33 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Measure Live IPO section height
+  useEffect(() => {
+    const measureHeight = () => {
+      if (liveIpoSectionRef.current) {
+        const height = liveIpoSectionRef.current.offsetHeight;
+        setLiveIpoSectionHeight(height);
+      }
+    };
+
+    // Measure initially
+    measureHeight();
+
+    // Create ResizeObserver to watch for height changes
+    const resizeObserver = new ResizeObserver(measureHeight);
+    if (liveIpoSectionRef.current) {
+      resizeObserver.observe(liveIpoSectionRef.current);
+    }
+
+    // Also listen to window resize
+    window.addEventListener('resize', measureHeight);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener('resize', measureHeight);
+    };
+  }, [ipos.length, itemsPerPage]);
 
   const totalPages = Math.ceil(ipos.length / itemsPerPage);
 
@@ -63,32 +94,37 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
     <div className="relative py-8">
       {/* Extended Background Container */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Hero background that extends into Live IPO section */}
+        {/* Hero background that extends into half of Live IPO section */}
         <div
-          className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-50"
+          className="absolute inset-0"
           style={{
-            height: 'calc(100vh + 50vh)', // Full hero height + half of Live IPO section
+            height: `calc(100vh + ${liveIpoSectionHeight / 2}px)`, // Full hero height + half of Live IPO section
             background: `
               linear-gradient(135deg, 
-                rgba(219, 234, 254, 0.8) 0%, 
-                rgba(255, 255, 255, 0.9) 50%, 
-                rgba(219, 234, 254, 0.8) 100%
+                rgba(224, 242, 254, 1) 0%,      /* Very light blue, top-left */
+                rgba(191, 230, 255, 1) 30%,     /* Slightly deeper sky blue */
+                rgba(255, 255, 255, 0.7) 60%,  /* Hint of white, semi-transparent */
+                rgba(173, 216, 230, 1) 80%,     /* Muted blue */
+                rgba(240, 248, 255, 1) 100%     /* Alice Blue, bottom-right */
               )
             `
           }}
         />
-
-        {/* Extended Hero Image - FIXED */}
+        
+        {/* Light blue background for the bottom half of Live IPO section */}
         <div
-          className="absolute top-0 right-0 w-full h-full pointer-events-none"
+          className="absolute left-0 right-0"
           style={{
-            height: 'calc(100vh + 50vh)', // Match the background height
-            backgroundImage: `url(${heroSection.src})`, // Use mesh.src instead of './mesh.svg'
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'contain',
-            backgroundPosition: 'center right',
-            opacity: 0.1,
-            transform: 'scale(1.2)', // Slightly scale up for better coverage
+            top: `calc(100vh + ${liveIpoSectionHeight / 2}px)`,
+            height: `${liveIpoSectionHeight / 2}px`,
+            background: `
+              linear-gradient(135deg, 
+                rgba(240, 248, 255, 1) 0%,     /* Alice Blue */
+                rgba(230, 245, 255, 1) 30%,    /* Slightly deeper alice blue */
+                rgba(220, 240, 255, 1) 60%,    /* Light sky blue */
+                rgba(235, 247, 255, 1) 100%    /* Very light blue */
+              )
+            `
           }}
         />
       </div>
@@ -103,13 +139,13 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
               <div className="text-center lg:text-left space-y-4 sm:space-y-6">
                 <h1 className="text-2xl font-dm-serif sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight font-black">
                   Know The{' '}
-                  <span className="text-red-500 font-black">Risk.</span>
+                  <span className="text-[#B4292E] font-black">Risk.</span>
                   <br />
                   Predict The{' '}
-                  <span className="text-green-500 font-black">Return.</span>
+                  <span className="text-[#00914D] font-black">Return.</span>
                   <br />
                   Invest{' '}
-                  <span className="text-yellow-500 font-black">Smarter.</span>
+                  <span className="text-[#D59527] font-black">Smarter.</span>
                 </h1>
                 <p className="text-sm sm:text-base lg:text-lg text-[#858585] font-medium font-ibm-plex max-w-2xl mx-auto lg:mx-0">
                   IPO Milega helps you make informed IPO decisions by showing real-time risk levels and predicting returns based on your investment.
@@ -148,15 +184,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
         </section>
 
         {/* Live IPOs Section - Better spacing and responsive layout */}
-        <section className="py-12 sm:py-16 lg:py-24 relative">
-          {/* Transition overlay for smooth color change */}
-          <div
-            className="absolute inset-0 bg-gradient-to-b from-transparent via-white/50 to-gray-50"
-            style={{
-              top: '50%', // Start the transition at 50% of the section height
-            }}
-          />
-
+        <section ref={liveIpoSectionRef} className="py-10 sm:py-16 lg:py-24 relative">
           {/* Section Content */}
           <div className="relative z-10">
             {/* Header */}
@@ -165,17 +193,17 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                 <div className="text-center sm:text-left">
                   <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 font-ibm-plex">
                     <div className="flex items-center justify-center sm:justify-start gap-2 lg:gap-3">
-                      <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-red-500 rounded-full animate-pulse shadow-lg"></span>
+                      <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-[#B4292E] rounded-full animate-pulse shadow-lg "></span>
                       <div>
                         <div>Live IPOs</div>
-                        <div className="text-gray-600 text-sm sm:text-base font-medium font-ibm-plex">Current IPOs open for Investment</div>
+                        <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">Current IPOs open for Investment</div>
                       </div>
                     </div>
                   </h2>
                 </div>
                 <Link
                   href="/ipos?filter=live"
-                  className="text-[#0073E6] font-ibm-plex hover:text-[#0073E6] font-bold flex items-center justify-center sm:justify-start space-x-2 group text-sm sm:text-base bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all duration-200 self-center sm:self-auto"
+                  className="text-[#B4292E] font-ibm-plex hover:text-[#B4292E] font-bold flex items-center justify-center sm:justify-start space-x-2 group text-sm sm:text-base bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all duration-200 self-center sm:self-auto"
                 >
                   <span>View All ({count})</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -243,7 +271,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                             key={index}
                             onClick={() => setCurrentIndex(index)}
                             className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentIndex
-                              ? 'bg-red-600 scale-125 shadow-md'
+                              ? 'bg-[#B4292E] scale-125 shadow-md'
                               : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
                               }`}
                             aria-label={`Go to slide ${index + 1}`}
