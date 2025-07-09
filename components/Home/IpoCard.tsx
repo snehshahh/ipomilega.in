@@ -299,7 +299,7 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
         <div className="grid grid-cols-2 gap-4 mt-4">
           <div className={`text-center p-3 rounded-lg border  shadow-sm`}>
             <h4 className={`text-xs font-medium mb-1`}>Current Price</h4>
-            <span className={`text-sm font-semibold`}>{ipo?.listing_price || 'N/A'}</span>
+            <span className={`text-sm font-semibold`}>₹{ipo?.listing_price || 'N/A'}</span>
           </div>
           <div className={`text-center p-3 bg-white rounded-lg border  shadow-sm`}>
             <h4 className={`text-xs font-medium mb-1`}>Total Return</h4>

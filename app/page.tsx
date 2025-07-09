@@ -1,5 +1,4 @@
 // app/page.tsx - Main Homepage Component
-import AnimatedBackground from '@/components/Home/Bg';
 import { BlogSection } from '@/components/Home/BlogSection';
 import { CtaSection } from '@/components/Home/CtaSection';
 import { LiveIposSection } from '@/components/Home/LiveIposSection';
@@ -76,9 +75,6 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Animated Mesh Background */}
-      <AnimatedBackground />
-
       {/* Content */}
       <div className="relative z-10 min-h-screen">
         <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
