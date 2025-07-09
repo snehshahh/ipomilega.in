@@ -32,6 +32,10 @@ export interface Ipo {
   financial_report: FinancialReport[];
   ipo_dates: IpoDates;
   ipo_details: IpoDetails;
+  ipo_name: string;
+  ipo_price: string;
+  listing_price: string;
+  listing_gain: string;
   ipo_market_lot: IpoMarketLot[],
   promoters: string;
   nii_sr: string;

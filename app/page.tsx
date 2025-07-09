@@ -2,7 +2,6 @@
 import AnimatedBackground from '@/components/Home/Bg';
 import { BlogSection } from '@/components/Home/BlogSection';
 import { CtaSection } from '@/components/Home/CtaSection';
-import { Footer } from '@/components/Home/Footer';
 import { LiveIposSection } from '@/components/Home/LiveIposSection';
 import { PastIposSection } from '@/components/Home/PastIposSection';
 import { UpcomingIposSection } from '@/components/Home/UpcomingIpos';
@@ -87,8 +86,6 @@ export default async function HomePage() {
         <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
         <BlogSection blogs={homeData.blogList} />
         <CtaSection />
-        <hr className="border-gray-200  w-[60%] mx-auto" />
-        <Footer />
       </div>
     </div>
   );

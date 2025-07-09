@@ -287,11 +287,11 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
               </h3>
               <div className="text-left flex flex-row items-left justify-between gap-2">
                 <span className="font-medium block font-ibm-plex" style={{ fontWeight: '500' }}>Listed</span>
-                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>{ipo?.ipo_details?.ipo_listing || 'N/A'}</span>
+                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>{ipo?.ipo_dates?.ipo_listing_date || 'N/A'}</span>
               </div>
               <div className="text-left flex flex-row items-left justify-between gap-2">
                 <span className="font-medium block font-ibm-plex" style={{ fontWeight: '500' }}>Listing Price</span>
-                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>{ipo?.gmp_price_gain || 'N/A'}</span>
+                <span className="font-medium block font-ibm-plex" style={{ fontWeight: '400' }}>{ipo?.listing_price || 'N/A'}</span>
               </div>
             </div>
           </div>
@@ -299,11 +299,11 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
         <div className="grid grid-cols-2 gap-4 mt-4">
           <div className={`text-center p-3 rounded-lg border  shadow-sm`}>
             <h4 className={`text-xs font-medium mb-1`}>Current Price</h4>
-            <span className={`text-sm font-semibold`}>{ipo?.gmp_price_gain || 'N/A'}</span>
+            <span className={`text-sm font-semibold`}>{ipo?.listing_price || 'N/A'}</span>
           </div>
           <div className={`text-center p-3 bg-white rounded-lg border  shadow-sm`}>
             <h4 className={`text-xs font-medium mb-1`}>Total Return</h4>
-            <span className={`text-sm ${riskTextColor} font-semibold`}>{ipo?.gmp_price_gain || 'N/A'}</span>
+            <span className={`text-sm ${riskTextColor} font-semibold`}>{ipo?.listing_gain || 'N/A'}</span>
           </div>
         </div>
         <hr className="my-4 border-gray-200" />
