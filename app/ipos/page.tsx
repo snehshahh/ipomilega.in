@@ -22,17 +22,17 @@ import {
   RefreshCw,
   LineChart,
 } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Blog, Ipo } from "../models/ipo"
 import { sortIPOsByOpeningDate } from "@/lib/dates"
 import { IpoComprehensiveAnalysis } from "../models/ipo_comprehensive_analysis"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useProgressRouter } from "@/components/Progressbar/useProgressRouter"
 
 export default function IPOs() {
   const [ipoList, setIpoList] = useState<Ipo[]>([])
   const [blogList, setBlogList] = useState<Blog[]>([])
-  const router = useRouter()
+  const router = useProgressRouter()
   const [isLoading, setIsLoading] = useState(false)
   const[analysisList, setAnalysisList] = useState<IpoComprehensiveAnalysis[]>([])
   const [error, setError] = useState<string | null>(null)

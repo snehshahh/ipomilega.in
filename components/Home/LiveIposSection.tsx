@@ -1,4 +1,4 @@
-// LiveIposSection.tsx - Fixed responsive gradient background
+// LiveIposSection.tsx - Updated with AllotmentPredictor Modal
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -8,12 +8,14 @@ import { HomePageIpoProps, IpoSectionProps } from '@/app/types/homepage';
 import Image from 'next/image';
 import heroSection from '@/public/HeroSection.svg';
 import { LiveIpoCard } from './IpoCard';
+import AllotmentPredictor from './AllotmentPredictor';
 
 export function LiveIposSection({ ipos, count }: IpoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [liveIpoSectionHeight, setLiveIpoSectionHeight] = useState(0);
-  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   // Refs for measuring heights
   const liveIpoSectionRef = useRef<HTMLDivElement>(null);
 
@@ -90,6 +92,29 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
     setCurrentIndex(0);
   }, [itemsPerPage]);
 
+  // Close modal on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isModalOpen) {
+        setIsModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isModalOpen]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isModalOpen]);
+
   return (
     <div className="relative py-8">
       {/* Extended Background Container */}
@@ -110,7 +135,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
             `
           }}
         />
-        
+
         {/* Light blue background for the bottom half of Live IPO section */}
         <div
           className="absolute left-0 right-0"
@@ -157,12 +182,12 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                   >
                     Explore IPOs
                   </Link>
-                  <Link
-                    href="/analysis"
+                  <button
+                    onClick={() => setIsModalOpen(true)}
                     className="text-[#0073E6] px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-bold hover:bg-[#0073E6] hover:text-white border border-[#0073E6] transition-colors text-center text-sm sm:text-base"
                   >
-                    Try Return Predictor
-                  </Link>
+                    Find IPO Chance of Allotment
+                  </button>
                 </div>
               </div>
 
@@ -294,6 +319,26 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
           </div>
         </section>
       </div>
+
+      {/* AllotmentPredictor Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setIsModalOpen(false)}
+          />
+
+          {/* Modal Body */}
+          <div className="p-6">
+            <AllotmentPredictor
+              ipos={ipos}
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

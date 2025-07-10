@@ -7,7 +7,6 @@ import { UpcomingIposSection } from '@/components/Home/UpcomingIpos';
 import { getHomePageData } from '@/lib/data-fetching';
 import { Metadata } from 'next';
 
-
 // SEO Metadata
 export const metadata: Metadata = {
   title: 'IPO Milega - Your Gateway to IPO Investments | Live, Upcoming & Past IPOs',

@@ -31,7 +31,6 @@ import {
   ChevronLeft,
   RefreshCw
 } from "lucide-react"
-import { useRouter } from "next/navigation"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
 import { Blog, Ipo } from "../models/ipo"
@@ -40,11 +39,12 @@ import Link from "next/link"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { sortIPOsByOpeningDate } from "@/lib/dates"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useProgressRouter } from "@/components/Progressbar/useProgressRouter"
 
 export default function Admin() {
   const [ipoList, setIpoList] = useState<Ipo[]>([])
   const [blogList, setBlogList] = useState<Blog[]>([])
-  const router = useRouter()
+  const router = useProgressRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")

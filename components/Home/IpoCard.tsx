@@ -6,11 +6,14 @@ import { Card, CardContent, CardHeader } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useProgressRouter } from '../Progressbar/useProgressRouter';
 
 interface IpoCardProps {
   ipo: Ipo | null;
   analysis: IpoComprehensiveAnalysis | null;
 }
+
+
 
 // Utility function for getting company initials
 const getInitials = (name: string) => {
@@ -25,16 +28,16 @@ const getInitials = (name: string) => {
 
 // Utility function to get risk border color
 const getRiskBorderColor = (riskScore: number) => {
-  if (riskScore <= 3) return 'border-b-[#00914D]';
+  if (riskScore <= 3) return 'border-b-[#B4292E]';
   if (riskScore <= 6) return 'border-b-[#D59527]';
-  return 'border-b-[#B4292E]';
+  return 'border-b-[#00914D]';
 };
 
 // Utility function to get risk text color (no background)
 const getRiskTextColor = (riskScore: number) => {
-  if (riskScore <= 3) return 'text-[#00914D]';
+  if (riskScore <= 3) return 'text-[#B4292E]';
   if (riskScore <= 6) return 'text-[#D59527]';
-  return 'text-[#B4292E]';
+  return 'text-[#00914D]';
 };
 
 // Utility function to get risk border color for elements
@@ -46,6 +49,11 @@ const getRiskTextColor = (riskScore: number) => {
 
 // Live IPO Card Component
 export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
+  const router = useProgressRouter();
+
+  const handleViewAnalysis = (ipo: Ipo) => {
+    router.push(`/analysis/${ipo?._id}`);
+  };
   const getDaysUntilClosing = () => {
     if (!ipo?.closing_date) return 0;
     const closingDate = new Date(ipo.closing_date);
@@ -56,9 +64,9 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
   };
 
   const getRiskTextColorForElements = (riskScore: number) => {
-    if (riskScore <= 3) return 'text-[#00914D]';
+    if (riskScore <= 3) return 'text-[#B4292E]';
     if (riskScore <= 6) return 'text-[#D59527]';
-    return 'text-[#B4292E]';
+    return 'text-[#00914D]';
   };
 
   const daysUntilClosing = getDaysUntilClosing();
@@ -135,7 +143,7 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
         </div>
         <hr className="my-4 border-gray-200" />
         <div className="mt-6">
-          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors">
+          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
             View Analysis
           </Button>
         </div>
@@ -146,6 +154,11 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
 
 // Upcoming IPO Card Component
 export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
+  const router = useProgressRouter();
+
+  const handleViewAnalysis = (ipo: Ipo) => {
+    router.push(`/analysis/${ipo?._id}`);
+  };
   const getDaysUntilOpening = () => {
     if (!ipo?.open_date) return 0;
     const openingDate = new Date(ipo.open_date);
@@ -217,7 +230,7 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
           <div className={`text-center p-3 rounded-lg border  shadow-sm`}>
             <h4 className={`text-xs font-medium mb-1`}>Expected GMP</h4>
             <div className="flex items-center justify-center space-x-1">
-              <span className={`text-sm ${riskTextColor} font-semibold`}>₹{ipo?.gmp_price_gain || 'TBA'}</span>
+              <span className={`text-sm text-green-500 font-semibold`}>₹{ipo?.gmp_price_gain || 'TBA'}</span>
             </div>
           </div>
           <div className={`text-center p-3 bg-white rounded-lg border shadow-sm`}>
@@ -227,7 +240,7 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
         </div>
         <hr className="my-4 border-gray-200" />
         <div className="mt-6">
-          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors">
+          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
             Pre-Analysis
           </Button>
         </div>
@@ -238,6 +251,11 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
 
 // Past IPO Card Component
 export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
+  const router = useProgressRouter();
+
+  const handleViewAnalysis = (ipo: Ipo) => {
+    router.push(`/analysis/${ipo?._id}`);
+  };
   const riskScore = analysis?.risk_meter?.score || 0;
   const riskBorderColor = getRiskBorderColor(riskScore);
   const riskTextColor = getRiskTextColor(riskScore);
@@ -308,7 +326,7 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
         </div>
         <hr className="my-4 border-gray-200" />
         <div className="mt-6">
-          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors">
+          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
             View Analysis
           </Button>
         </div>

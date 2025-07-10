@@ -1,7 +1,7 @@
 import { Blog } from "@/app/models/ipo";
 import { BlogCard } from "./BlogCard";
 import { PenBox } from "lucide-react";
-import Link from 'next/link';
+import { ProgressLink } from "@/components/Progressbar/ProgressLink";
 
 export function BlogSection({ blogs }: { blogs: Blog[] }) {
     return (
@@ -21,13 +21,13 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
                             </div>
                         </h2>
                     </div>
-                    <Link
+                    <ProgressLink
                         href="/blogs"
                         className="text-green-600 hover:text-green-700 font-bold flex items-center justify-center sm:justify-start space-x-2 group text-sm sm:text-base bg-green-50 hover:bg-green-100 px-4 py-2 rounded-lg transition-all duration-200 self-center sm:self-auto"
                     >
                         <span>View All</span>
                         <span className="text-sm group-hover:translate-x-1 transition-transform">&gt;</span>
-                    </Link>
+                    </ProgressLink>
                 </div>
             </div>
 

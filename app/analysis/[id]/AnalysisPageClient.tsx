@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -24,6 +23,7 @@ import {
 } from "lucide-react";
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis";
 import { cn } from "@/lib/utils";
+import { useProgressRouter } from "@/components/Progressbar/useProgressRouter";
 
 interface AnalysisPageClientProps {
   analysis: IpoComprehensiveAnalysis;
@@ -31,7 +31,7 @@ interface AnalysisPageClientProps {
 }
 
 export default function AnalysisPageClient({ analysis, logo }: AnalysisPageClientProps) {
-  const router = useRouter();
+  const router = useProgressRouter();
 
   const getScoreColor = (score: number) => {
     if (score >= 8) return "text-green-600 dark:text-green-400";
