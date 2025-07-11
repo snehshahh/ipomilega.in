@@ -22,7 +22,7 @@ export function CtaSection() {
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
                         <div className="text-center sm:text-left">
-                            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 font-ibm-plex">
+                            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 font-ibm-plex">
                                 <div className="flex items-center justify-center sm:justify-start gap-2 lg:gap-3">
                                     <MailOpen className="w-8 h-8 text-gray-600 font-ibm-plex" />
                                     <div>

@@ -62,7 +62,7 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="text-center sm:text-left">
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 flex items-start justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 flex items-start justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
               <div className="flex items-center justify-center mt-4">
                 <span className="text-[#D59527] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>&lt;</span>
                 <span className="text-[#D59527] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.2s' }}>&lt;</span>

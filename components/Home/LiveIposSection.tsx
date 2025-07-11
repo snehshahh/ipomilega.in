@@ -1,9 +1,9 @@
-// LiveIposSection.tsx - Updated with AllotmentPredictor Modal
+// LiveIposSection.tsx - Creative Grid Layout with Flexible Columns
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, Clock } from 'lucide-react';
 import { HomePageIpoProps, IpoSectionProps } from '@/app/types/homepage';
 import Image from 'next/image';
 import heroSection from '@/public/HeroSection.svg';
@@ -11,33 +11,14 @@ import { LiveIpoCard } from './IpoCard';
 import AllotmentPredictor from './AllotmentPredictor';
 
 export function LiveIposSection({ ipos, count }: IpoSectionProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(true);
   const [liveIpoSectionHeight, setLiveIpoSectionHeight] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Removed viewMode state - only using masonry view
+  const [visibleIpos, setVisibleIpos] = useState(6);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Refs for measuring heights
   const liveIpoSectionRef = useRef<HTMLDivElement>(null);
-
-  // Responsive items per page
-  const [itemsPerPage, setItemsPerPage] = useState(3);
-
-  // Handle responsive items per page
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 640) {
-        setItemsPerPage(1); // Mobile: 1 card
-      } else if (window.innerWidth < 1024) {
-        setItemsPerPage(2); // Tablet: 2 cards
-      } else {
-        setItemsPerPage(3); // Desktop: 3 cards
-      }
-    };
-
-    handleResize(); // Set initial value
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   // Measure Live IPO section height
   useEffect(() => {
@@ -64,33 +45,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
       resizeObserver.disconnect();
       window.removeEventListener('resize', measureHeight);
     };
-  }, [ipos.length, itemsPerPage]);
-
-  const totalPages = Math.ceil(ipos.length / itemsPerPage);
-
-  // Auto-rotate carousel every 5 seconds
-  useEffect(() => {
-    if (!isPlaying || ipos.length <= itemsPerPage) return;
-
-    const interval = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % totalPages);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [isPlaying, totalPages, ipos.length, itemsPerPage]);
-
-  const nextSlide = () => {
-    setCurrentIndex(prev => (prev + 1) % totalPages);
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex(prev => (prev - 1 + totalPages) % totalPages);
-  };
-
-  // Reset current index when items per page changes
-  useEffect(() => {
-    setCurrentIndex(0);
-  }, [itemsPerPage]);
+      }, [ipos.length]); // Removed viewMode dependency
 
   // Close modal on escape key
   useEffect(() => {
@@ -114,6 +69,37 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
       document.body.style.overflow = 'auto';
     };
   }, [isModalOpen]);
+
+  const handleLoadMore = () => {
+    setIsAnimating(true);
+    setTimeout(() => {
+      setVisibleIpos(prev => Math.min(prev + 6, ipos.length));
+      setIsAnimating(false);
+    }, 300);
+  };
+
+  // Removed handleViewModeChange function
+
+  // Simple 3-column grid layout using full width
+  const MasonryGrid = ({ items }: { items: HomePageIpoProps[] }) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {items.map((ipo, index) => (
+        <div
+          key={ipo._id}
+          className={`transform transition-all duration-700 ${
+            isAnimating ? 'scale-95 opacity-60' : 'scale-100 opacity-100'
+          }`}
+          style={{
+            transitionDelay: `${index * 100}ms`,
+          }}
+        >
+          <div className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-gray-100 h-full">
+            <LiveIpoCard ipo={ipo.ipo} analysis={ipo.analysis} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 
   return (
     <div className="relative py-8">
@@ -208,17 +194,17 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
           </div>
         </section>
 
-        {/* Live IPOs Section - Better spacing and responsive layout */}
+        {/* Live IPOs Section - Creative Layout */}
         <section ref={liveIpoSectionRef} className="py-10 sm:py-16 lg:py-24 relative">
           {/* Section Content */}
           <div className="relative z-10">
             {/* Header */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="text-center sm:text-left">
-                  <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 font-ibm-plex">
-                    <div className="flex items-center justify-center sm:justify-start gap-2 lg:gap-3">
-                      <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-[#B4292E] rounded-full animate-pulse shadow-lg "></span>
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8">
+                <div className="text-center lg:text-left">
+                  <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 font-ibm-plex">
+                    <div className="flex items-center justify-center lg:justify-start gap-2 lg:gap-3">
+                      <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-[#B4292E] rounded-full animate-pulse shadow-lg"></span>
                       <div>
                         <div>Live IPOs</div>
                         <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">Current IPOs open for Investment</div>
@@ -226,13 +212,18 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                     </div>
                   </h2>
                 </div>
-                <Link
-                  href="/ipos?filter=live"
-                  className="text-[#B4292E] font-ibm-plex hover:text-[#B4292E] font-bold flex items-center justify-center sm:justify-start space-x-2 group text-sm sm:text-base bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all duration-200 self-center sm:self-auto"
-                >
-                  <span>View All ({count})</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </Link>
+                
+                {/* Controls */}
+                <div className="flex justify-center lg:justify-end">
+                  {/* View All Link */}
+                  <Link
+                    href="/ipos?filter=live"
+                    className="text-[#B4292E] font-ibm-plex hover:text-[#B4292E] font-bold flex items-center justify-center space-x-2 group text-sm sm:text-base bg-white hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 shadow-md border border-gray-200"
+                  >
+                    <span>View All ({count})</span>
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                </div>
               </div>
             </div>
 
@@ -247,70 +238,35 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {/* Carousel Container */}
-                  <div
-                    className="relative overflow-hidden"
-                    onMouseEnter={() => setIsPlaying(false)}
-                    onMouseLeave={() => setIsPlaying(true)}
-                  >
-                    <div
-                      className="flex transition-transform duration-500 ease-in-out"
-                      style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-                    >
-                      {Array.from({ length: totalPages }).map((_, pageIndex) => (
-                        <div key={pageIndex} className="w-full flex-shrink-0 px-2">
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-items-center py-5">
-                            {ipos.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage).map((ipo: HomePageIpoProps) => (
-                              <div
-                                key={ipo._id}
-                                className="transition-all duration-300 hover:scale-105 w-full max-w-sm"
-                              >
-                                <div className="h-full rounded-lg overflow-hidden bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
-                                  <LiveIpoCard ipo={ipo.ipo} analysis={ipo.analysis} />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
+                <div className="space-y-8">
+                  {/* 3-Column Masonry Grid */}
+                  <MasonryGrid items={ipos.slice(0, visibleIpos)} />
+
+                  {/* Load More Button */}
+                  {visibleIpos < ipos.length && (
+                    <div className="flex justify-center pt-8">
+                      <button
+                        onClick={handleLoadMore}
+                        disabled={isAnimating}
+                        className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 px-8 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isAnimating ? 'Loading...' : `Load More (${ipos.length - visibleIpos} remaining)`}
+                      </button>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Bottom Navigation Section */}
-                  {ipos.length > itemsPerPage && (
-                    <div className="flex items-center justify-center space-x-6">
-                      {/* Left Arrow */}
-                      <button
-                        onClick={prevSlide}
-                        className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
-                        aria-label="Previous IPOs"
-                      >
-                        <ChevronLeft className="w-5 h-5" />
-                      </button>
-
-                      {/* Pagination Dots */}
-                      <div className="flex space-x-2">
-                        {Array.from({ length: totalPages }).map((_, index) => (
-                          <button
-                            key={index}
-                            onClick={() => setCurrentIndex(index)}
-                            className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentIndex
-                              ? 'bg-[#B4292E] scale-125 shadow-md'
-                              : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
-                              }`}
-                            aria-label={`Go to slide ${index + 1}`}
-                          />
-                        ))}
+                  {/* Show All Button */}
+                  {visibleIpos >= ipos.length && ipos.length > 6 && (
+                    <div className="flex justify-center pt-8">
+                      <div className="text-center">
+                        <p className="text-gray-500 font-medium mb-4">You&apos;ve seen all live IPOs!</p>
+                        <Link
+                          href="/ipos?filter=live"
+                          className="bg-[#B4292E] hover:bg-[#9d1f24] text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
+                        >
+                          Explore All IPOs
+                        </Link>
                       </div>
-
-                      {/* Right Arrow */}
-                      <button
-                        onClick={nextSlide}
-                        className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
-                      >
-                        <ChevronRight className="w-5 h-5" />
-                      </button>
                     </div>
                   )}
                 </div>
