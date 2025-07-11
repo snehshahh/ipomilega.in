@@ -36,7 +36,7 @@ export default function RootLayout({
     await signOut();
   };
 
-  const isAdmin =["admin@gmail.com","snehshah7634@gmail.com","shahvraj114@gmail.com"].includes(session?.user?.email || "");
+  const isAdmin = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(session?.user?.email || "");
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -52,8 +52,8 @@ export default function RootLayout({
         <ProgressProvider>
           <header className="fixed font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
             <div className="container mx-auto px-6 py-2">
-              <div className="flex h-12 items-center justify-between">
-                {/* Logo Section */}
+              <div className="flex h-15 items-center font-bold justify-between" style={{ fontWeight: "400" }}>
+                {/* Logo Section - Left */}
                 <ProgressLink
                   href="/"
                   className="flex items-center space-x-2 transition-opacity hover:opacity-80"
@@ -61,43 +61,44 @@ export default function RootLayout({
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                     <TrendingUp className="h-4 w-4" />
                   </div>
-                  <span className="text-xl font-bold text-black tracking-tight drop-shadow-lg">
+                  <span className="text-2xl font-bold text-black tracking-tight drop-shadow-lg">
                     IPO Milega
                   </span>
                 </ProgressLink>
 
-                {/* Navigation Links */}
-                <nav className="hidden md:flex items-center space-x-1">
-                  {isAdmin && (
+                {/* Navigation and User Controls - Right */}
+                <div className="flex items-center space-x-4 text-xl">
+                  {/* Navigation Links */}
+                  <nav className="hidden md:flex items-center space-x-1">
+                    {isAdmin && (
+                      <ProgressLink
+                        href="/admin"
+                        className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm"
+                      >
+                        Admin
+                      </ProgressLink>
+                    )}
                     <ProgressLink
-                      href="/admin"
-                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-white rounded-md hover:bg-white/10 backdrop-blur-sm"
+                      href="/blogs"
+                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm"
                     >
-                      Admin
+                      Blogs
                     </ProgressLink>
-                  )}
-                  <ProgressLink
-                    href="/blogs"
-                    className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-white rounded-md hover:bg-white/10 backdrop-blur-sm"
-                  >
-                    Blogs
-                  </ProgressLink>
-                  <ProgressLink
-                    href="/ipos"
-                    className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-white rounded-md hover:bg-white/10 backdrop-blur-sm"
-                  >
-                    IPOs
-                  </ProgressLink>
-                  <ProgressLink
-                    href="/analysis"
-                    className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-white rounded-md hover:bg-white/10 backdrop-blur-sm"
-                  >
-                    Analysis
-                  </ProgressLink>
-                </nav>
+                    <ProgressLink
+                      href="/ipos"
+                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm"
+                    >
+                      IPOs
+                    </ProgressLink>
+                    <ProgressLink
+                      href="/analysis"
+                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm"
+                    >
+                      Analysis
+                    </ProgressLink>
+                  </nav>
 
-                {/* Right Section */}
-                <div className="flex items-center space-x-4">
+                  {/* User Section */}
                   {session ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
