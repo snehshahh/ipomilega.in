@@ -80,7 +80,6 @@ export default async function HomePage() {
         <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
         <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
         <BlogSection blogs={homeData.blogList} />
-        <CtaSection />
       </div>
     </div>
   );
