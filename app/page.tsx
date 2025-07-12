@@ -1,4 +1,3 @@
-// app/page.tsx - Main Homepage Component
 import { BlogSection } from '@/components/Home/BlogSection';
 import { LiveIposSection } from '@/components/Home/LiveIposSection';
 import { PastIposSection } from '@/components/Home/PastIposSection';
@@ -6,7 +5,6 @@ import { UpcomingIposSection } from '@/components/Home/UpcomingIpos';
 import { getHomePageData } from '@/lib/data-fetching';
 import { Metadata } from 'next';
 
-// SEO Metadata
 export const metadata: Metadata = {
   title: 'IPO Milega - Your Gateway to IPO Investments | Live, Upcoming & Past IPOs',
   description: 'Discover the latest IPO opportunities with IPO Milega. Track live IPOs, upcoming listings, and past performance. Get expert insights and make informed investment decisions.',
@@ -67,13 +65,11 @@ export const metadata: Metadata = {
   },
 };
 
-
 export default async function HomePage() {
   const homeData = await getHomePageData();
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Content */}
+    <div className="min-h-screen relative overflow-hidden bg-[#EEF9FF]">
       <div className="relative z-10 min-h-screen">
         <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
         <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />

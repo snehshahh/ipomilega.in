@@ -9,30 +9,26 @@ import { UpcomingIpoCard } from '@/components/Home/IpoCard';
 export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-
-  // Responsive items per page
   const [itemsPerPage, setItemsPerPage] = useState(3);
 
-  // Handle responsive items per page
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 640) {
-        setItemsPerPage(1); // Mobile: 1 card
+        setItemsPerPage(1);
       } else if (window.innerWidth < 1024) {
-        setItemsPerPage(2); // Tablet: 2 cards
+        setItemsPerPage(2);
       } else {
-        setItemsPerPage(3); // Desktop: 3 cards
+        setItemsPerPage(3);
       }
     };
 
-    handleResize(); // Set initial value
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const totalPages = Math.ceil(ipos.length / itemsPerPage);
 
-  // Auto-rotate carousel every 5 seconds
   useEffect(() => {
     if (!isPlaying || ipos.length <= itemsPerPage) return;
 
@@ -51,16 +47,14 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
     setCurrentIndex(prev => (prev - 1 + totalPages) % totalPages);
   };
 
-  // Reset current index when items per page changes
   useEffect(() => {
     setCurrentIndex(0);
   }, [itemsPerPage]);
 
   return (
-    <section className="py-10 sm:py-16 lg:py-24 relative">
-      {/* Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <section className="bg-[#EEF9FF] py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30 mb-8">
+        <div className="flex flex-col items-center sm:items-start sm:flex-row sm:justify-between gap-4">
           <div className="text-center sm:text-left">
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 flex items-start justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
               <div className="flex items-center justify-center mt-4">
@@ -89,20 +83,17 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
           </Link>
         </div>
       </div>
-
-      {/* IPOs Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30">
         {ipos.length === 0 ? (
-          <div className="flex items-center justify-center py-8 sm:py-12">
-            <div className="text-center py-6 sm:py-8 lg:py-12 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 max-w-sm sm:max-w-md w-full mx-4">
-              <CalendarDays className="w-10 sm:w-12 h-10 sm:h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-base sm:text-lg font-medium font-ibm-plex">No upcoming IPOs at the moment</p>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center py-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 max-w-sm w-full mx-4">
+              <CalendarDays className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-base font-medium font-ibm-plex">No upcoming IPOs at the moment</p>
               <p className="text-gray-400 text-sm mt-2 font-ibm-plex">Check back soon for new opportunities!</p>
             </div>
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Carousel Container */}
             <div
               className="relative overflow-hidden"
               onMouseEnter={() => setIsPlaying(false)}
@@ -113,12 +104,12 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
                 style={{ transform: `translateX(-${currentIndex * 100}%)` }}
               >
                 {Array.from({ length: totalPages }).map((_, pageIndex) => (
-                  <div key={pageIndex} className="w-full flex-shrink-0 px-2">
+                  <div key={pageIndex} className="w-full flex-shrink-0">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-items-center py-5">
                       {ipos.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage).map((ipo: HomePageIpoProps) => (
                         <div
                           key={ipo._id}
-                          className="transition-all duration-300 hover:scale-105 w-full max-w-sm"
+                          className="transition-all duration-300 hover:scale-105 w-full max-w-sm mx-auto"
                         >
                           <div className="h-full rounded-lg overflow-hidden bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
                             <UpcomingIpoCard ipo={ipo.ipo} analysis={ipo.analysis || null} />
@@ -130,11 +121,8 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
                 ))}
               </div>
             </div>
-
-            {/* Bottom Navigation Section */}
             {ipos.length > itemsPerPage && (
               <div className="flex items-center justify-center space-x-6">
-                {/* Left Arrow */}
                 <button
                   onClick={prevSlide}
                   className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
@@ -142,23 +130,20 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-
-                {/* Pagination Dots */}
                 <div className="flex space-x-2">
                   {Array.from({ length: totalPages }).map((_, index) => (
                     <button
                       key={index}
                       onClick={() => setCurrentIndex(index)}
-                      className={`w-3 h-3 rounded-full transition-all duration-200 ${index === currentIndex
+                      className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                        index === currentIndex
                           ? 'bg-[#00914D] scale-125 shadow-md'
                           : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
-                        }`}
+                      }`}
                       aria-label={`Go to slide ${index + 1}`}
                     />
                   ))}
                 </div>
-
-                {/* Right Arrow */}
                 <button
                   onClick={nextSlide}
                   className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"

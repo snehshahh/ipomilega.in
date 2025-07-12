@@ -20,7 +20,6 @@ import {
 import { ProgressProvider } from "@/components/Progressbar/ProgressProvider";
 import { ProgressLink } from "@/components/Progressbar/ProgressLink";
 
-// Geist fonts are now imported directly from the geist package
 const geistSans = GeistSans;
 const geistMono = GeistMono;
 
@@ -51,9 +50,8 @@ export default function RootLayout({
       >
         <ProgressProvider>
           <header className="fixed font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
-            <div className="container mx-auto px-6 py-2">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30 py-2">
               <div className="flex h-15 items-center font-bold justify-between" style={{ fontWeight: "400" }}>
-                {/* Logo Section - Left */}
                 <ProgressLink
                   href="/"
                   className="flex items-center space-x-2 transition-opacity hover:opacity-80"
@@ -65,40 +63,41 @@ export default function RootLayout({
                     IPO Milega
                   </span>
                 </ProgressLink>
-
-                {/* Navigation and User Controls - Right */}
                 <div className="flex items-center space-x-4 text-xl">
-                  {/* Navigation Links */}
-                  <nav className="hidden md:flex items-center space-x-1">
+                  <nav className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-1">
                     {isAdmin && (
                       <ProgressLink
                         href="/admin"
-                        className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm"
+                        className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm w-full sm:w-auto text-center"
                       >
                         Admin
                       </ProgressLink>
                     )}
                     <ProgressLink
+                      href="/"
+                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm w-full sm:w-auto text-center"
+                    >
+                      Home
+                    </ProgressLink>
+                    <ProgressLink
                       href="/blogs"
-                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm"
+                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm w-full sm:w-auto text-center"
                     >
                       Blogs
                     </ProgressLink>
                     <ProgressLink
                       href="/ipos"
-                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm"
+                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm w-full sm:w-auto text-center"
                     >
                       IPOs
                     </ProgressLink>
                     <ProgressLink
                       href="/analysis"
-                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm"
+                      className="relative px-4 py-2 text-sm font-medium text-black/80 transition-colors hover:text-black rounded-md hover:bg-white/10 backdrop-blur-sm w-full sm:w-auto text-center"
                     >
                       Analysis
                     </ProgressLink>
                   </nav>
-
-                  {/* User Section */}
                   {session ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -148,7 +147,14 @@ export default function RootLayout({
                   ) : (
                     <Button
                       onClick={() => setShowLoginDialog(true)}
-                      className="bg-white/20 hover:bg-white/30 text-black border border-white/30 px-6 py-2 rounded-full font-medium transition-all hover:shadow-md backdrop-blur-sm"
+                      className="bg-[#212121] hover:bg-[#212121]/10 text-white px-6 py-2 rounded-full font-medium transition-all hover:shadow-md backdrop-blur-sm"
+                      style={{
+                        width: 161,
+                        height: 40,
+                        top: 20,
+                        left: 1159,
+                        border: "8px",
+                      }}
                     >
                       Sign In
                     </Button>
@@ -157,12 +163,10 @@ export default function RootLayout({
               </div>
             </div>
           </header>
-
           <main className="flex-1">
             {children}
             <Toaster position="top-right" richColors />
           </main>
-
           <LoginDialog
             isOpen={showLoginDialog}
             onClose={() => setShowLoginDialog(false)}

@@ -1,4 +1,3 @@
-// LiveIposSection.tsx - Creative Grid Layout with Flexible Columns
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -13,41 +12,31 @@ import AllotmentPredictor from './AllotmentPredictor';
 export function LiveIposSection({ ipos, count }: IpoSectionProps) {
   const [liveIpoSectionHeight, setLiveIpoSectionHeight] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  // Removed viewMode state - only using masonry view
   const [visibleIpos, setVisibleIpos] = useState(6);
   const [isAnimating, setIsAnimating] = useState(false);
-
-  // Refs for measuring heights
   const liveIpoSectionRef = useRef<HTMLDivElement>(null);
 
-  // Measure Live IPO section height
   useEffect(() => {
     const measureHeight = () => {
       if (liveIpoSectionRef.current) {
         const height = liveIpoSectionRef.current.offsetHeight;
-        setLiveIpoSectionHeight(height);
+        setLiveIpoSectionHeight(height + 200);
       }
     };
 
-    // Measure initially
     measureHeight();
-
-    // Create ResizeObserver to watch for height changes
     const resizeObserver = new ResizeObserver(measureHeight);
     if (liveIpoSectionRef.current) {
       resizeObserver.observe(liveIpoSectionRef.current);
     }
-
-    // Also listen to window resize
     window.addEventListener('resize', measureHeight);
 
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener('resize', measureHeight);
     };
-      }, [ipos.length]); // Removed viewMode dependency
+  }, [ipos.length]);
 
-  // Close modal on escape key
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isModalOpen) {
@@ -58,7 +47,6 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isModalOpen]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     if (isModalOpen) {
       document.body.style.overflow = 'hidden';
@@ -78,11 +66,8 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
     }, 300);
   };
 
-  // Removed handleViewModeChange function
-
-  // Simple 3-column grid layout using full width
   const MasonryGrid = ({ items }: { items: HomePageIpoProps[] }) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {items.map((ipo, index) => (
         <div
           key={ipo._id}
@@ -93,7 +78,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
             transitionDelay: `${index * 100}ms`,
           }}
         >
-          <div className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-gray-100 h-full">
+          <div className="bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 overflow-hidden border border-gray-100 h-full w-full max-w-sm mx-auto">
             <LiveIpoCard ipo={ipo.ipo} analysis={ipo.analysis} />
           </div>
         </div>
@@ -102,52 +87,36 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
   );
 
   return (
-    <div className="relative py-8">
-      {/* Extended Background Container */}
+    <div className="relative py-10">
       <div className="absolute inset-0 overflow-hidden">
-        {/* Hero background that extends into half of Live IPO section */}
         <div
           className="absolute inset-0"
           style={{
-            height: `calc(100vh + ${liveIpoSectionHeight / 2}px)`, // Full hero height + half of Live IPO section
+            height: `calc(100vh + ${liveIpoSectionHeight * 0.5}px)`,
             background: `
-              linear-gradient(135deg, 
-                rgba(224, 242, 254, 1) 0%,      /* Very light blue, top-left */
-                rgba(191, 230, 255, 1) 30%,     /* Slightly deeper sky blue */
-                rgba(255, 255, 255, 0.7) 60%,  /* Hint of white, semi-transparent */
-                rgba(173, 216, 230, 1) 80%,     /* Muted blue */
-                rgba(240, 248, 255, 1) 100%     /* Alice Blue, bottom-right */
-              )
-            `
+              radial-gradient(circle at 20% 30%, rgba(240, 248, 255, 1), rgba(240, 248, 255, 0) 40%),
+              radial-gradient(circle at 70% 20%, rgba(173, 216, 230, 0.6), rgba(173, 216, 230, 0) 50%),
+              radial-gradient(circle at 30% 80%, rgba(135, 206, 250, 0.5), rgba(135, 206, 250, 0) 50%),
+              radial-gradient(circle at 90% 70%, rgba(173, 216, 250, 0.5), rgba(173, 216, 250, 0) 60%)
+            `,
+            backgroundColor: '#e6f4fe',
+            filter: 'blur(50px)'
           }}
         />
-
-        {/* Light blue background for the bottom half of Live IPO section */}
         <div
           className="absolute left-0 right-0"
           style={{
-            top: `calc(100vh + ${liveIpoSectionHeight / 2}px)`,
-            height: `${liveIpoSectionHeight / 2}px`,
-            background: `
-              linear-gradient(135deg, 
-                rgba(240, 248, 255, 1) 0%,     /* Alice Blue */
-                rgba(230, 245, 255, 1) 30%,    /* Slightly deeper alice blue */
-                rgba(220, 240, 255, 1) 60%,    /* Light sky blue */
-                rgba(235, 247, 255, 1) 100%    /* Very light blue */
-              )
-            `
+            top: `calc(100vh + ${liveIpoSectionHeight * 0.8}px)`,
+            height: `${liveIpoSectionHeight * 0.3}px`,
+            backgroundColor: '#EEF9FF'
           }}
         />
       </div>
-
-      {/* Content Container */}
       <div className="relative z-10">
-        {/* Hero Section - Responsive heights and spacing */}
-        <section className="min-h-screen flex items-center px-4 sm:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto w-full">
-            <div className="grid lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 items-center">
-              {/* Text Content */}
-              <div className="text-center lg:text-left space-y-4 sm:space-y-6">
+        <section className="min-h-screen flex items-center px-4 sm:px-6 md:px-12 lg:px-30">
+          <div className="max-w-7xl mx-auto w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
+              <div className="text-center lg:text-left space-y-4">
                 <h1 className="text-2xl font-dm-serif sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight font-black">
                   Know The{' '}
                   <span className="text-[#B4292E] font-black">Risk.</span>
@@ -176,8 +145,6 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                   </button>
                 </div>
               </div>
-
-              {/* Hero Image */}
               <div className="flex justify-center order-first lg:order-last">
                 <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
                   <Image
@@ -193,100 +160,79 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
             </div>
           </div>
         </section>
-
-        {/* Live IPOs Section - Creative Layout */}
-        <section ref={liveIpoSectionRef} className="py-10 sm:py-16 lg:py-24 relative">
-          {/* Section Content */}
-          <div className="relative z-10">
-            {/* Header */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 lg:gap-8">
-                <div className="text-center lg:text-left">
-                  <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 font-ibm-plex">
-                    <div className="flex items-center justify-center lg:justify-start gap-2 lg:gap-3">
-                      <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-[#B4292E] rounded-full animate-pulse shadow-lg"></span>
-                      <div>
-                        <div>Live IPOs</div>
-                        <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">Current IPOs open for Investment</div>
-                      </div>
+        <section ref={liveIpoSectionRef} className="py-10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30 mb-8">
+            <div className="flex flex-col items-center lg:items-start lg:flex-row lg:justify-between gap-4">
+              <div className="text-center lg:text-left">
+                <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 font-ibm-plex">
+                  <div className="flex items-center justify-center lg:justify-start gap-2 lg:gap-3">
+                    <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-[#B4292E] rounded-full animate-pulse shadow-lg"></span>
+                    <div>
+                      <div>Live IPOs</div>
+                      <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">Current IPOs open for Investment</div>
                     </div>
-                  </h2>
-                </div>
-                
-                {/* Controls */}
-                <div className="flex justify-center lg:justify-end">
-                  {/* View All Link */}
-                  <Link
-                    href="/ipos?filter=live"
-                    className="text-[#B4292E] font-ibm-plex hover:text-[#B4292E] font-bold flex items-center justify-center space-x-2 group text-sm sm:text-base bg-white hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 shadow-md border border-gray-200"
-                  >
-                    <span>View All ({count})</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
+                  </div>
+                </h2>
+              </div>
+              <div className="flex justify-center lg:justify-end">
+                <Link
+                  href="/ipos?filter=live"
+                  className="text-[#B4292E] font-ibm-plex hover:text-[#B4292E] font-bold flex items-center justify-center space-x-2 group text-sm sm:text-base bg-white hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 shadow-md border border-gray-200"
+                >
+                  <span>View All ({count})</span>
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </div>
             </div>
-
-            {/* IPOs Content */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {ipos.length === 0 ? (
-                <div className="flex items-center justify-center py-8 sm:py-12">
-                  <div className="text-center py-6 sm:py-8 lg:py-12 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 max-w-sm sm:max-w-md w-full mx-4">
-                    <Clock className="w-10 sm:w-12 h-10 sm:h-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500 text-base sm:text-lg font-medium font-ibm-plex">No live IPOs at the moment</p>
-                    <p className="text-gray-400 text-sm mt-2 font-ibm-plex">Check back soon for new opportunities!</p>
+          </div>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30">
+            {ipos.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center py-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 max-w-sm w-full mx-4">
+                  <Clock className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500 text-base font-medium font-ibm-plex">No live IPOs at the moment</p>
+                  <p className="text-gray-400 text-sm mt-2 font-ibm-plex">Check back soon for new opportunities!</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                <MasonryGrid items={ipos.slice(0, visibleIpos)} />
+                {visibleIpos < ipos.length && (
+                  <div className="flex justify-center pt-8">
+                    <button
+                      onClick={handleLoadMore}
+                      disabled={isAnimating}
+                      className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 px-8 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isAnimating ? 'Loading...' : `Load More (${ipos.length - visibleIpos} remaining)`}
+                    </button>
                   </div>
-                </div>
-              ) : (
-                <div className="space-y-8">
-                  {/* 3-Column Masonry Grid */}
-                  <MasonryGrid items={ipos.slice(0, visibleIpos)} />
-
-                  {/* Load More Button */}
-                  {visibleIpos < ipos.length && (
-                    <div className="flex justify-center pt-8">
-                      <button
-                        onClick={handleLoadMore}
-                        disabled={isAnimating}
-                        className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 px-8 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                )}
+                {visibleIpos >= ipos.length && ipos.length > 6 && (
+                  <div className="flex justify-center pt-8">
+                    <div className="text-center">
+                      <p className="text-gray-500 font-medium mb-4">You&apos;ve seen all live IPOs!</p>
+                      <Link
+                        href="/ipos?filter=live"
+                        className="bg-[#B4292E] hover:bg-[#9d1f24] text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
                       >
-                        {isAnimating ? 'Loading...' : `Load More (${ipos.length - visibleIpos} remaining)`}
-                      </button>
+                        Explore All IPOs
+                      </Link>
                     </div>
-                  )}
-
-                  {/* Show All Button */}
-                  {visibleIpos >= ipos.length && ipos.length > 6 && (
-                    <div className="flex justify-center pt-8">
-                      <div className="text-center">
-                        <p className="text-gray-500 font-medium mb-4">You&apos;ve seen all live IPOs!</p>
-                        <Link
-                          href="/ipos?filter=live"
-                          className="bg-[#B4292E] hover:bg-[#9d1f24] text-white px-8 py-3 rounded-lg font-bold shadow-lg hover:shadow-xl transition-all duration-300"
-                        >
-                          Explore All IPOs
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </section>
       </div>
-
-      {/* AllotmentPredictor Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setIsModalOpen(false)}
           />
-
-          {/* Modal Body */}
-          <div className="p-6">
+          <div className="p-4 sm:p-6 w-full max-w-md sm:max-w-lg md:max-w-2xl">
             <AllotmentPredictor
               ipos={ipos}
               isOpen={isModalOpen}
