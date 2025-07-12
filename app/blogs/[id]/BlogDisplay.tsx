@@ -18,9 +18,9 @@ import {
   Clock,
 } from "lucide-react";
 import MarkdownRenderer from "@/components/MarkDown";
-import { useRouter } from "next/navigation";
 import { Ipo } from "@/app/models/ipo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useProgressRouter } from "@/components/Progressbar/useProgressRouter";
 
 interface BlogPost {
   title: string;
@@ -44,7 +44,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
   const [isLoadingIpo, setIsLoadingIpo] = useState(false);
   // const [isBookmarked, setIsBookmarked] = useState(false);
   // const [isLiked, setIsLiked] = useState(false);
-  const router = useRouter();
+  const router = useProgressRouter();
 
   useEffect(() => {
     if (blog.ipo_id) {

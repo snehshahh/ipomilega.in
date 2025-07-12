@@ -22,13 +22,13 @@ export async function getHomePageData(): Promise<HomePageData> {
       data: ipoData.data,
       counts: ipoData.counts,
       blogList: blogData.blogList || [],
-    } as HomePageData;
+    };
   } catch (error) {
     console.error('Error fetching homepage data:', error);
     return {
       data: { upcoming: [], live: [], past: [] },
       counts: { upcoming: 0, live: 0, past: 0 },
       blogList: [],
-    } as HomePageData;
+    };
   }
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useParams, useRouter } from "next/navigation"
+import { useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -40,6 +40,7 @@ import { Ipo } from "@/app/models/ipo"
 import { useSession } from "@/lib/auth-client"
 import MarkdownRenderer from "@/components/MarkDown"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useProgressRouter } from "@/components/Progressbar/useProgressRouter"
 
 interface IpoandAnalysis {
   ipo: Ipo;
@@ -62,7 +63,7 @@ interface BlogPost {
 
 export default function CreateBlogPage() {
   const params = useParams();
-  const router = useRouter();
+  const router = useProgressRouter();
   const session = useSession();
   const ipoId = params.id as string;
   const [ipoData, setIpoData] = useState<IpoandAnalysis | null>(null);

@@ -1,11 +1,12 @@
 import React from 'react';
-import { Clock, TrendingUp, Calendar, CheckCircle } from 'lucide-react';
+import { TrendingUp, Calendar, CheckCircle } from 'lucide-react';
 import { Ipo } from '@/app/models/ipo';
 import { IpoComprehensiveAnalysis } from '@/app/models/ipo_comprehensive_analysis';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardContent, CardHeader } from '../ui/card';
 import { Badge } from '../ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { useProgressRouter } from '../Progressbar/useProgressRouter';
 
 interface IpoCardProps {
   ipo: Ipo | null;
@@ -25,13 +26,25 @@ const getInitials = (name: string) => {
 
 // Utility function to get risk border color
 const getRiskBorderColor = (riskScore: number) => {
-  if (riskScore <= 3) return 'border-b-green-500';
-  if (riskScore <= 6) return 'border-b-yellow-500';
-  return 'border-b-red-500';
+  if (riskScore <= 3) return 'border-b-[#B4292E]';
+  if (riskScore <= 6) return 'border-b-[#D59527]';
+  return 'border-b-[#00914D]';
 };
 
-// Live IPO Card Component - Responsive version
+// Utility function to get risk text color (no background)
+const getRiskTextColor = (riskScore: number) => {
+  if (riskScore <= 3) return 'text-[#B4292E]';
+  if (riskScore <= 6) return 'text-[#D59527]';
+  return 'text-[#00914D]';
+};
+
+// Live IPO Card Component
 export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
+  const router = useProgressRouter();
+
+  const handleViewAnalysis = (ipo: Ipo) => {
+    router.push(`/analysis/${ipo?._id}`);
+  };
   const getDaysUntilClosing = () => {
     if (!ipo?.closing_date) return 0;
     const closingDate = new Date(ipo.closing_date);
@@ -41,110 +54,86 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
     return Math.max(0, diffDays);
   };
 
+  const getRiskTextColorForElements = (riskScore: number) => {
+    if (riskScore <= 3) return 'text-[#B4292E]';
+    if (riskScore <= 6) return 'text-[#D59527]';
+    return 'text-[#00914D]';
+  };
+
   const daysUntilClosing = getDaysUntilClosing();
   const riskScore = analysis?.risk_meter?.score || 0;
   const riskBorderColor = getRiskBorderColor(riskScore);
+  const riskTextColorForElements = getRiskTextColorForElements(riskScore);
 
   return (
-    <Card className={`w-full max-w-sm mx-auto overflow-hidden border-2 border-gray-200 bg-white h-full border-b-4 ${riskBorderColor}`}>
-      <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4 h-full flex flex-col">
-        {/* Header with Live Badge */}
-        <div className="flex justify-between items-start flex-wrap gap-2">
-          <Badge variant="outline" className="bg-white border-gray-300 text-gray-700 font-medium text-xs">
-            {ipo?.ipo_details?.ipo_listing || 'N/A'}
-          </Badge>
-          <Badge variant="outline" className="bg-white border-gray-300 text-gray-700 font-medium text-xs whitespace-nowrap">
-            🔴 LIVE - {daysUntilClosing}d left
-          </Badge>
-        </div>
-
-        {/* Company Info */}
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-white shadow-md flex-shrink-0">
-            <AvatarImage
-              src={ipo?.image_url}
-              alt={`${ipo?.upcoming_ipo_2025} logo`}
-              className="object-cover"
-            />
-            <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-700 text-white font-bold text-xs sm:text-sm">
-              {getInitials(ipo?.upcoming_ipo_2025 || '')}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">
+    <Card className={`w-full max-w-sm mx-auto h-full border-b-6 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }} >
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <div className="w-full">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Badge variant="outline" className="bg-gray-50 border-gray-300 text-gray-800 text-xs font-medium w-fit">
               {ipo?.ipo_type || 'N/A'}
-            </p>
-            <h2 className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">
-              {ipo?.upcoming_ipo_2025 || 'Company Name'}
-            </h2>
-            <p className="text-xs text-gray-600 font-medium truncate">
-              {ipo?.ipo_details?.issue_size || 'N/A'} | ₹{ipo?.price_band || 'N/A'}
-            </p>
+            </Badge>
+            <Badge variant="secondary"
+              className="bg-white/95 backdrop-blur-sm text-red-600 text-xs font-medium animate-pulse border border-red-200 w-fit">
+              🔴 LIVE - {daysUntilClosing == 0 ? "Closing Today" : daysUntilClosing + "d" + " left"}
+            </Badge>
           </div>
         </div>
-
-        {/* IPO Timeline */}
-        <div className="space-y-2 bg-gray-50 p-2 sm:p-3 rounded-lg">
-          <h3 className="text-sm font-semibold text-gray-800 flex items-center space-x-1">
-            <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
-            <span>Timeline</span>
-          </h3>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600">Opens:</span>
-              <span className="font-medium">{ipo?.open_date || 'N/A'}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600">Closes:</span>
-              <span className="font-medium text-red-600">{ipo?.closing_date || 'N/A'}</span>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-col items-left justify-left">
+          <div className="flex flex-row items-center justify-left gap-3">
+            <Avatar className="w-15 h-15 sm:w-16 sm:h-16 flex-shrink-0">
+              {
+                ipo?.image_url ? (
+                  <AvatarImage src={ipo.image_url} />
+                ) : (
+                  <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
+                    {getInitials(ipo?.upcoming_ipo_2025 || '')}
+                  </AvatarFallback>
+                )
+              }
+            </Avatar>
+            <div className="flex flex-col items-left justify-left min-w-0 flex-1">
+              <h2 className="text-base sm:text-lg font-semibold truncate">{ipo?.upcoming_ipo_2025 || 'Company Name'}</h2>
+              <p className="text-sm text-gray-600 truncate">{ipo?.ipo_size || 'N/A'} | ₹{ipo?.price_band || 'N/A'}</p>
             </div>
           </div>
         </div>
-
-        {/* Current Performance */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <div className="text-center p-2 bg-white rounded-lg border">
-            <h4 className="text-xs font-medium text-gray-500 mb-1">GMP</h4>
+        <div className="flex flex-col items-left justify-center mt-3">
+          <div className="flex flex-row items-left justify-center gap-3">
+            <div className="w-full py-3">
+              <h3 className="text-sm sm:text-md text-gray-800 flex items-left space-x-1 font-semibold mb-1">
+                <Calendar className="w-4 h-4 mt-1 text-gray-600 flex-shrink-0" />
+                <span className="text-sm sm:text-md font-medium font-ibm-plex" style={{ fontWeight: '600' }}>Timeline</span>
+              </h3>
+              <div className="text-left flex flex-row items-left justify-between gap-2">
+                <span className="font-normal block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>Opening Date</span>
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.open_date || 'TBA'}</span>
+              </div>
+              <div className="text-left flex flex-row items-left justify-between gap-2">
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>Closing Date</span>
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.closing_date || 'TBA'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4">
+          <div className="text-center p-2 sm:p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <h4 className="text-xs font-medium mb-1">Expected GMP</h4>
             <div className="flex items-center justify-center space-x-1">
-              <TrendingUp className="w-3 h-3 text-gray-400" />
-              <span className="text-xs sm:text-sm font-medium text-gray-600">₹{ipo?.gmp_price_gain || 0}</span>
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 flex-shrink-0" />
+              <span className="text-xs sm:text-sm text-green-500 font-semibold">₹{ipo?.gmp_price_gain || 'TBA'}</span>
             </div>
           </div>
-          <div className="text-center p-2 bg-white rounded-lg border">
-            <h4 className="text-xs font-medium text-gray-500 mb-1">Risk</h4>
-            <span className="text-xs sm:text-sm font-medium text-gray-600">{riskScore}/10</span>
-          </div>
-        </div>
-
-        {/* Subscription Details */}
-        <div className="space-y-2 flex-1">
-          <h4 className="text-sm font-semibold text-gray-800">Subscription</h4>
-          <div className="grid grid-cols-4 gap-1 sm:gap-2 text-center">
-            <div className="bg-white p-1 sm:p-1.5 rounded border">
-              <p className="text-xs font-medium text-gray-600">QIB</p>
-              <p className="font-bold text-xs text-gray-900">{ipo?.qib_sr || 'N/A'}</p>
-            </div>
-            <div className="bg-white p-1 sm:p-1.5 rounded border">
-              <p className="text-xs font-medium text-gray-600">NII</p>
-              <p className="font-bold text-xs text-gray-900">{ipo?.nii_sr || 'N/A'}</p>
-            </div>
-            <div className="bg-white p-1 sm:p-1.5 rounded border">
-              <p className="text-xs font-medium text-gray-600">RII</p>
-              <p className="font-bold text-xs text-gray-900">{ipo?.rii_sr || 'N/A'}</p>
-            </div>
-            <div className="bg-white p-1 sm:p-1.5 rounded border">
-              <p className="text-xs font-medium text-gray-600">Total</p>
-              <p className="font-bold text-xs text-gray-600">{ipo?.total_sr || 'N/A'}</p>
-            </div>
+          <div className="text-center p-2 sm:p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <h4 className="text-xs font-medium mb-1">Risk Score</h4>
+            <span className={`text-xs sm:text-sm ${riskTextColorForElements} font-semibold`}>{riskScore}/10</span>
           </div>
         </div>
-
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-2 mt-auto">
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs py-1.5 sm:py-2">
-            Chances of Allotment
-          </Button>
-          <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 text-xs py-1.5 sm:py-2">
+        <hr className="my-4 border-gray-200" />
+        <div className="mt-6">
+          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
             View Analysis
           </Button>
         </div>
@@ -153,8 +142,13 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
   );
 }
 
-// Upcoming IPO Card Component - Responsive version
+// Upcoming IPO Card Component
 export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
+  const router = useProgressRouter();
+
+  const handleViewAnalysis = (ipo: Ipo) => {
+    router.push(`/analysis/${ipo?._id}`);
+  };
   const getDaysUntilOpening = () => {
     if (!ipo?.open_date) return 0;
     const openingDate = new Date(ipo.open_date);
@@ -167,85 +161,76 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
   const daysUntilOpening = getDaysUntilOpening();
   const riskScore = analysis?.risk_meter?.score || 0;
   const riskBorderColor = getRiskBorderColor(riskScore);
+  const riskTextColor = getRiskTextColor(riskScore);
 
   return (
-    <Card className={`w-full max-w-sm mx-auto overflow-hidden border-2 border-gray-200 bg-white h-full border-b-4 ${riskBorderColor}`}>
-      <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4 h-full flex flex-col">
-        {/* Header with Upcoming Badge */}
-        <div className="flex justify-between items-start flex-wrap gap-2">
-          <Badge variant="outline" className="bg-white border-gray-300 text-gray-700 font-medium text-xs">
-            {ipo?.ipo_details?.ipo_listing || 'N/A'}
-          </Badge>
-          <Badge variant="outline" className="bg-white border-gray-300 text-gray-700 font-medium text-xs whitespace-nowrap">
-            📅 {daysUntilOpening}d to go
-          </Badge>
-        </div>
-
-        {/* Company Info */}
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-white shadow-md flex-shrink-0">
-            <AvatarImage
-              src={ipo?.image_url}
-              alt={`${ipo?.upcoming_ipo_2025} logo`}
-              className="object-cover"
-            />
-            <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-700 text-white font-bold text-xs sm:text-sm">
-              {getInitials(ipo?.upcoming_ipo_2025 || '')}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">
+    <Card className={`w-full max-w-sm mx-auto h-full border-b-6 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }}>
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <div className="w-full">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Badge variant="outline" className="bg-gray-50 border-gray-300 text-gray-800 text-xs font-medium w-fit">
               {ipo?.ipo_type || 'N/A'}
-            </p>
-            <h2 className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">
-              {ipo?.upcoming_ipo_2025 || 'Company Name'}
-            </h2>
-            <p className="text-xs text-gray-600 font-medium truncate">
-              {ipo?.ipo_details?.issue_size || 'N/A'} | ₹{ipo?.price_band || 'N/A'}
-            </p>
+            </Badge>
+            <Badge variant="secondary"
+              className="bg-white/95 backdrop-blur-sm text-blue-600 text-xs font-medium border border-blue-200 w-fit">
+              📅 {daysUntilOpening}d to go
+            </Badge>
           </div>
         </div>
-
-        {/* Launch Timeline */}
-        <div className="space-y-2 bg-gray-50 p-2 sm:p-3 rounded-lg">
-          <h3 className="text-sm font-semibold text-gray-800 flex items-center space-x-1">
-            <Calendar className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
-            <span>Timeline</span>
-          </h3>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600">Expected Open:</span>
-              <span className="font-medium">{ipo?.open_date || 'TBA'}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600">Expected Close:</span>
-              <span className="font-medium">{ipo?.closing_date || 'TBA'}</span>
-            </div>
-            <div className="flex items-center justify-center space-x-1 text-gray-700 pt-1 bg-white rounded-md py-1">
-              <Clock className="w-3 h-3" />
-              <span className="font-bold text-xs">{daysUntilOpening} Day{daysUntilOpening === 1 ? '' : 's'} to Launch</span>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-col items-left justify-left">
+          <div className="flex flex-row items-center justify-left gap-3">
+            <Avatar className="w-15 h-15 sm:w-16 sm:h-16 flex-shrink-0">
+              {
+                ipo?.image_url ? (
+                  <AvatarImage src={ipo.image_url} />
+                ) : (
+                  <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
+                    {getInitials(ipo?.upcoming_ipo_2025 || '')}
+                  </AvatarFallback>
+                )
+              }
+            </Avatar>
+            <div className="flex flex-col items-left justify-left min-w-0 flex-1">
+              <h2 className="text-base sm:text-lg font-semibold truncate">{ipo?.upcoming_ipo_2025 || 'Company Name'}</h2>
+              <p className="text-sm text-gray-600 truncate">{ipo?.ipo_details?.issue_size || 'N/A'} | ₹{ipo?.price_band || 'N/A'}</p>
             </div>
           </div>
         </div>
-
-        {/* Predicted Metrics */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <div className="text-center p-2 bg-white rounded-lg border">
-            <h4 className="text-xs font-medium text-gray-600 mb-1">Expected GMP</h4>
+        <div className="flex flex-col items-left justify-center mt-3">
+          <div className="flex flex-row items-left justify-center gap-3">
+            <div className="w-full py-3">
+              <h3 className="text-sm sm:text-md text-gray-800 flex items-left space-x-1 font-semibold mb-1">
+                <Calendar className="w-4 h-4 mt-1 text-gray-600 flex-shrink-0" />
+                <span className="text-sm sm:text-md font-medium font-ibm-plex" style={{ fontWeight: '600' }}>Timeline</span>
+              </h3>
+              <div className="text-left flex flex-row items-left justify-between gap-2">
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>Expected Opening Date</span>
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.open_date || 'TBA'}</span>
+              </div>
+              <div className="text-left flex flex-row items-left justify-between gap-2">
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>Expected Closing Date</span>
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.closing_date || 'TBA'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4">
+          <div className={`text-center p-2 sm:p-3 rounded-lg border shadow-sm`}>
+            <h4 className={`text-xs font-medium mb-1`}>Expected GMP</h4>
             <div className="flex items-center justify-center space-x-1">
-              <TrendingUp className="w-3 h-3 text-gray-400" />
-              <span className="text-xs sm:text-sm font-bold text-gray-600">₹{ipo?.gmp_price_gain || 'TBA'}</span>
+              <span className={`text-xs sm:text-sm text-green-500 font-semibold`}>₹{ipo?.gmp_price_gain || 'TBA'}</span>
             </div>
           </div>
-          <div className="text-center p-2 bg-white rounded-lg border">
-            <h4 className="text-xs font-medium text-gray-600 mb-1">Risk Score</h4>
-            <span className="text-xs sm:text-sm font-bold text-gray-600">{riskScore}/10</span>
+          <div className={`text-center p-2 sm:p-3 bg-white rounded-lg border shadow-sm`}>
+            <h4 className={`text-xs font-medium mb-1`}>Risk Score</h4>
+            <span className={`text-xs sm:text-sm ${riskTextColor} font-semibold`}>{riskScore}/10</span>
           </div>
         </div>
-
-        {/* Action Button */}
-        <div className="pt-1 mt-auto">
-          <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 w-full text-xs py-1.5 sm:py-2">
+        <hr className="my-4 border-gray-200" />
+        <div className="mt-6">
+          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
             Pre-Analysis
           </Button>
         </div>
@@ -254,109 +239,82 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
   );
 }
 
-// Past IPO Card Component - Responsive version
+// Past IPO Card Component
 export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
+  const router = useProgressRouter();
+
+  const handleViewAnalysis = (ipo: Ipo) => {
+    router.push(`/analysis/${ipo?._id}`);
+  };
   const riskScore = analysis?.risk_meter?.score || 0;
   const riskBorderColor = getRiskBorderColor(riskScore);
 
   return (
-    <Card className={`w-full max-w-sm mx-auto overflow-hidden border-2 border-gray-200 bg-white h-full border-b-4 ${riskBorderColor}`}>
-      <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4 h-full flex flex-col">
-        {/* Header with Listed Badge */}
-        <div className="flex justify-between items-start flex-wrap gap-2">
-          <Badge variant="outline" className="bg-white border-gray-300 text-gray-700 font-medium text-xs">
-            {ipo?.ipo_details?.ipo_listing || 'N/A'}
-          </Badge>
-          <Badge variant="outline" className="bg-white border-gray-300 text-gray-700 font-medium text-xs whitespace-nowrap">
-            ✅ Listed
-          </Badge>
-        </div>
-
-        {/* Company Info */}
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10 sm:h-12 sm:w-12 border-2 border-white shadow-md flex-shrink-0">
-            <AvatarImage
-              src={ipo?.image_url}
-              alt={`${ipo?.upcoming_ipo_2025} logo`}
-              className="object-cover"
-            />
-            <AvatarFallback className="bg-gradient-to-br from-gray-600 to-gray-700 text-white font-bold text-xs sm:text-sm">
-              {getInitials(ipo?.upcoming_ipo_2025 || '')}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs text-gray-500 uppercase font-medium tracking-wide">
+    <Card className={`w-full max-w-sm mx-auto h-full border-b-6 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }} >
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <div className="w-full">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Badge variant="outline" className="bg-gray-50 border-gray-300 text-gray-800 text-xs font-medium w-fit">
               {ipo?.ipo_type || 'N/A'}
-            </p>
-            <h2 className="text-sm sm:text-base font-bold text-gray-900 leading-tight truncate">
-              {ipo?.upcoming_ipo_2025 || 'Company Name'}
-            </h2>
-            <p className="text-xs text-gray-600 font-medium truncate">
-              {ipo?.ipo_details?.issue_size || 'N/A'} | ₹{ipo?.price_band || 'N/A'}
-            </p>
+            </Badge>
+            <Badge variant="secondary"
+              className="bg-white/95 backdrop-blur-sm text-green-600 text-xs font-medium border border-green-200 w-fit">
+              ✅ Listed
+            </Badge>
           </div>
         </div>
-
-        {/* Listing Performance */}
-        <div className="space-y-2 bg-gray-50 p-2 sm:p-3 rounded-lg">
-          <h3 className="text-sm font-semibold text-gray-800 flex items-center space-x-1">
-            <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-gray-600" />
-            <span>Performance</span>
-          </h3>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600">Listed:</span>
-              <span className="font-medium">{ipo?.closing_date || 'N/A'}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-600">Listing Price:</span>
-              <span className="font-medium">N/A</span>
-            </div>
-            <div className="flex items-center justify-center space-x-1 text-gray-700 pt-1 bg-white rounded-md py-1">
-              <TrendingUp className="w-3 h-3" />
-              <span className="font-bold text-xs">Listing Gain: N/A</span>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-col items-left justify-left">
+          <div className="flex flex-row items-center justify-left gap-3">
+            <Avatar className="w-15 h-15 sm:w-16 sm:h-16 flex-shrink-0">
+              {
+                ipo?.image_url ? (
+                  <AvatarImage src={ipo.image_url} />
+                ) : (
+                  <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
+                    {getInitials(ipo?.upcoming_ipo_2025 || '')}
+                  </AvatarFallback>
+                )
+              }
+            </Avatar>
+            <div className="flex flex-col items-left justify-left min-w-0 flex-1">
+              <h2 className="text-base sm:text-lg font-semibold truncate">{ipo?.upcoming_ipo_2025 || 'Company Name'}</h2>
+              <p className="text-sm text-gray-600 truncate">{ipo?.ipo_size || 'N/A'} | ₹{ipo?.price_band || 'N/A'}</p>
             </div>
           </div>
         </div>
-
-        {/* Current Trading Info */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <div className="text-center p-2 bg-white rounded-lg border">
-            <h4 className="text-xs font-medium text-gray-500 mb-1">Current Price</h4>
-            <span className="text-xs sm:text-sm font-medium text-blue-600">N/A</span>
-          </div>
-          <div className="text-center p-2 bg-white rounded-lg border">
-            <h4 className="text-xs font-medium text-gray-500 mb-1">Total Return</h4>
-            <span className="text-xs sm:text-sm font-medium text-gray-600">N/A</span>
-          </div>
-        </div>
-
-        {/* Final Subscription Results */}
-        <div className="space-y-2 flex-1">
-          <h4 className="text-sm font-semibold text-gray-800">Final Subscription</h4>
-          <div className="grid grid-cols-4 gap-1 sm:gap-2 text-center">
-            <div className="bg-white p-1 sm:p-1.5 rounded border">
-              <p className="text-xs font-medium text-gray-600">QIB</p>
-              <p className="font-bold text-xs text-gray-900">{ipo?.qib_sr || 'N/A'}</p>
-            </div>
-            <div className="bg-white p-1 sm:p-1.5 rounded border">
-              <p className="text-xs font-medium text-gray-600">NII</p>
-              <p className="font-bold text-xs text-gray-900">{ipo?.nii_sr || 'N/A'}</p>
-            </div>
-            <div className="bg-white p-1 sm:p-1.5 rounded border">
-              <p className="text-xs font-medium text-gray-600">RII</p>
-              <p className="font-bold text-xs text-gray-900">{ipo?.rii_sr || 'N/A'}</p>
-            </div>
-            <div className="bg-white p-1 sm:p-1.5 rounded border">
-              <p className="text-xs font-medium text-gray-600">Total</p>
-              <p className="font-bold text-xs text-gray-600">{ipo?.total_sr || 'N/A'}</p>
+        <div className="flex flex-col items-left justify-center mt-3">
+          <div className="flex flex-row items-left justify-center gap-3">
+            <div className="w-full py-3">
+              <h3 className="text-sm sm:text-md text-gray-800 flex items-left space-x-1 font-semibold mb-1">
+                <CheckCircle className="w-4 h-4 mt-1 text-gray-600 flex-shrink-0" />
+                <span className="text-sm sm:text-md font-medium font-ibm-plex">Performance</span>
+              </h3>
+              <div className="text-left flex flex-row items-left justify-between gap-2">
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '500' }}>Listed</span>
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.ipo_dates?.ipo_listing_date || 'N/A'}</span>
+              </div>
+              <div className="text-left flex flex-row items-left justify-between gap-2">
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '500' }}>Listing Price</span>
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>₹{ipo?.listing_price || 'N/A'}</span>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Action Button */}
-        <div className="pt-1 mt-auto">
-          <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 w-full text-xs py-1.5 sm:py-2">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4">
+          <div className={`text-center p-2 sm:p-3 rounded-lg border shadow-sm`}>
+            <h4 className={`text-xs font-medium mb-1`}>Current Price</h4>
+            <span className={`text-xs sm:text-sm font-semibold`}>₹{ipo?.listing_price || 'N/A'}</span>
+          </div>
+          <div className={`text-center p-2 sm:p-3 bg-white rounded-lg border shadow-sm`}>
+            <h4 className={`text-xs font-medium mb-1`}>Total Return</h4>
+            <span className={`text-xs sm:text-sm text-green-500 font-semibold`}>{ipo?.listing_gain || 'N/A'}</span>
+          </div>
+        </div>
+        <hr className="my-4 border-gray-200" />
+        <div className="mt-6">
+          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
             View Analysis
           </Button>
         </div>

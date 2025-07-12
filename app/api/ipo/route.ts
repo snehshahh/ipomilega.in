@@ -102,6 +102,8 @@ export async function GET() {
             if (!dateA || !dateB) return 0;
             return dateB.getTime() - dateA.getTime();
         });
+
+        const sortedPastIposWithExistingPerformance =sortedPastIpos.filter((ipo: Ipo) => ipo.listing_price != "");
         
         const sortedTbaIpos = tbaIpos.sort((a, b) => {
             const nameA = a.upcoming_ipo_2025 || '';
@@ -144,7 +146,7 @@ export async function GET() {
             });
         });
 
-        sortedPastIpos.forEach((ipo: Ipo) => {
+        sortedPastIposWithExistingPerformance.forEach((ipo: Ipo) => {
             const analysisData = analysisList.find((analysis: unknown) => {
                 const analysisTyped = analysis as IpoComprehensiveAnalysis;
                 return analysisTyped.ipo_table_id === ipo._id.toString();

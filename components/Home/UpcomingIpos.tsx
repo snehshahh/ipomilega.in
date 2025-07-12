@@ -2,37 +2,33 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { HomePageIpoProps, IpoSectionProps } from '@/app/types/homepage';
 import { UpcomingIpoCard } from '@/components/Home/IpoCard';
 
 export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  
-  // Responsive items per page
   const [itemsPerPage, setItemsPerPage] = useState(3);
-  
-  // Handle responsive items per page
+
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 640) {
-        setItemsPerPage(1); // Mobile: 1 card
+        setItemsPerPage(1);
       } else if (window.innerWidth < 1024) {
-        setItemsPerPage(2); // Tablet: 2 cards
+        setItemsPerPage(2);
       } else {
-        setItemsPerPage(3); // Desktop: 3 cards
+        setItemsPerPage(3);
       }
     };
 
-    handleResize(); // Set initial value
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const totalPages = Math.ceil(ipos.length / itemsPerPage);
 
-  // Auto-rotate carousel every 5 seconds
   useEffect(() => {
     if (!isPlaying || ipos.length <= itemsPerPage) return;
 
@@ -51,56 +47,53 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
     setCurrentIndex(prev => (prev - 1 + totalPages) % totalPages);
   };
 
-  // Reset current index when items per page changes
   useEffect(() => {
     setCurrentIndex(0);
   }, [itemsPerPage]);
 
   return (
-    <section className="py-12 sm:py-16 lg:py-24 bg-gray-50">
-      {/* Header */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <section className="bg-[#EEF9FF] py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30 mb-8">
+        <div className="flex flex-col items-center sm:items-start sm:flex-row sm:justify-between gap-4">
           <div className="text-center sm:text-left">
-            <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-black text-gray-900 mb-2 flex items-center justify-center sm:justify-start gap-2 lg:gap-3">
-              <div className="flex items-center relative">
-                <span className="text-green-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideRight_1.5s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>&gt;</span>
-                <span className="text-green-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideRight_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.2s' }}>&gt;</span>
-                <span className="text-green-500 font-bold text-lg sm:text-xl lg:text-2xl animate-[slideRight_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.4s' }}>&gt;</span>
+            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 flex items-start justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
+              <div className="flex items-center justify-center mt-4">
+                <span className="text-[#00914D] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideRight_1.5s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>&gt;</span>
+                <span className="text-[#00914D] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideRight_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.2s' }}>&gt;</span>
+                <span className="text-[#00914D] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideRight_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.4s' }}>&gt;</span>
               </div>
-              Upcoming IPOs
+              <div>
+                <div>Upcoming IPOs</div>
+                <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">Get ready for these upcoming opportunities</div>
+              </div>
             </h2>
             <style jsx>{`
-              @keyframes slideRight {
-                0%, 100% { transform: translateX(0px); opacity: 1; }
-                50% { transform: translateX(8px); opacity: 0.7; }
-              }
+                @keyframes slideRight {
+                  0%, 100% { transform: translateX(0px); opacity: 1; }
+                  50% { transform: translateX(8px); opacity: 0.7; }
+                }
             `}</style>
-            <p className="text-gray-600 text-sm sm:text-base font-medium">Get ready for these upcoming opportunities</p>
           </div>
           <Link
             href="/ipos?filter=upcoming"
-            className="text-green-600 hover:text-green-700 font-bold flex items-center justify-center sm:justify-start space-x-2 group text-sm sm:text-base bg-green-50 hover:bg-green-100 px-4 py-2 rounded-lg transition-all duration-200 self-center sm:self-auto"
+            className="text-[#00914D] font-ibm-plex hover:text-[#00914D] font-bold flex items-center justify-center sm:justify-start space-x-2 group text-sm sm:text-base bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-all duration-200 self-center sm:self-auto"
           >
             <span>View All ({count})</span>
-            <span className="text-sm group-hover:translate-x-1 transition-transform">&gt;</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       </div>
-
-      {/* IPOs Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30">
         {ipos.length === 0 ? (
-          <div className="flex items-center justify-center py-8 sm:py-12">
-            <div className="text-center py-6 sm:py-8 lg:py-12 bg-white rounded-xl shadow-sm border border-gray-100 max-w-sm sm:max-w-md w-full mx-4">
-              <CalendarDays className="w-10 sm:w-12 h-10 sm:h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-base sm:text-lg font-medium">No upcoming IPOs at the moment</p>
-              <p className="text-gray-400 text-sm mt-2">Check back soon for new opportunities!</p>
+          <div className="flex items-center justify-center py-8">
+            <div className="text-center py-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 max-w-sm w-full mx-4">
+              <CalendarDays className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-base font-medium font-ibm-plex">No upcoming IPOs at the moment</p>
+              <p className="text-gray-400 text-sm mt-2 font-ibm-plex">Check back soon for new opportunities!</p>
             </div>
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Carousel Container */}
             <div
               className="relative overflow-hidden"
               onMouseEnter={() => setIsPlaying(false)}
@@ -111,15 +104,15 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
                 style={{ transform: `translateX(-${currentIndex * 100}%)` }}
               >
                 {Array.from({ length: totalPages }).map((_, pageIndex) => (
-                  <div key={pageIndex} className="w-full flex-shrink-0 px-2">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-items-center">
+                  <div key={pageIndex} className="w-full flex-shrink-0">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-items-center py-5">
                       {ipos.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage).map((ipo: HomePageIpoProps) => (
                         <div
                           key={ipo._id}
-                          className="transition-all duration-300 hover:scale-105 w-full max-w-sm"
+                          className="transition-all duration-300 hover:scale-105 w-full max-w-sm mx-auto"
                         >
                           <div className="h-full rounded-lg overflow-hidden bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
-                            <UpcomingIpoCard ipo={ipo.ipo} analysis={ipo.analysis || null}/>
+                            <UpcomingIpoCard ipo={ipo.ipo} analysis={ipo.analysis || null} />
                           </div>
                         </div>
                       ))}
@@ -128,11 +121,8 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
                 ))}
               </div>
             </div>
-
-            {/* Bottom Navigation Section */}
             {ipos.length > itemsPerPage && (
               <div className="flex items-center justify-center space-x-6">
-                {/* Left Arrow */}
                 <button
                   onClick={prevSlide}
                   className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"
@@ -140,8 +130,6 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-
-                {/* Pagination Dots */}
                 <div className="flex space-x-2">
                   {Array.from({ length: totalPages }).map((_, index) => (
                     <button
@@ -149,15 +137,13 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
                       onClick={() => setCurrentIndex(index)}
                       className={`w-3 h-3 rounded-full transition-all duration-200 ${
                         index === currentIndex
-                          ? 'bg-green-600 scale-125 shadow-md'
+                          ? 'bg-[#00914D] scale-125 shadow-md'
                           : 'bg-gray-300 hover:bg-gray-400 hover:scale-110'
                       }`}
                       aria-label={`Go to slide ${index + 1}`}
                     />
                   ))}
                 </div>
-
-                {/* Right Arrow */}
                 <button
                   onClick={nextSlide}
                   className="bg-white hover:bg-gray-50 text-gray-700 hover:text-gray-900 p-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-200 border border-gray-200"

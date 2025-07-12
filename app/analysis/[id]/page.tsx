@@ -6,7 +6,7 @@ import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysi
 // Server-side function to fetch analysis data
 async function getAnalysisData(id: string): Promise<{ ipos_analysis: IpoComprehensiveAnalysis; logo: string } | null> {
   try {
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
     const response = await fetch(`${baseUrl}/api/analysis/${id}`, {
       cache: 'no-store', // For real-time data
       // Alternatively use: cache: 'force-cache' for static data
