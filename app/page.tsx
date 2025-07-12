@@ -1,6 +1,5 @@
 // app/page.tsx - Main Homepage Component
 import { BlogSection } from '@/components/Home/BlogSection';
-import { CtaSection } from '@/components/Home/CtaSection';
 import { LiveIposSection } from '@/components/Home/LiveIposSection';
 import { PastIposSection } from '@/components/Home/PastIposSection';
 import { UpcomingIposSection } from '@/components/Home/UpcomingIpos';
