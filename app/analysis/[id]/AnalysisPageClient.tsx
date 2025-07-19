@@ -298,10 +298,10 @@ export default function AnalysisPageClient({ analysis, ipo }: AnalysisPageClient
               </button>
               <div className="flex items-center space-x-3 min-w-0 flex-1">
                 <Avatar className="w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0">
-                  {ipo?.image_url  && ipo?.image_url !== "" ? (
-                    <AvatarImage src={ipo.image_url} alt={`${analysis.company_name} logo`} />
+                  {ipo?.image_url.trim() !== ""  && ipo?.image_url != null  && ipo?.image_url != undefined && ipo?.image_url != " "  ? (
+                    <AvatarImage src={ipo?.image_url} alt={`${analysis.company_name} logo`} />
                   ) : (
-                    <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
+                    <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium"> 
                       {getInitials(analysis.company_name || '')}
                     </AvatarFallback>
                   )}
