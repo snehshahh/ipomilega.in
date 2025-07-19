@@ -29,6 +29,10 @@ function AvatarImage({
     <AvatarPrimitive.Image
       data-slot="avatar-image"
       className={cn("aspect-square size-full", className)}
+      style={{
+        objectFit: 'cover',
+        objectPosition: 'center',
+      }}
       {...props}
     />
   )
