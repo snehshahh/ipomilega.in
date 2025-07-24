@@ -4,7 +4,7 @@ import { Ipo } from '@/app/models/ipo';
 
 
 interface AllotmentPredictorProps {
-    ipos: Ipo[];
+    ipos?: Ipo[] | null;
     selectedIpo?: Ipo;
     className?: string;
     isModal?: boolean;
@@ -26,7 +26,7 @@ interface Result {
 }
 
 const AllotmentPredictor: React.FC<AllotmentPredictorProps> = ({
-    ipos = [],
+    ipos = null,
     selectedIpo = null,
     className = "",
     isModal = false
@@ -73,7 +73,7 @@ const AllotmentPredictor: React.FC<AllotmentPredictorProps> = ({
         setIsCalculating(true);
 
         setTimeout(() => {
-            const selectedIpoData = ipos.find(ipo => ipo._id === selectedIpoId);
+            const selectedIpoData = ipos?.find(ipo => ipo._id === selectedIpoId);
             if (!selectedIpoData) return;
 
             const amount = parseFloat(applicationAmount);
@@ -205,7 +205,7 @@ const AllotmentPredictor: React.FC<AllotmentPredictorProps> = ({
             )}
 
             {/* Show message if no IPOs available */}
-            {ipos.length === 0 ? (
+            {ipos?.length === 0 ? (
                 <div className="text-center py-8">
                     <div className="bg-gray-50 rounded-lg p-6">
                         <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
@@ -233,7 +233,7 @@ const AllotmentPredictor: React.FC<AllotmentPredictorProps> = ({
                                         disabled={!!selectedIpo}
                                     >
                                         <option value="">Choose an IPO</option>
-                                        {ipos.map((ipo) => (
+                                        {ipos?.map((ipo) => (
                                             <option key={ipo._id} value={ipo._id}>
                                                 {ipo.ipo_name || ipo.upcoming_ipo_2025} (₹{ipo.price_band})
                                             </option>
@@ -299,7 +299,7 @@ const AllotmentPredictor: React.FC<AllotmentPredictorProps> = ({
                                 {selectedIpoId && (
                                     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                                         {(() => {
-                                            const selectedIpoData = ipos.find(ipo => ipo._id === selectedIpoId);
+                                            const selectedIpoData = ipos?.find(ipo => ipo._id === selectedIpoId);
                                             return selectedIpoData ? (
                                                 <div>
                                                     <h3 className="font-bold text-gray-900 mb-2 font-ibm-plex">

@@ -1,557 +1,514 @@
 "use client";
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+import { useState, useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  ArrowLeftCircle,
-  Target,
-  Coins,
-  LineChart,
-  Sparkles,
-  Landmark,
-  Building2,
-  ShieldCheck,
-  TrendingUp,
-  Gauge,
-  CalendarClock,
-  PieChart,
-  Share2,
-} from "lucide-react";
+import { ArrowLeftCircle, Share2 } from "lucide-react";
+import React from 'react';
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis";
-import { cn } from "@/lib/utils";
-import { useProgressRouter } from "@/components/Progressbar/useProgressRouter";
+import { Ipo } from "@/app/models/ipo";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import "@/app/styles/analysis.css"; // Make sure to import your new CSS file
+
+// --- HELPER COMPONENTS (hoisted for performance) ---
+
+// Updated marker positions to align with actual dot transitions
+
+
+// Updated TimelineMarker component with better alignment
+const TimelineMarker = ({ label, date, position, alignment = 'center' }: { label: string, date: string, position: string, alignment?: 'left' | 'center' | 'right' }) => {
+    let alignmentClass = 'items-center text-center -translate-x-1/2'; // Default for 'center'
+    if (alignment === 'left') alignmentClass = 'items-start text-left'; // No x-translation for left alignment
+    if (alignment === 'right') alignmentClass = 'items-end text-right -translate-x-full';
+
+    const formattedDate = new Date(date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    return (
+        <div
+            className={`absolute top-0 h-full flex flex-col justify-between ${alignmentClass}`}
+            style={{ left: position }}
+        >
+            <p className="text-lg font-medium -translate-y-8"
+                style={{
+                    fontFamily: 'IBM Plex Sans',
+                    fontWeight: 400,
+                    fontStyle: 'Regular',
+                    fontSize: 18,
+                }}
+            >{label}</p>
+            <p className="text-lg font-semibold translate-y-8"
+                style={{
+                    fontFamily: 'IBM Plex Sans',
+                    fontWeight: 600,
+                    fontStyle: 'SemiBold',
+                    fontSize: 18,
+                }}
+            >{formattedDate}</p>
+        </div>
+    );
+};
+
+
+const ProgressCircle = ({ label, value, description }: { label: string, value: number, description?: string }) => {
+    const cappedValue = Math.min(value, 100);
+    const strokeWidth = 4;
+    const progressRadius = 16;
+    const innerRadius = progressRadius - strokeWidth / 2;
+    const circumference = 2 * Math.PI * progressRadius;
+    const strokeDasharray = circumference;
+    const strokeDashoffset = circumference - (cappedValue / 100) * circumference;
+
+    return (
+        <div className="flex flex-col items-center text-center">
+            <h4 className="progress-circle-label mb-2 sm:mb-4">{label}</h4>
+            <div className="relative w-65 h-36">
+                <svg width="100" height="100" viewBox="0 0 36 36" className="w-65 h-36">
+                    <circle cx="18" cy="18" r={innerRadius} fill="#2563eb" />
+                    <circle
+                        cx="18" cy="18" r={progressRadius} fill="none" stroke="#93c5fd"
+                        strokeWidth={strokeWidth} strokeLinecap="round" strokeDasharray={strokeDasharray}
+                        strokeDashoffset={strokeDashoffset} transform="rotate(-90 18 18)"
+                        style={{ transition: 'stroke-dashoffset 0.5s ease-in-out' }}
+                    />
+                    <text x="18" y="22" textAnchor="middle" fill="white" fontSize="8" fontWeight="bold" fontFamily="IBM Plex Sans, sans-serif">
+                        {cappedValue.toFixed(0)}
+                    </text>
+                </svg>
+            </div>
+            {description && <p className="text-body-sm mt-4 max-w-xs">{description}</p>}
+        </div>
+    );
+};
+
+
+// --- MAIN PAGE COMPONENT ---
 
 interface AnalysisPageClientProps {
-  analysis: IpoComprehensiveAnalysis;
-  logo: string | null;
+    analysis: IpoComprehensiveAnalysis;
+    ipo: Ipo;
 }
 
-export default function AnalysisPageClient({ analysis, logo }: AnalysisPageClientProps) {
-  const router = useProgressRouter();
+const getInitials = (name: string) => {
+    if (!name) return '';
+    return name.split(' ').map((word: string) => word.charAt(0)).join('').toUpperCase().slice(0, 2);
+};
 
-  const getScoreColor = (score: number) => {
-    if (score >= 8) return "text-green-600 dark:text-green-400";
-    if (score >= 6) return "text-yellow-600 dark:text-yellow-400";
-    return "text-red-600 dark:text-red-400";
-  };
+export default function AnalysisPageClient({ analysis, ipo }: AnalysisPageClientProps) {
+    const [activeTab, setActiveTab] = useState("performance");
+    const [sectionOrder, setSectionOrder] = useState<string[]>(["performance", "fundamentals", "risk", "flexibility"]);
+    const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  const getRiskColor = (score: number) => {
-    if (score >= 8) return "text-red-600 dark:text-red-400";
-    if (score >= 6) return "text-yellow-600 dark:text-yellow-400";
-    return "text-green-600 dark:text-green-400";
-  };
+    const getScoreColor = (score: number) => {
+        if (score >= 8) return "text-green-600 dark:text-green-400";
+        if (score >= 6) return "text-yellow-600 dark:text-yellow-400";
+        return "text-red-600 dark:text-red-400";
+    };
 
-  const overallScore = (analysis.summary_metrics.fundamentals_score + analysis.summary_metrics.performance_score) / 2;
+    const riskCategoryColors: { [key: string]: string } = {
+        market_risks: "text-red-600",
+        financial_risks: "text-orange-500",
+        operational_risks: "text-gray-600",
+        regulatory_risks: "text-blue-600",
+        default: "text-gray-600",
+    };
 
-  const formatDate = (date: string | undefined) => {
-    if (!date) return "";
-    return new Date(date).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+    const overallScore = analysis ? (analysis.summary_metrics?.fundamentals_score + analysis.summary_metrics?.performance_score) / 2 : 0;
+    const getDisplayPrice = () => {
+        const priceBand = analysis.ipo_details?.price_band;
+        if (priceBand && typeof priceBand === 'string' && priceBand.includes(' - ')) {
+            const parts = priceBand.split(' - ');
+            const upperPrice = parts[1]?.trim();
+            if (upperPrice && !isNaN(parseFloat(upperPrice))) return `₹${upperPrice}`;
+        }
+        return 'N/A';
+    };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${analysis.company_name} IPO Analysis`,
-          text: `Check out this comprehensive IPO analysis of ${analysis.company_name}. Score: ${overallScore.toFixed(1)}/10`,
-          url: window.location.href,
-        });
-      } catch (error) {
-        console.error("Error sharing:", error);
-      }
-    } else {
-      await navigator.clipboard.writeText(window.location.href);
-      alert("Link copied to clipboard");
+    // --- Timeline & Split Data Configuration ---
+    const dotSegments = { opening: 10, closing: 15, listing: 8, allotment: 12 };
+    const totalDots = Object.values(dotSegments).reduce((a, b) => a + b, 0);
+    const markerPositions = {
+        opening: '0%', // First dot
+        closing: `${(dotSegments.opening / totalDots) * 100}%`, // Where green ends, red begins
+        listing: `${((dotSegments.opening + dotSegments.closing) / totalDots) * 100}%`, // Where red ends, yellow begins
+        allotment: `${((dotSegments.opening + dotSegments.closing + dotSegments.listing) / totalDots) * 100}%`, // Where yellow ends, blue begins
+    };
+    const displayPrice = getDisplayPrice();
+    // Position the price box only if price is valid (not N/A)
+    const showPriceBox = displayPrice !== 'N/A';
+    const priceBoxPosition = `${((dotSegments.opening + dotSegments.closing / 2) / totalDots) * 100}%`;
+
+    const timelineData = {
+        opening: analysis?.time?.issue_dates?.opening || "N/A",
+        closing: analysis?.time?.issue_dates?.closing || "N/A",
+        listing: analysis?.time?.listing_details?.expected_date || "N/A",
+        allotment: analysis?.time?.allotment_timeline?.date || "N/A",
+    };
+
+    // Current (wrong) - around line 123
+    const getDotColorClass = (index: number) => {
+        if (index >= dotSegments.opening && index < dotSegments.opening + dotSegments.closing) return "bg-[#B4292E]";
+        if (index >= dotSegments.opening + dotSegments.closing && index < totalDots - dotSegments.allotment) return "bg-[#E4CA28]";
+        if (index >= totalDots - dotSegments.allotment) return "bg-[#0073E6]";
+        return "bg-[#00914D]";
+    };
+
+
+    const investorData = [
+        { label: "Retail Investor", value: parseFloat(analysis?.ipo_details?.allocation_details?.retail.toString() || "0") },
+        { label: "NII", value: parseFloat(analysis?.ipo_details?.allocation_details?.nii.toString() || "0") },
+        { label: "QIB", value: parseFloat(analysis?.ipo_details?.allocation_details?.qib.toString() || "0") },
+        { label: "Total", value: parseFloat((analysis?.ipo_details?.allocation_details?.retail + analysis?.ipo_details?.allocation_details?.nii + analysis?.ipo_details?.allocation_details?.qib).toString() || "0") },
+    ];
+    // --- End Data Configuration ---
+
+    const handleShare = async () => {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `${analysis?.company_name || 'IPO'} Analysis`,
+                    text: `Check out this comprehensive IPO analysis of ${analysis?.company_name || 'Company'}. Score: ${overallScore.toFixed(1)}/10`,
+                    url: window.location.href,
+                });
+            } catch (error) { console.error("Error sharing:", error); }
+        } else {
+            await navigator.clipboard.writeText(window.location.href);
+            alert("Link copied to clipboard");
+        }
+    };
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) setActiveTab(entry.target.id);
+                });
+            },
+            { rootMargin: "-150px 0px 0px 0px", threshold: 0.5 }
+        );
+
+        const currentRefs = sectionRefs.current;
+        Object.values(currentRefs).forEach((ref) => { if (ref) observer.observe(ref); });
+
+        return () => { Object.values(currentRefs).forEach((ref) => { if (ref) observer.unobserve(ref); }); };
+    }, [sectionOrder]);
+
+    const handleTabClick = (value: string) => {
+        setSectionOrder((prev) => [value, ...prev.filter((tab) => tab !== value)]);
+        setTimeout(() => {
+            const section = sectionRefs.current[value];
+            if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 0);
+    };
+
+    if (!analysis) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <p className="text-lg text-muted-foreground">No analysis data available</p>
+            </div>
+        );
     }
-  };
 
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 sm:py-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center space-x-3 sm:space-x-4">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => router.back()}
-                className="border-primary/20 hover:bg-primary/10 h-10 w-10"
-                aria-label="Go back"
-              >
-                <ArrowLeftCircle className="h-5 w-5 text-primary" />
-              </Button>
-              <div className="flex items-center space-x-3">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={logo || undefined} alt={analysis.company_name} />
-                  <AvatarFallback>
-                    <Building2 className="h-8 w-8 text-primary" />
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl font-bold text-primary truncate">
-                    {analysis.company_name} IPO Analysis
-                  </h1>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    Comprehensive Investment Review & Rating
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={handleShare}
-                variant="outline"
-                size="sm"
-                className="border-primary/20 hover:bg-primary/10"
-                aria-label="Share analysis"
-              >
-                <Share2 className="h-4 w-4 mr-2 text-primary" />
-                Share
-              </Button>
-              <Button
-                onClick={() => router.push("/admin")}
-                variant="outline"
-                className="border-primary/20 hover:bg-primary/10"
-              >
-                <ArrowLeftCircle className="mr-2 h-4 w-4 text-primary" />
-                Back to Dashboard
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
-        {/* Key Metrics Overview */}
-        <section aria-labelledby="key-metrics-heading">
-          <h2 id="key-metrics-heading" className="sr-only">Key Investment Metrics</h2>
-          <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                label: "Overall Investment Score",
-                value: overallScore.toFixed(1) + "/10",
-                icon: Target,
-                color: getScoreColor(overallScore),
-                description: "Combined fundamentals and performance rating",
-              },
-              {
-                label: "Issue Size",
-                value: analysis.ipo_details.issue_size,
-                icon: Coins,
-                color: "text-foreground",
-                description: "Total IPO offering amount",
-              },
-              {
-                label: "Price Band",
-                value: analysis.ipo_details.price_band,
-                icon: LineChart,
-                color: "text-foreground",
-                description: "IPO price range per share",
-              },
-              {
-                label: "Potential Gains",
-                value: `~${analysis.ipo_details.approximate_gains_potential}%`,
-                icon: Sparkles,
-                color: "text-green-600 dark:text-green-400",
-                description: "Expected listing gains percentage",
-              },
-            ].map((metric, index) => (
-              <Card
-                key={index}
-                className="bg-background/60 backdrop-blur-sm border hover:bg-muted/50 transition-colors"
-              >
-                <CardContent className="p-4 sm:p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-muted-foreground">{metric.label}</p>
-                      <p className={cn("text-2xl sm:text-3xl font-bold", metric.color)}>
-                        {metric.value}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1" title={metric.description}>
-                        {metric.description}
-                      </p>
-                    </div>
-                    <metric.icon className="h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground" aria-hidden="true" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        {/* Main Analysis Tabs */}
-        <section aria-labelledby="analysis-sections-heading">
-          <h2 id="analysis-sections-heading" className="sr-only">Detailed Analysis Sections</h2>
-          <Tabs defaultValue="timeline" className="space-y-6">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-5 gap-2 bg-muted/30">
-              <TabsTrigger value="timeline" className="text-foreground data-[state=active]:bg-primary data-[state=active]:text-background">
-                Timeline
-              </TabsTrigger>
-              <TabsTrigger value="risk" className="text-foreground data-[state=active]:bg-primary data-[state=active]:text-background">
-                Risk Assessment
-              </TabsTrigger>
-              <TabsTrigger value="performance" className="text-foreground data-[state=active]:bg-primary data-[state=active]:text-background">
-                Performance
-              </TabsTrigger>
-              <TabsTrigger value="flexibility" className="text-foreground data-[state=active]:bg-primary data-[state=active]:text-background">
-                Flexibility
-              </TabsTrigger>
-              <TabsTrigger value="fundamentals" className="text-foreground data-[state=active]:bg-primary data-[state=active]:text-background">
-                Fundamentals
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="timeline">
-              <div className="grid gap-6 lg:grid-cols-2">
-                <Card className="bg-background/60 backdrop-blur-sm border">
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-foreground">
-                      <CalendarClock className="mr-3 h-6 w-6 text-primary" />
-                      Timeline
-                      <Badge className={cn("ml-auto text-lg", getScoreColor(analysis.time.score))}>
-                        {analysis.time.score}/10
-                      </Badge>
-                    </CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                      {analysis.time.summary}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid gap-4 sm:gap-6">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Issue Dates</p>
-                        <p className="text-base sm:text-lg font-medium text-foreground">
-                          {formatDate(analysis.time.issue_dates.opening)} - {formatDate(analysis.time.issue_dates.closing)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Expected Listing</p>
-                        <p className="text-base sm:text-lg font-medium text-foreground">
-                          {formatDate(analysis.time.listing_details.expected_date)}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Exchanges</p>
-                        <p className="text-base sm:text-lg font-medium text-foreground">
-                          {analysis.time.listing_details.exchanges.join(", ")}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-background/60 backdrop-blur-sm border">
-                  <CardHeader>
-                    <CardTitle className="flex items-center text-foreground">
-                      <PieChart className="mr-3 h-6 w-6 text-primary" />
-                      IPO Allocation
-                    </CardTitle>
-                    <CardDescription className="text-muted-foreground">
-                      Share allocation breakdown
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {[
-                      { label: "Retail Investors", value: analysis.ipo_details.allocation_details.retail },
-                      { label: "QIB", value: analysis.ipo_details.allocation_details.qib },
-                      { label: "NII", value: analysis.ipo_details.allocation_details.nii },
-                    ].map((item, index) => (
-                      <div key={index}>
-                        <div className="flex justify-between items-center mb-1">
-                          <span className="text-sm text-muted-foreground">{item.label}</span>
-                          <span className="text-sm font-medium text-foreground">{item.value}%</span>
+    return (
+        <div className="min-h-screen font-ibm-plex main-background">
+            {/* Header */}
+            <header className="border-b backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div className="flex items-center space-x-4 min-w-0 flex-1">
+                            <button onClick={() => window.history.back()} className="border border-primary/20 hover:bg-primary/10 h-10 w-10 flex-shrink-0 rounded-md flex items-center justify-center" aria-label="Go back">
+                                <ArrowLeftCircle className="h-5 w-5 text-primary" />
+                            </button>
+                            <div className="flex items-center space-x-3 min-w-0 flex-1">
+                                <Avatar className="w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0">
+                                    {ipo?.image_url?.trim() ? (
+                                        <AvatarImage src={ipo.image_url} alt={`${analysis.company_name} logo`} />
+                                    ) : (
+                                        <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
+                                            {getInitials(analysis.company_name || '')}
+                                        </AvatarFallback>
+                                    )}
+                                </Avatar>
+                                <div className="min-w-0 flex-1">
+                                    <h1 className="text-xl sm:text-2xl lg:text-3xl text-primary truncate heading-main">
+                                        {analysis.company_name} IPO Analysis
+                                    </h1>
+                                    <p className="text-sm sm:text-base text-muted-foreground">
+                                        Comprehensive Investment Review
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <Progress value={item.value} className="h-3 bg-muted/50" />
-                      </div>
-                    ))}
-                    <div className="pt-4 border-t border-primary/20">
-                      <p className="text-sm text-muted-foreground">Lot Size</p>
-                      <p className="text-xl sm:text-2xl font-bold text-foreground">
-                        {analysis.ipo_details.lot_size} shares
-                      </p>
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <button onClick={handleShare} className="border border-primary/20 hover:bg-primary/10 flex-1 sm:flex-none px-3 py-2 rounded-md text-sm flex items-center justify-center" aria-label="Share analysis">
+                                <Share2 className="h-4 w-4 mr-2 text-primary" />
+                                Share
+                            </button>
+                        </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
+                </div>
+            </header>
 
-            <TabsContent value="risk">
-              <Card className="bg-background/60 backdrop-blur-sm border">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-foreground">
-                    <ShieldCheck className="mr-3 h-6 w-6 text-primary" />
-                    Risk Assessment & Analysis
-                    <Badge className={cn("ml-auto text-lg", getRiskColor(analysis.risk_meter.score))}>
-                      {analysis.risk_meter.score}/10 Risk
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    {analysis.risk_meter.summary}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {Object.entries(analysis.risk_meter.risk_categories).map(([category, risks]) => (
-                    <div key={category} className="border border-primary/20 rounded-lg p-4 hover:bg-muted/50 transition-colors">
-                      <h4 className="font-medium text-foreground capitalize mb-2">
-                        {category.replace("_", " ")}
-                      </h4>
-                      <ul className="space-y-1">
-                        {(risks as string[]).slice(0, 3).map((risk, index) => (
-                          <li key={index} className="text-sm text-muted-foreground flex items-start">
-                            <span className="text-red-600 dark:text-red-400 mr-2">•</span>
-                            {risk}
-                          </li>
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+                {/* Key Metrics Overview */}
+                <section aria-labelledby="key-metrics-heading">
+                    <h2 id="key-metrics-heading" className="sr-only">Key Investment Metrics</h2>
+                    <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                        {[
+                            { label: "Overall Score", value: `${overallScore.toFixed(1)}/10`, color: getScoreColor(overallScore), description: "Combined rating" },
+                            { label: "Issue Size", value: analysis.ipo_details?.issue_size || "N/A", color: "text-foreground", description: "Total offering amount" },
+                            { label: "Price Band", value: analysis.ipo_details?.price_band || "N/A", color: "text-foreground", description: "Price per share" },
+                            { label: "Potential Gains", value: `~${analysis.ipo_details?.approximate_gains_potential || 0}%`, color: "text-green-600 dark:text-green-400", description: "Expected listing gains" },
+                        ].map((metric) => (
+                            <div key={metric.label} className="bg-white/70 backdrop-blur-sm border p-6 text-center rounded-lg flex flex-col justify-center">
+                                <p className="metric-card-label mb-2">{metric.label}</p>
+                                <p className={`metric-card-value ${metric.color}`}>{metric.value}</p>
+                                <p className="text-muted-foreground metric-card-description mt-1">{metric.description}</p>
+                            </div>
                         ))}
-                      </ul>
                     </div>
-                  ))}
+                </section>
 
-                  {analysis.risk_meter.risk_mitigation && (
-                    <div className="mt-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                      <h4 className="font-medium text-green-800 dark:text-green-200 mb-2">Risk Mitigation Strategies</h4>
-                      <p className="text-sm text-green-700 dark:text-green-300">
-                        {analysis.risk_meter.risk_mitigation}
-                      </p>
+                {/* Timeline & Investor Split Section */}
+                <section className="p-4 sm:p-6">
+                    <h2 className="heading-section text-center sm:text-left text-gray-800 mb-12">Timeline & Split</h2>
+                    <div className="w-full mb-16">
+                        <div className="relative h-12">
+                            <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between">
+                                {Array.from({ length: totalDots }).map((_, i) => {
+                                    const colorClass = getDotColorClass(i);
+                                    const prevColorClass = i > 0 ? getDotColorClass(i - 1) : null;
+                                    const sizeClass = (i === 0 || colorClass !== prevColorClass) ? 'w-7 h-7 animate-pulse p-1' : 'w-5 h-5 mt-1';
+                                    return <div key={i} className={`rounded-full transition-all ${sizeClass} ${colorClass}`} />;
+                                })}
+                            </div>
+
+                            {/* Only show price box if price is not N/A */}
+                            {showPriceBox && (
+                                <div
+                                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-[#B4292E] text-white font-bold text-sm px-3 py-1 rounded-md shadow-lg z-10"
+                                    style={{ left: priceBoxPosition }}
+                                >
+                                    {displayPrice}
+                                </div>
+                            )}
+
+                            <div className="absolute inset-0">
+                                <TimelineMarker label="Opening" date={timelineData.opening} position={markerPositions.opening} alignment="left" />
+                                <TimelineMarker label="Closing" date={timelineData.closing} position={markerPositions.closing} alignment="left" />
+                                <TimelineMarker label="Listing" date={timelineData.listing} position={markerPositions.listing} alignment="left" />
+                                <TimelineMarker label="Allotment" date={timelineData.allotment} position={markerPositions.allotment} alignment="left" />
+                            </div>
+                        </div>
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="performance">
-              <Card className="bg-background/60 backdrop-blur-sm border">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-foreground">
-                    <TrendingUp className="mr-3 h-6 w-6 text-primary" />
-                    Company Performance Analysis
-                    <Badge className={cn("ml-auto text-lg", getScoreColor(analysis.performance.score))}>
-                      {analysis.performance.score}/10
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    {analysis.performance.summary}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <h4 className="font-medium text-foreground mb-2">Management Quality Assessment</h4>
-                    <div className="flex items-center space-x-3 mb-2">
-                      <Progress
-                        value={analysis.performance.management_quality.score * 10}
-                        className="flex-1 h-3 bg-muted/50"
-                      />
-                      <span className="text-sm font-medium text-foreground">
-                        {analysis.performance.management_quality.score}/10
-                      </span>
+                    <hr className="my-8 border-t border-gray-200" />
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-8 gap-x-4 justify-items-center">
+                        {investorData.map((item, i) => (
+                            <ProgressCircle key={i} label={item.label} value={item.value} />
+                        ))}
                     </div>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      <strong>Experience:</strong> {analysis.performance.management_quality.experience}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      <strong>Track Record:</strong> {analysis.performance.management_quality.track_record}
-                    </p>
-                  </div>
+                </section>
 
-                  <div>
-                    <h4 className="font-medium text-foreground mb-2">Key Business Achievements</h4>
-                    <ul className="space-y-2">
-                      {analysis.performance.key_achievements.slice(0, 5).map((achievement, index) => (
-                        <li key={index} className="text-sm text-muted-foreground flex items-start">
-                          <span className="text-green-600 dark:text-green-400 mr-2">✓</span>
-                          {achievement}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {analysis.performance.market_comparison && (
-                    <div className="p-4 bg-muted/20 rounded-lg">
-                      <h4 className="font-medium text-foreground mb-2">Market Comparison</h4>
-                      <p className="text-sm text-muted-foreground">{analysis.performance.market_comparison}</p>
+                {/* Sticky Tab Navigation */}
+                <div className="sticky top-[89px] z-40 mb-7">
+                    <div className="grid w-full grid-cols-2 sm:grid-cols-4 gap-1 p-1 bg-white backdrop-blur-sm rounded-full">
+                        {["performance", "fundamentals", "risk", "flexibility"].map((tab) => (
+                            <button key={tab} onClick={() => handleTabClick(tab)} className={`sticky-tab-button text-sm py-2 px-3 transition-colors capitalize ${activeTab === tab ? 'bg-[#99CCFF] text-[#0073E6] shadow-md' : 'hover:bg-[#99CCFF]/50 text-[#0073E6]'}`}>
+                                {tab}
+                            </button>
+                        ))}
                     </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                </div>
 
-            <TabsContent value="flexibility">
-              <Card className="bg-background/60 backdrop-blur-sm border">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-foreground">
-                    <Gauge className="mr-3 h-6 w-6 text-primary" />
-                    Business Flexibility & Adaptability
-                    <Badge className={cn("ml-auto text-lg", getScoreColor(analysis.flexibility.score))}>
-                      {analysis.flexibility.score}/10
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    {analysis.flexibility.summary}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[
-                    {
-                      label: "Market Adaptability",
-                      score: analysis.flexibility.market_adaptability.score,
-                      description: analysis.flexibility.market_adaptability.description,
-                    },
-                    {
-                      label: "Financial Stability",
-                      score: analysis.flexibility.financial_stability.score || 0,
-                      description: analysis.flexibility.financial_stability.description || "Not available",
-                    },
-                    {
-                      label: "Operational Agility",
-                      score: analysis.flexibility.operational_agility.score,
-                      description: analysis.flexibility.operational_agility.description,
-                    },
-                  ].map((item, index) => (
-                    <div key={index} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium text-foreground">{item.label}</span>
-                        <span className="text-sm font-medium text-foreground">{item.score}/10</span>
-                      </div>
-                      <Progress value={item.score * 10} className="h-3 bg-muted/50" />
-                      <p className="text-xs text-muted-foreground">{item.description}</p>
-                    </div>
-                  ))}
+                {/* Detailed Analysis Sections */}
+                <section aria-labelledby="analysis-sections-heading">
+                    <h2 id="analysis-sections-heading" className="sr-only">Detailed Analysis Sections</h2>
+                    {sectionOrder.map((tab) => (
+                        <div key={tab} ref={(el) => { sectionRefs.current[tab] = el; }} id={tab} className="scroll-mt-[150px] mb-8">
+                            {tab === "performance" && (
+                                <div className="p-6">
+                                    <h3 className="heading-section text-blue-600 mb-6">Performance</h3>
+                                    <ul className="space-y-6 list-disc list-outside pl-5">
+                                        <li>
+                                            <h4 className="heading-subsection">Company Performance</h4>
+                                            <p className="text-body">{analysis.performance?.summary || "Performance analysis not available"}</p>
+                                        </li>
+                                        {analysis.performance?.management_quality && (
+                                            <li>
+                                                <h4 className="heading-subsection">Management Quality</h4>
+                                                <div className="flex flex-col sm:flex-row items-center gap-6">
+                                                    <div className="flex-shrink-0">
+                                                        <ProgressCircle label="Mgmt Score" value={analysis.performance.management_quality.score || 0} />
+                                                    </div>
+                                                    <div className="flex-1 space-y-2 text-body-sm">
+                                                        <p><strong>Experience:</strong> {analysis.performance.management_quality.experience || "N/A"}</p>
+                                                        <p><strong>Track Record:</strong> {analysis.performance.management_quality.track_record || "N/A"}</p>
+                                                    </div>
+                                                </div>
+                                            </li>
+                                        )}
+                                        {analysis.performance?.key_achievements && (
+                                            <li>
+                                                <h4 className="heading-subsection">Key Achievements</h4>
+                                                <div className="space-y-2 text-body">
+                                                    {analysis.performance.key_achievements.slice(0, 3).map((achievement: string, index: number) => (
+                                                        <p key={index}>{achievement}</p>
+                                                    ))}
+                                                </div>
+                                            </li>
+                                        )}
+                                        {analysis.performance?.market_comparison && (
+                                            <li>
+                                                <h4 className="heading-subsection">Market Comparison</h4>
+                                                <p className="text-body">{analysis.performance.market_comparison}</p>
+                                            </li>
+                                        )}
+                                    </ul>
+                                </div>
+                            )}
 
-                  {analysis.flexibility.product_diversification && (
-                    <div className="mt-6 p-4 bg-muted/20 rounded-lg">
-                      <h4 className="font-medium text-foreground mb-2">Product Diversification Strategy</h4>
-                      <p className="text-sm text-muted-foreground">{analysis.flexibility.product_diversification}</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
+                            {tab === "fundamentals" && (
+                                <div className="p-6">
+                                    <h3 className="heading-section text-blue-600 mb-6">Fundamentals</h3>
+                                    <ul className="space-y-6 list-disc list-outside pl-5">
+                                        <li>
+                                            <h4 className="heading-subsection">Financial Fundamentals</h4>
+                                            <p className="text-body mb-6">{analysis.fundamentals?.summary || "Financial analysis not available"}</p>
+                                            {analysis.fundamentals && (
+                                                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2">
+                                                    {analysis.fundamentals.revenue_details?.total_revenue && (
+                                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
+                                                            <p className="text-sm text-muted-foreground mb-1">Total Revenue</p>
+                                                            <p className="text-xl sm:text-2xl font-bold">INR {(analysis.fundamentals.revenue_details.total_revenue / 10000000).toFixed(0)} CR</p>
+                                                            <p className="text-xs text-muted-foreground">Latest FY</p>
+                                                        </div>
+                                                    )}
+                                                    {analysis.fundamentals.profit_analysis?.net_profit && (
+                                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
+                                                            <p className="text-sm text-muted-foreground mb-1">Net Profit</p>
+                                                            <p className="text-xl sm:text-2xl font-bold">INR {(analysis.fundamentals.profit_analysis.net_profit / 10000000).toFixed(0)} CR</p>
+                                                            <p className="text-xs text-muted-foreground">Latest FY</p>
+                                                        </div>
+                                                    )}
+                                                    {analysis.fundamentals.revenue_details?.revenue_cagr && (
+                                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
+                                                            <p className="text-sm text-muted-foreground mb-1">Revenue Growth</p>
+                                                            <p className="text-xl sm:text-2xl font-bold text-green-600">{analysis.fundamentals.revenue_details.revenue_cagr}%</p>
+                                                            <p className="text-xs text-muted-foreground">Current Growth</p>
+                                                        </div>
+                                                    )}
+                                                    {analysis.fundamentals.profit_analysis?.profit_margin && (
+                                                        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
+                                                            <p className="text-sm text-muted-foreground mb-1">Profit Margin</p>
+                                                            <p className="text-xl sm:text-2xl font-bold text-green-600">{analysis.fundamentals.profit_analysis.profit_margin}%</p>
+                                                            <p className="text-xs text-muted-foreground">Current Margin</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </li>
+                                        <li>
+                                            <h4 className="heading-subsection">Debt to Equity Ratio</h4>
+                                            <p className="text-body">Demo</p>
+                                        </li>
+                                        <li>
+                                            <h4 className="heading-subsection">Business Model & Market Positioning</h4>
+                                            <p className="text-body">Demo</p>
+                                        </li>
+                                    </ul>
+                                </div>
+                            )}
 
-            <TabsContent value="fundamentals">
-              <Card className="bg-background/60 backdrop-blur-sm border">
-                <CardHeader>
-                  <CardTitle className="flex items-center text-foreground">
-                    <Landmark className="mr-3 h-6 w-6 text-primary" />
-                    Financial Fundamentals Analysis
-                    <Badge className={cn("ml-auto text-lg", getScoreColor(analysis.fundamentals.score))}>
-                      {analysis.fundamentals.score}/10
-                    </Badge>
-                  </CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    {analysis.fundamentals.summary}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    {analysis.fundamentals.revenue_details.total_revenue !== 0 && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total Revenue (Latest FY)</p>
-                        <p className="text-xl sm:text-2xl font-bold text-foreground">
-                          ₹{(analysis.fundamentals.revenue_details.total_revenue / 10000000).toFixed(1)} Cr
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          CAGR: {analysis.fundamentals.revenue_details.revenue_cagr !== 0 && `${analysis.fundamentals.revenue_details.revenue_cagr}%`}
-                        </p>
-                      </div>
-                    )}
-                    {analysis.fundamentals.revenue_details.revenue_cagr !== 0 && (
-                      <div>
-                        <p className="text-sm text-muted-foreground">Revenue Growth (CAGR)</p>
-                        <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
-                          {analysis.fundamentals.revenue_details.revenue_cagr}%
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {analysis.fundamentals.revenue_details.revenue_trend}
-                        </p>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-sm text-muted-foreground">Net Profit (Latest FY)</p>
-                      <p className="text-xl sm:text-2xl font-bold text-foreground">
-                        ₹{(analysis.fundamentals.profit_analysis.net_profit / 10000000).toFixed(1)} Cr
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {analysis.fundamentals.profit_analysis.profit_trend}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Profit Margin</p>
-                      <p className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
-                        {analysis.fundamentals.profit_analysis.profit_margin}%
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Industry comparison metric
-                      </p>
-                    </div>
-                  </div>
+                            {tab === "risk" && (
+                                <div className="p-6">
+                                    <h3 className="heading-section text-blue-600 mb-4">Risk Assessment</h3>
+                                    <p className="text-body mb-8">{analysis.risk_meter?.summary || "Risk analysis not available"}</p>
+                                    {analysis.risk_meter?.risk_categories && (
+                                        <div className="grid gap-6 sm:grid-cols-2">
+                                            {Object.entries(analysis.risk_meter.risk_categories).map(([category, risks]) => {
+                                                const colorClass = riskCategoryColors[category as keyof typeof riskCategoryColors] || riskCategoryColors.default;
+                                                return (
+                                                    <Card key={category}>
+                                                        <CardHeader>
+                                                            <CardTitle className={`capitalize text-xl font-semibold ${colorClass}`}>{category.replace(/_/g, " ")}</CardTitle>
+                                                        </CardHeader>
+                                                        <CardContent>
+                                                            <ul className="list-disc list-outside space-y-2 pl-5"
+                                                            style={{
+                                                                paddingTop: "0px",
+                                                            }}>
+                                                                {(risks as string[]).slice(0, 3).map((risk, i) => (<li key={i} className="text-sm text-gray-800" style={{
+                                                                marginTop: "-10px",
+                                                            }}>{risk}</li>))}
+                                                            </ul>
+                                                        </CardContent>
+                                                    </Card>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
-                  {analysis.fundamentals.assets_and_liabilities.debt_to_equity_ratio && (
-                    <div>
-                      <p className="text-sm text-muted-foreground mb-2">Debt to Equity Ratio</p>
-                      <div className="flex items-center space-x-3">
-                        <Progress
-                          value={Math.min((analysis.fundamentals.assets_and_liabilities.debt_to_equity_ratio || 0) * 20, 100)}
-                          className="flex-1 h-3 bg-muted/50"
-                        />
-                        <span className="text-sm font-medium text-foreground">
-                          {analysis.fundamentals.assets_and_liabilities.debt_to_equity_ratio}x
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Lower ratios indicate better financial health
-                      </p>
-                    </div>
-                  )}
+                            {tab === "flexibility" && (
+                                <div className="p-6">
+                                    <h3 className="heading-section text-blue-600 mb-6">Business Flexibility & Adaptability</h3>
+                                    <div className="mb-12">
+                                        <ul className="space-y-6 list-disc list-outside pl-5">
+                                            <li>
+                                                <h4 className="heading-subsection">Flexibility and Adaptability Insights</h4>
+                                                <p className="text-body">{analysis.flexibility?.summary || "Flexibility analysis not available"}</p>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    {analysis.flexibility && (
+                                        <div className="grid gap-8 sm:grid-cols-3 justify-items-center">
+                                            {[
+                                                { label: "Market Adaptability", metric: analysis.flexibility.market_adaptability },
+                                                { label: "Financial Stability", metric: analysis.flexibility.financial_stability },
+                                                { label: "Operational Agility", metric: analysis.flexibility.operational_agility },
+                                            ].map(({ label, metric }) => {
+                                                if (!metric) return null;
+                                                return (
+                                                    <ProgressCircle key={label} label={label} value={metric.score || 0} description={metric.description || "No description available."} />
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </section>
 
-                  <div className="mt-6 p-4 bg-muted/20 rounded-lg">
-                    <h4 className="font-medium text-foreground mb-2">Business Model & Market Position</h4>
-                    <p className="text-sm text-muted-foreground mb-2">{analysis.fundamentals.business_model}</p>
-                    <p className="text-sm text-muted-foreground">{analysis.fundamentals.market_position}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-
-          {/* Investment Summary */}
-          <Card className="bg-gradient-to-r from-background to-muted border">
-            <CardHeader>
-              <CardTitle className="text-xl sm:text-2xl text-foreground">Investment Summary</CardTitle>
-              <CardDescription className="text-muted-foreground">
-                {analysis.ipo_details.gains_rationale}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-6 sm:grid-cols-3">
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-2">Profitability Score</p>
-                <p className={cn("text-3xl sm:text-4xl font-bold", getScoreColor(analysis.ipo_details.profitability_of_allotment.score))}>
-                  {analysis.ipo_details.profitability_of_allotment.score}/10
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-2">Potential Gains</p>
-                <p className="text-3xl sm:text-4xl font-bold text-green-600 dark:text-green-400">
-                  {analysis.ipo_details.approximate_gains_potential}%
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-2">Assessment</p>
-                <p className="text-base sm:text-lg font-medium text-foreground">
-                  {analysis.ipo_details.profitability_of_allotment.assessment}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-      </main>
-    </div>
-  );
+                {/* Investment Summary */}
+                <section>
+                    <Card className="bg-gradient-to-r from-background to-muted border">
+                        <CardHeader>
+                            <CardTitle className="heading-card-title text-foreground pt-4">Investment Summary</CardTitle>
+                            <CardDescription className="text-body"></CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-6 sm:grid-cols-3 text-center px-6">
+                            <div>
+                                <p className="summary-score-label mb-2">Profitability Score</p>
+                                <p className={`summary-score-value mt-4 text-green-600 ${getScoreColor(analysis.ipo_details.profitability_of_allotment.score)}`}>
+                                    {analysis.ipo_details.profitability_of_allotment.score}/10
+                                </p>
+                            </div>
+                            <div>
+                                <p className="summary-score-label mb-2">Potential Gains</p>
+                                <p className={`summary-score-value mt-4 text-green-600 ${getScoreColor(analysis.ipo_details.profitability_of_allotment.score)}`}>
+                                    {analysis.ipo_details.approximate_gains_potential}%
+                                </p>
+                            </div>
+                            <div>
+                                <p className="summary-score-label mb-2">Assessment</p>
+                                <p className={`summary-assessment-text mt-4 sm:mt-6 ${getScoreColor(analysis.ipo_details.profitability_of_allotment.score)}`}>
+                                    {analysis.ipo_details.profitability_of_allotment.assessment}
+                                </p>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </section>
+            </main>
+        </div>
+    );
 }

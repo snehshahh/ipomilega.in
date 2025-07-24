@@ -16,6 +16,10 @@ function Avatar({
         "relative flex size-8 shrink-0 overflow-hidden rounded-full",
         className
       )}
+      style={{
+        objectPosition: 'center',
+        objectFit: 'cover',
+      }}
       {...props}
     />
   )
@@ -29,6 +33,10 @@ function AvatarImage({
     <AvatarPrimitive.Image
       data-slot="avatar-image"
       className={cn("aspect-square size-full", className)}
+      style={{
+        objectFit: 'cover',
+        objectPosition: 'center',
+      }}
       {...props}
     />
   )

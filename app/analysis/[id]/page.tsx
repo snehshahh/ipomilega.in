@@ -2,9 +2,10 @@ import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import AnalysisPageClient from './AnalysisPageClient'
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis"
+import { Ipo } from '@/app/models/ipo';
 
 // Server-side function to fetch analysis data
-async function getAnalysisData(id: string): Promise<{ ipos_analysis: IpoComprehensiveAnalysis; logo: string } | null> {
+async function getAnalysisData(id: string): Promise<{ ipos_analysis: IpoComprehensiveAnalysis; ipo: Ipo } | null> {
   try {
     const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
     const response = await fetch(`${baseUrl}/api/analysis/${id}`, {
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params // Await the params Promise
   const data = await getAnalysisData(id)
   const analysis = data?.ipos_analysis
-  const logo = data?.logo
+  const ipo = data?.ipo
   
   if (!analysis) {
     return {
@@ -79,7 +80,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       siteName: 'IPO Analysis Platform',
       images: [
         {
-          url: `${logo}`, // You'll need to create this
+          url: `${ipo?.image_url}`, // You'll need to create this
           width: 1200,
           height: 630,
           alt: `${analysis.company_name} IPO Analysis`,
@@ -93,7 +94,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       card: 'summary_large_image',
       title,
       description,
-      images: [`${logo}`], // You'll need to create this
+      images: [`${ipo?.image_url}`], // You'll need to create this
       creator: '@yourtwitterhandle', // Replace with your Twitter handle
     },
     
@@ -234,7 +235,7 @@ export default async function AnalysisPage({ params }: { params: Promise<{ id: s
         }}
       />
       
-      <AnalysisPageClient analysis={analysis.ipos_analysis} logo={analysis.logo} />
+      <AnalysisPageClient analysis={analysis.ipos_analysis} ipo={analysis.ipo} />
     </>
   )
 }
