@@ -60,6 +60,112 @@ const TimelineMarker = ({
   );
 };
 
+const TimelineMarkerMobileUpper = ({
+  label,
+  date,
+  position,
+  alignment = "center",
+}: {
+  label: string;
+  date: string;
+  position: string;
+  alignment?: "left" | "center" | "right";
+}) => {
+  let alignmentClass = "items-center text-center -translate-x-1/2"; // Default for 'center'
+  if (alignment === "left") alignmentClass = "items-start text-left"; // No x-translation for left alignment
+  if (alignment === "right")
+    alignmentClass = "items-end text-right -translate-x-full";
+
+  const formattedDate = new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  return (
+    <div
+      className={`absolute top-0 h-full flex flex-col justify-between ${alignmentClass}`}
+      style={{ left: position }}
+    >
+      <p
+        className="text-lg font-medium -translate-y-8"
+        style={{
+          fontFamily: "IBM Plex Sans",
+          fontWeight: 400,
+          fontStyle: "Regular",
+          fontSize: 18,
+        }}
+      >
+        {label}
+      </p>
+      <p
+        className="text-lg font-semibold translate-y-8"
+        style={{
+          fontFamily: "IBM Plex Sans",
+          fontWeight: 600,
+          fontStyle: "SemiBold",
+          fontSize: 18,
+        }}
+      >
+        {formattedDate}
+      </p>
+    </div>
+  );
+};
+
+const TimelineMarkerMobileLower = ({
+  label,
+  date,
+  position,
+  alignment = "center",
+}: {
+  label: string;
+  date: string;
+  position: string;
+  alignment?: "left" | "center" | "right";
+}) => {
+  let alignmentClass = "items-center text-center -translate-x-1/2"; // Default for 'center'
+  if (alignment === "left") alignmentClass = "items-start text-left"; // No x-translation for left alignment
+  if (alignment === "right")
+    alignmentClass = "items-end text-right -translate-x-full";
+
+  const formattedDate = new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  return (
+    <div
+      className={`absolute top-0 h-full flex flex-col justify-between ${alignmentClass}`}
+      style={{ left: position }}
+    >
+      <p
+        className="text-lg font-medium -translate-y-8"
+        style={{
+          fontFamily: "IBM Plex Sans",
+          fontWeight: 400,
+          fontStyle: "Regular",
+          fontSize: 18,
+        }}
+      >
+        {label}
+      </p>
+      <p
+        className="text-lg font-semibold translate-y-8"
+        style={{
+          fontFamily: "IBM Plex Sans",
+          fontWeight: 600,
+          fontStyle: "SemiBold",
+          fontSize: 18,
+        }}
+      >
+        {formattedDate}
+      </p>
+    </div>
+  );
+};
+
 const ProgressCircle = ({
   label,
   value,
@@ -430,59 +536,156 @@ export default function AnalysisPageClient({
             Timeline & Split
           </h2>
           <div className="w-full mb-16">
-            <div className="relative h-12">
-              <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between">
-                {Array.from({ length: totalDots }).map((_, i) => {
-                  const colorClass = getDotColorClass(i);
-                  const prevColorClass = i > 0 ? getDotColorClass(i - 1) : null;
-                  const sizeClass =
-                    i === 0 || colorClass !== prevColorClass
-                      ? "w-7 h-7 animate-pulse p-1"
-                      : "w-5 h-5 mt-1";
-                  return (
-                    <div
-                      key={i}
-                      className={`rounded-full transition-all ${sizeClass} ${colorClass}`}
-                    />
-                  );
-                })}
+            <div className="hidden sm:block">
+              <div className="relative h-12">
+                <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between">
+                  {Array.from({ length: totalDots }).map((_, i) => {
+                    const colorClass = getDotColorClass(i);
+                    const prevColorClass =
+                      i > 0 ? getDotColorClass(i - 1) : null;
+                    const sizeClass =
+                      i === 0 || colorClass !== prevColorClass
+                        ? "w-7 h-7 animate-pulse p-1"
+                        : "w-5 h-5 mt-1";
+                    return (
+                      <div
+                        key={i}
+                        className={`rounded-full transition-all ${sizeClass} ${colorClass}`}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Only show price box if price is not N/A */}
+                {showPriceBox && (
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-[#B4292E] text-white font-bold text-sm px-3 py-1 rounded-md shadow-lg z-10"
+                    style={{ left: priceBoxPosition }}
+                  >
+                    {displayPrice}
+                  </div>
+                )}
+
+                <div className="absolute inset-0">
+                  <TimelineMarker
+                    label="Opening"
+                    date={timelineData.opening}
+                    position={markerPositions.opening}
+                    alignment="left"
+                  />
+                  <TimelineMarker
+                    label="Closing"
+                    date={timelineData.closing}
+                    position={markerPositions.closing}
+                    alignment="left"
+                  />
+                  <TimelineMarker
+                    label="Listing"
+                    date={timelineData.listing}
+                    position={markerPositions.listing}
+                    alignment="left"
+                  />
+                  <TimelineMarker
+                    label="Allotment"
+                    date={timelineData.allotment}
+                    position={markerPositions.allotment}
+                    alignment="left"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="block sm:hidden">
+              <div className="relative h-12">
+                <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between">
+                  {Array.from({ length: totalDots / 2 }).map((_, i) => {
+                    const index = i;
+                    const colorClass = getDotColorClass(index);
+                    const prevColorClass =
+                      index > 0 ? getDotColorClass(index - 1) : null;
+                    const sizeClass =
+                      index === 0 || colorClass !== prevColorClass
+                        ? "w-7 h-7 animate-pulse p-1"
+                        : "w-5 h-5 mt-1";
+                    return (
+                      <div
+                        key={index}
+                        className={`rounded-full transition-all ${sizeClass} ${colorClass}`}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Only show price box if price is not N/A */}
+                {showPriceBox && (
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-[#B4292E] text-white font-bold text-sm px-3 py-1 rounded-md shadow-lg z-10"
+                    style={{ left: priceBoxPosition }}
+                  >
+                    {displayPrice}
+                  </div>
+                )}
+
+                <div className="absolute inset-0">
+                  <TimelineMarkerMobileUpper
+                    label="Opening"
+                    date={timelineData.opening}
+                    position={markerPositions.opening}
+                    alignment="left"
+                  />
+                  <TimelineMarkerMobileUpper
+                    label="Closing"
+                    date={timelineData.closing}
+                    position={`${parseFloat(markerPositions.closing) + 22}%`}
+                    alignment="left"
+                  />
+                </div>
               </div>
 
-              {/* Only show price box if price is not N/A */}
-              {showPriceBox && (
-                <div
-                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-[#B4292E] text-white font-bold text-sm px-3 py-1 rounded-md shadow-lg z-10"
-                  style={{ left: priceBoxPosition }}
-                >
-                  {displayPrice}
+              <div className="relative h-12 mt-24">
+                <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between">
+                  {Array.from({ length: totalDots / 2 }).map((_, i) => {
+                    const index = i + totalDots / 2;
+                    const colorClass = getDotColorClass(index);
+                    const prevColorClass =
+                      index > 0 ? getDotColorClass(index - 1) : null;
+                    const sizeClass =
+                      colorClass !== prevColorClass
+                        ? "w-7 h-7 animate-pulse p-1"
+                        : "w-5 h-5 mt-1";
+                    return (
+                      <div
+                        key={index}
+                        className={`rounded-full transition-all ${sizeClass} ${colorClass}`}
+                      />
+                    );
+                  })}
                 </div>
-              )}
 
-              <div className="absolute inset-0">
-                <TimelineMarker
-                  label="Opening"
-                  date={timelineData.opening}
-                  position={markerPositions.opening}
-                  alignment="left"
-                />
-                <TimelineMarker
-                  label="Closing"
-                  date={timelineData.closing}
-                  position={markerPositions.closing}
-                  alignment="left"
-                />
-                <TimelineMarker
-                  label="Listing"
-                  date={timelineData.listing}
-                  position={markerPositions.listing}
-                  alignment="left"
-                />
-                <TimelineMarker
-                  label="Allotment"
-                  date={timelineData.allotment}
-                  position={markerPositions.allotment}
-                  alignment="left"
-                />
+                {/* Only show price box if price is not N/A */}
+                {showPriceBox && (
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-[#B4292E] text-white font-bold text-sm px-3 py-1 rounded-md shadow-lg z-10"
+                    style={{ left: priceBoxPosition }}
+                  >
+                    {displayPrice}
+                  </div>
+                )}
+
+                <div className="absolute inset-0">
+                  <TimelineMarkerMobileLower
+                    label="Listing"
+                    date={timelineData.listing}
+                    position={`${parseFloat(markerPositions.listing) - 42}%`}
+                    alignment="left"
+                  />
+                  <TimelineMarkerMobileLower
+                    label="Allotment"
+                    date={timelineData.allotment}
+                    position={`${parseFloat(markerPositions.allotment) - 22}%`}
+                    alignment="left"
+                  />
+                </div>
               </div>
             </div>
           </div>
