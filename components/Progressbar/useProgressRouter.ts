@@ -1,18 +1,18 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
-import { useProgress } from './ProgressProvider';
+import { useRouter } from "next/navigation";
+import { useProgress } from "./ProgressProvider";
 
 export const useProgressRouter = () => {
   const router = useRouter();
-  const { startProgress, completeProgress } = useProgress();
+  const { startProgress } = useProgress();
 
   const push = async (href: string) => {
     startProgress();
     try {
       await router.push(href);
     } finally {
-      completeProgress();
+      // completeProgress();
     }
   };
 
@@ -21,7 +21,7 @@ export const useProgressRouter = () => {
     try {
       await router.replace(href);
     } finally {
-      completeProgress();
+      // completeProgress();
     }
   };
 
@@ -30,7 +30,7 @@ export const useProgressRouter = () => {
     try {
       router.back();
     } finally {
-      completeProgress();
+      // completeProgress();
     }
   };
 
@@ -39,7 +39,7 @@ export const useProgressRouter = () => {
     try {
       router.forward();
     } finally {
-      completeProgress();
+      // completeProgress();
     }
   };
 
