@@ -69,7 +69,7 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
     <Card className={`w-full max-w-sm mx-auto h-full border-b-6 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }} >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-full">
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-row gap-2">
             <Badge variant="outline" className="bg-gray-50 border-gray-300 text-gray-800 text-xs font-medium w-fit">
               {ipo?.ipo_type || 'N/A'}
             </Badge>
@@ -167,7 +167,7 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
     <Card className={`w-full max-w-sm mx-auto h-full border-b-6 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-full">
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-row gap-2">
             <Badge variant="outline" className="bg-gray-50 border-gray-300 text-gray-800 text-xs font-medium w-fit">
               {ipo?.ipo_type || 'N/A'}
             </Badge>
@@ -253,7 +253,7 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
     <Card className={`w-full max-w-sm mx-auto h-full border-b-6 ${riskBorderColor} shadow-md font-ibm-plex`} style={{ borderRadius: '8px', borderTop: 'none', borderLeft: 'none', borderRight: 'none', boxShadow: 'none' }} >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div className="w-full">
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-row gap-2">
             <Badge variant="outline" className="bg-gray-50 border-gray-300 text-gray-800 text-xs font-medium w-fit">
               {ipo?.ipo_type || 'N/A'}
             </Badge>
