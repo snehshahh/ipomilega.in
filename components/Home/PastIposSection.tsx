@@ -109,7 +109,7 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
                       {ipos.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage).map((ipo: HomePageIpoProps) => (
                         <div
                           key={ipo._id}
-                          className="transition-all duration-300 hover:scale-105 w-full max-w-sm mx-auto"
+                          className="transition-all duration-300 hover:scale-105 motion-safe:hover:shadow-2xl w-full max-w-sm mx-auto"
                         >
                           <div className="h-full rounded-lg overflow-hidden bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
                             <PastIpoCard ipo={ipo.ipo} analysis={ipo.analysis || null} />

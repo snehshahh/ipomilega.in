@@ -84,12 +84,12 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
                         ) : (
                             <div className="space-y-6">
                                 <div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-items-center py-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center py-5">
                                         {blogs.map((blog: Blog) => (
                                             <div
                                                 key={blog._id}
-                                                className="transition-all duration-300 hover:scale-105 w-full max-w-sm"
-                                            >
+                                                className="transition-all duration-300 hover:scale-105 w-full max-w-sm motion-safe:hover:shadow-xl"
+                                                >
                                                 <div className="h-full rounded-lg overflow-hidden bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
                                                     <BlogCard blog={blog} />
                                                 </div>

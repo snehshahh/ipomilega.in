@@ -51,8 +51,8 @@ export default function RootLayout({
         <ProgressProvider>
           <header className="fixed  font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
             {/* Full width responsive container like homepage sections */}
-            <div className="w-full app-container">
-              <div className="max-w-7xl mx-auto  flex h-15 font-bold justify-between" style={{ fontWeight: "400" }}>
+            <div className="w-full">
+              <div className="max-w-7xl mx-auto app-container flex items-center h-16 justify-between" style={{ fontWeight: "400" }}>
                 <ProgressLink
                   href="/"
                   className="flex items-center space-x-2 transition-opacity hover:opacity-80"
@@ -60,12 +60,12 @@ export default function RootLayout({
                   <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                     <TrendingUp className="h-4 w-4" />
                   </div>
-                  <span className="text-2xl font-bold text-black tracking-tight drop-shadow-lg">
+                  <span className="text-xl sm:text-2xl font-bold text-black tracking-tight drop-shadow-lg">
                     IPO Milega
                   </span>
                 </ProgressLink>
-                <div className="flex items-center space-x-4 text-xl">
-                  <nav className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-1">
+                <div className="flex items-center space-x-2 sm:space-x-4 text-xl">
+                  <nav className="hidden sm:flex items-center space-x-1">
                     {isAdmin && (
                       <ProgressLink
                         href="/admin"
