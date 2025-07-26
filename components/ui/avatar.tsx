@@ -8,11 +8,8 @@ import { cn } from "@/lib/utils"
 // Option 1: Modified Avatar with better object-fit options
 function Avatar({
   className,
-  objectFit = "cover", // allow customization
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root> & {
-  objectFit?: "cover" | "contain" | "fill" | "scale-down"
-}) {
+}: React.ComponentProps<typeof AvatarPrimitive.Root>) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
@@ -31,13 +28,8 @@ function Avatar({
 
 function AvatarImage({
   className,
-  objectFit = "cover",
-  padding = false, // add padding option for logos
   ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Image> & {
-  objectFit?: "cover" | "contain" | "fill" | "scale-down"
-  padding?: boolean
-}) {
+}: React.ComponentProps<typeof AvatarPrimitive.Image>) {
   return (
     <AvatarPrimitive.Image
       data-slot="avatar-image"

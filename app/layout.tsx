@@ -1,6 +1,5 @@
 "use client";
 
-import { GeistSans, GeistMono } from "geist/font";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -20,8 +19,6 @@ import {
 import { ProgressProvider } from "@/components/Progressbar/ProgressProvider";
 import { ProgressLink } from "@/components/Progressbar/ProgressLink";
 
-const geistSans = GeistSans;
-const geistMono = GeistMono;
 
 export default function RootLayout({
   children,
