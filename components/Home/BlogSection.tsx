@@ -34,7 +34,7 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
     }, []);
 
     return (
-        <div className="relative py-10">
+        <div className="relative py-10 app-container">
             <div
                 className="absolute inset-0 pointer-events-none"
                 style={{
@@ -50,7 +50,7 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
             />
             <div className="relative z-10">
                 <section className="py-10" ref={blogSectionRef}>
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30">
+                    <div className="max-w-7xl mx-auto">
                         <div className="flex flex-col items-center sm:items-start sm:flex-row sm:justify-between gap-4">
                             <div className="text-center sm:text-left">
                                 <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 font-ibm-plex">
@@ -72,7 +72,7 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
                             </ProgressLink>
                         </div>
                     </div>
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30">
+                    <div className="max-w-7xl mx-auto">
                         {blogs.length === 0 ? (
                             <div className="flex items-center justify-center py-8">
                                 <div className="text-center py-6 bg-white rounded-xl shadow-sm border border-gray-100 max-w-sm w-full mx-4">
@@ -102,7 +102,7 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
                     </div>
                 </section>
                 <section className="py-10">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30">
+                    <div className="max-w-7xl mx-auto">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div className="text-center sm:text-left">
                                 <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 font-ibm-plex">
@@ -131,7 +131,7 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
                 </section>
                 <hr className="border-black w-full mx-auto" />
                 <footer className="py-1">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30">
+                    <div className="max-w-7xl mx-auto">
                         <h2 className="text-2xl font-dm-serif text-gray-900 mb-2 text-center" style={{ fontWeight: '700' }}>IPO Milega</h2>
                         <div className="text-center">
                             <div className="w-full overflow-hidden text-center">

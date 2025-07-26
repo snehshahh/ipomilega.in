@@ -12,7 +12,7 @@ interface ProgressLinkProps extends Omit<React.AnchorHTMLAttributes<HTMLAnchorEl
 export const ProgressLink = ({ href, children, className, onClick, ...props }: ProgressLinkProps) => {
   const router = useProgressRouter();
 
-  const handleClick = async (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     
     // Call custom onClick if provided
@@ -20,8 +20,8 @@ export const ProgressLink = ({ href, children, className, onClick, ...props }: P
       onClick(e);
     }
     
-    // Navigate with progress bar
-    await router.push(href);
+    // Navigate with progress bar - no await needed
+    router.push(href);
   };
 
   return (

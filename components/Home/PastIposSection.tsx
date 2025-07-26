@@ -52,8 +52,8 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
   }, [itemsPerPage]);
 
   return (
-    <section className="bg-[#EEF9FF] py-10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30 mb-8">
+    <section className="bg-[#EEF9FF] py-10 app-container">
+      <div className="max-w-7xl mx-auto mb-8">
         <div className="flex flex-col items-center sm:items-start sm:flex-row sm:justify-between gap-4">
           <div className="text-center sm:text-left">
             <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 flex items-start justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
@@ -83,7 +83,7 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
           </Link>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30">
+      <div className="max-w-7xl mx-auto">
         {ipos.length === 0 ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-center py-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 max-w-sm w-full mx-4">

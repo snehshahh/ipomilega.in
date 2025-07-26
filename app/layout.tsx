@@ -46,12 +46,13 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className="min-h-screen items-center"
       >
         <ProgressProvider>
-          <header className="fixed font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30 py-2">
-              <div className="flex h-15 items-center font-bold justify-between" style={{ fontWeight: "400" }}>
+          <header className="fixed  font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
+            {/* Full width responsive container like homepage sections */}
+            <div className="w-full app-container">
+              <div className="max-w-7xl mx-auto  flex h-15 font-bold justify-between" style={{ fontWeight: "400" }}>
                 <ProgressLink
                   href="/"
                   className="flex items-center space-x-2 transition-opacity hover:opacity-80"
@@ -148,13 +149,6 @@ export default function RootLayout({
                     <Button
                       onClick={() => setShowLoginDialog(true)}
                       className="bg-[#212121] hover:bg-[#212121]/10 text-white px-6 py-2 rounded-full font-medium transition-all hover:shadow-md backdrop-blur-sm"
-                      style={{
-                        width: 161,
-                        height: 40,
-                        top: 20,
-                        left: 1159,
-                        border: "8px",
-                      }}
                     >
                       Sign In
                     </Button>
@@ -163,7 +157,7 @@ export default function RootLayout({
               </div>
             </div>
           </header>
-          <main className="flex-1">
+          <main> {/* Adjusted padding for fixed header */}
             {children}
             <Toaster position="top-right" richColors />
           </main>

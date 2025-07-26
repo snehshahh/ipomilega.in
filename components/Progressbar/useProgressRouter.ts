@@ -5,42 +5,31 @@ import { useProgress } from './ProgressProvider';
 
 export const useProgressRouter = () => {
   const router = useRouter();
-  const { startProgress, completeProgress } = useProgress();
+  const { startProgress } = useProgress();
 
-  const push = async (href: string) => {
+  const push = (href: string) => {
     startProgress();
-    try {
-      await router.push(href);
-    } finally {
-      completeProgress();
-    }
+    router.push(href);
+    // Don't call completeProgress here - let the ProgressProvider handle it
+    // when the route actually changes
   };
 
-  const replace = async (href: string) => {
+  const replace = (href: string) => {
     startProgress();
-    try {
-      await router.replace(href);
-    } finally {
-      completeProgress();
-    }
+    router.replace(href);
+    // Don't call completeProgress here
   };
 
   const back = () => {
     startProgress();
-    try {
-      router.back();
-    } finally {
-      completeProgress();
-    }
+    router.back();
+    // Don't call completeProgress here
   };
 
   const forward = () => {
     startProgress();
-    try {
-      router.forward();
-    } finally {
-      completeProgress();
-    }
+    router.forward();
+    // Don't call completeProgress here
   };
 
   return {

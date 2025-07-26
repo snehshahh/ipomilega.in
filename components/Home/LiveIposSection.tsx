@@ -9,7 +9,7 @@ import heroSection from '@/public/HeroSection.svg';
 import { LiveIpoCard } from './IpoCard';
 import AllotmentPredictor from './AllotmentPredictor';
 
-export function LiveIposSection({ ipos, count }: IpoSectionProps) {
+export function  LiveIposSection({ ipos, count }: IpoSectionProps) {
   const [liveIpoSectionHeight, setLiveIpoSectionHeight] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [visibleIpos, setVisibleIpos] = useState(6);
@@ -87,7 +87,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
   );
 
   return (
-    <div className="relative py-10">
+    <div className="relative py-10 app-container">
       <div className="absolute inset-0 overflow-hidden">
         <div
           className="absolute inset-0"
@@ -113,8 +113,8 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
         />
       </div>
       <div className="relative z-10">
-        <section className="min-h-screen flex items-center px-4 sm:px-6 md:px-12 lg:px-30">
-          <div className="max-w-7xl mx-auto w-full">
+        <section className="min-h-screen flex items-center">
+        <div className="max-w-7xl mx-auto w-full flex justify-between">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
               <div className="text-center lg:text-left space-y-4">
                 <h1 className="text-2xl font-dm-serif sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight font-black">
@@ -146,12 +146,12 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
                 </div>
               </div>
               <div className="flex justify-center order-first lg:order-last">
-                <div className="relative w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg">
+                <div className="relative">
                   <Image
                     src={heroSection}
                     alt="Hero Section"
-                    width={500}
-                    height={500}
+                    width={446}
+                    height={446}
                     className="w-full h-auto relative z-10"
                     priority
                   />
@@ -161,7 +161,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
           </div>
         </section>
         <section ref={liveIpoSectionRef} className="py-10">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30 mb-8">
+          <div className="max-w-7xl mx-auto mb-8">
             <div className="flex flex-col items-center lg:items-start lg:flex-row lg:justify-between gap-4">
               <div className="text-center lg:text-left">
                 <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 font-ibm-plex">
@@ -185,7 +185,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
               </div>
             </div>
           </div>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30">
+          <div className="max-w-7xl mx-auto">
             {ipos.length === 0 ? (
               <div className="flex items-center justify-center py-8">
                 <div className="text-center py-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-sm border border-gray-100 max-w-sm w-full mx-4">

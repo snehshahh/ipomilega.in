@@ -123,7 +123,7 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
             <h4 className="text-xs font-medium mb-1">Expected GMP</h4>
             <div className="flex items-center justify-center space-x-1">
               <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 flex-shrink-0" />
-              <span className="text-xs sm:text-sm text-green-500 font-semibold">₹{ipo?.gmp_price_gain || 'TBA'}</span>
+              <span className="text-xs sm:text-sm text-green-500 font-semibold ">₹{ipo?.gmp_price_gain || 'TBA'}</span>
             </div>
           </div>
           <div className="text-center p-2 sm:p-3 bg-white rounded-lg border border-gray-200 shadow-sm">
