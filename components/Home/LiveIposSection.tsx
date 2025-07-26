@@ -165,7 +165,7 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
         </section>
         <section ref={liveIpoSectionRef} className="py-10">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30 mb-8">
-            <div className="flex flex-col items-center lg:items-start lg:flex-row lg:justify-between gap-4">
+            <div className="flex flex-col items-center sm:items-start sm:flex-row sm:justify-between gap-4">
               <div className="text-left">
                 <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 font-ibm-plex">
                   <div className="flex items-center justify-center lg:justify-start gap-2 lg:gap-3">
