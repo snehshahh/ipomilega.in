@@ -4,10 +4,19 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useSession, signOut } from "@/lib/auth-client";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { LoginDialog } from "@/components/ui/login";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ChevronDown, LogOut, TrendingUp, Loader2 } from "lucide-react";
+import {
+  ChevronDown,
+  LogOut,
+  TrendingUp,
+  Landmark,
+  FileText,
+  LineChart,
+  Rocket,
+  Loader2,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,24 +27,70 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ProgressProvider } from "@/components/Progressbar/ProgressProvider";
 import { ProgressLink } from "@/components/Progressbar/ProgressLink";
+import { AnimatePresence, motion } from "framer-motion";
 
-// Loading fallback component
-function PageLoadingFallback() {
+// Array of loading "scenes" for the creative loader
+const loadingStates = [
+  {
+    icon: <FileText className="h-10 w-10 text-[#0073E6]" />,
+    text: "Reviewing IPO Documents...",
+  },
+  {
+    icon: <Landmark className="h-10 w-10 text-[#0073E6]" />,
+    text: "Listing on the Stock Exchange...",
+  },
+  {
+    icon: <LineChart className="h-10 w-10 text-[#0073E6]" />,
+    text: "Analyzing Market Growth...",
+  },
+  {
+    icon: <Rocket className="h-10 w-10 text-[#0073E6] animate-bounce" />,
+    text: "Preparing for Launch!",
+  },
+];
+
+// The new creative IPO-themed loader component
+function CreativeIPOLoader() {
+  const [index, setIndex] = useState(0);
+
+  // This effect cycles through the loading states every 2.5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prevIndex) => (prevIndex + 1) % loadingStates.length);
+    }, 500); // Change state every 2.5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center space-y-4">
-          <div className="flex items-center justify-center space-x-2">
-            <Loader2 className="h-8 w-8 animate-spin text-[#0073E6]" />
-          </div>
-          <div className="text-xl font-black text-gray-900 font-ibm-plex">Loading...</div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
+      <div className="text-center space-y-6">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col items-center justify-center space-y-4 h-24" // Added fixed height
+          >
+            <div className="relative h-12 w-12 flex items-center justify-center">
+              {loadingStates[index].icon}
+            </div>
+            <p className="text-xl font-black text-gray-900 font-ibm-plex tracking-wide">
+              {loadingStates[index].text}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+        <div className="pt-4">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400 mx-auto" />
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-// Layout content component
+// Layout content component (no changes needed here)
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -44,14 +99,18 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     await signOut();
   };
 
-  const isAdmin = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(session?.user?.email || "");
+  const isAdmin = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+    session?.user?.email || ""
+  );
 
   return (
     <ProgressProvider>
       <header className="fixed font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
-        {/* Full width responsive container like homepage sections */}
         <div className="w-full">
-          <div className="max-w-7xl mx-auto app-container flex items-center h-16 justify-between" style={{ fontWeight: "400" }}>
+          <div
+            className="max-w-7xl mx-auto app-container flex items-center h-16 justify-between"
+            style={{ fontWeight: "400" }}
+          >
             <ProgressLink
               href="/"
               className="flex items-center space-x-2 transition-opacity hover:opacity-80"
@@ -126,9 +185,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                   >
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">
-                          {session?.user.name}
-                        </p>
+                        <p className="text-sm font-medium leading-none">{session?.user.name}</p>
                         <p className="text-xs leading-none text-muted-foreground">
                           {session?.user.email}
                         </p>
@@ -157,15 +214,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main>
-        <Suspense fallback={<PageLoadingFallback />}>
-          {children}
-        </Suspense>
+        {/* The suspense boundary now uses the new loader */}
+        <Suspense fallback={<CreativeIPOLoader />}>{children}</Suspense>
         <Toaster position="top-right" richColors />
       </main>
-      <LoginDialog
-        isOpen={showLoginDialog}
-        onClose={() => setShowLoginDialog(false)}
-      />
+      <LoginDialog isOpen={showLoginDialog} onClose={() => setShowLoginDialog(false)} />
     </ProgressProvider>
   );
 }
@@ -184,7 +237,8 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen items-center">
-        <Suspense fallback={<PageLoadingFallback />}>
+        {/* This outer suspense can also use the creative loader */}
+        <Suspense fallback={<CreativeIPOLoader />}>
           <LayoutContent>{children}</LayoutContent>
         </Suspense>
       </body>

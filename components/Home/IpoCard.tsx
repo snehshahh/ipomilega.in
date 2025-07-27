@@ -109,11 +109,11 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
               </h3>
               <div className="text-left flex flex-row items-left justify-between gap-2">
                 <span className="font-normal block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>Opening Date</span>
-                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.open_date || 'TBA'}</span>
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.ipo_dates?.ipo_open_date || 'TBA'}</span>
               </div>
               <div className="text-left flex flex-row items-left justify-between gap-2">
                 <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>Closing Date</span>
-                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.closing_date || 'TBA'}</span>
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.ipo_dates?.ipo_close_date || 'TBA'}</span>
               </div>
             </div>
           </div>
@@ -207,11 +207,11 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
               </h3>
               <div className="text-left flex flex-row items-left justify-between gap-2">
                 <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>Expected Opening Date</span>
-                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.open_date || 'TBA'}</span>
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.ipo_dates?.ipo_open_date || 'TBA'}</span>
               </div>
               <div className="text-left flex flex-row items-left justify-between gap-2">
                 <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>Expected Closing Date</span>
-                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.closing_date || 'TBA'}</span>
+                <span className="font-medium block font-ibm-plex text-sm" style={{ fontWeight: '400' }}>{ipo?.ipo_dates?.ipo_close_date || 'TBA'}</span>
               </div>
             </div>
           </div>

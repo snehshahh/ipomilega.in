@@ -11,22 +11,57 @@ function parseIpoDate(dateString: string, currentYear: number = new Date().getFu
     
     const cleanDate = dateString.trim();
     
+    // Handle common invalid cases
     if (cleanDate.toLowerCase() === 'tba' || cleanDate === '-' || cleanDate === '') {
         return null;
     }
     
+    // Check if it's just a year (like "2025" or current year)
     if (cleanDate === '2025' || cleanDate === currentYear.toString()) {
         return null;
     }
     
+    // Check if it's only a year without month/day
+    if (/^\d{4}$/.test(cleanDate)) {
+        return null;
+    }
+    
+    // Check for incomplete dates that only have year and month but no day
+    // Like "2025 January" or "January 2025" without specific day
+    const yearMonthOnlyPattern = /^(?:\d{4}\s+[a-zA-Z]+|[a-zA-Z]+\s+\d{4})$/;
+    if (yearMonthOnlyPattern.test(cleanDate)) {
+        return null;
+    }
+    
+    // Handle dates that already include the full year (like "June 12, 2025")
     if (cleanDate.includes(',') && cleanDate.includes('2025')) {
         const parsedDate = new Date(cleanDate);
         return isNaN(parsedDate.getTime()) ? null : parsedDate;
     }
     
+    // For dates like "12 June" or "June 12", add current year
+    // But first check if it has a proper day
+    const hasDay = /\b\d{1,2}\b/.test(cleanDate);
+    if (!hasDay) {
+        return null; // If no day is found, treat as invalid
+    }
+    
     const dateWithYear = `${cleanDate} ${currentYear}`;
     const parsedDate = new Date(dateWithYear);
-    return isNaN(parsedDate.getTime()) ? null : parsedDate;
+    
+    // Additional validation: check if the parsed date is valid and reasonable
+    if (isNaN(parsedDate.getTime())) {
+        return null;
+    }
+    
+    // Check if the parsed date has a valid day (not defaulting to 1st of month)
+    // This helps catch cases where only month/year was provided
+    const originalHasSpecificDay = /\b([1-9]|[12]\d|3[01])\b/.test(cleanDate);
+    if (!originalHasSpecificDay) {
+        return null;
+    }
+    
+    return parsedDate;
 }
 
 export async function GET() {
@@ -65,6 +100,7 @@ export async function GET() {
             const openDate = parseIpoDate(openDateString, currentYear);
             const closeDate = parseIpoDate(closeDateString, currentYear);
             
+            // If either date is invalid/incomplete, put in TBA
             if (!openDate || !closeDate) {
                 tbaIpos.push(ipoData);
                 return;
@@ -103,7 +139,7 @@ export async function GET() {
             return dateB.getTime() - dateA.getTime();
         });
 
-        const sortedPastIposWithExistingPerformance =sortedPastIpos.filter((ipo: Ipo) => ipo.listing_price != "");
+        const sortedPastIposWithExistingPerformance = sortedPastIpos.filter((ipo: Ipo) => ipo.listing_price != "");
         
         const sortedTbaIpos = tbaIpos.sort((a, b) => {
             const nameA = a.upcoming_ipo_2025 || '';

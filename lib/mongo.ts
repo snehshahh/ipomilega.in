@@ -45,11 +45,16 @@ export async function connectToDatabase() {
 
   try {
     await client.connect();
+    console.log("MongoDB connected successfully");
     const db = client.db(dbName);
+    console.log("Database selected successfully");
     await db.command({ ping: 1 });
+    console.log("Database ping successful");
     cachedDb = db;
+    console.log("Database cached successfully");
     return { client, db };
   } catch (error) {
+    
     console.error('MongoDB connection error:', error);
     throw new Error('Failed to connect to MongoDB');
   }
