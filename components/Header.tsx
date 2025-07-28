@@ -28,8 +28,8 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 lg:px-30 py-2">
+      <header className="fixed app-container m font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
+        <div className="max-w-7xl">
           <div className="flex h-15 items-center font-bold justify-between" style={{ fontWeight: "400" }}>
             <ProgressLink
               href="/"

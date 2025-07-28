@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { HomePageIpoProps, IpoSectionProps } from '@/app/types/homepage';
@@ -10,6 +10,10 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [itemsPerPage, setItemsPerPage] = useState(3);
+  
+  // Touch gesture refs
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   useEffect(() => {
     const handleResize = () => {
@@ -45,6 +49,27 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
 
   const prevSlide = () => {
     setCurrentIndex(prev => (prev - 1 + totalPages) % totalPages);
+  };
+
+  // Touch gesture handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current - touchEndX.current > 50) {
+      // Swiped left
+      nextSlide();
+    }
+
+    if (touchStartX.current - touchEndX.current < -50) {
+      // Swiped right
+      prevSlide();
+    }
   };
 
   useEffect(() => {
@@ -98,6 +123,9 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
               className="relative overflow-hidden"
               onMouseEnter={() => setIsPlaying(false)}
               onMouseLeave={() => setIsPlaying(true)}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
             >
               <div
                 className="flex transition-transform duration-500 ease-in-out"

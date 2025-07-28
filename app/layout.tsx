@@ -29,7 +29,7 @@ import { ProgressProvider } from "@/components/Progressbar/ProgressProvider";
 import { ProgressLink } from "@/components/Progressbar/ProgressLink";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
-import Header from "@/components/Header";
+// import Header from "@/components/Header";
 
 // Array of loading "scenes" for the creative loader
 const loadingStates = [
@@ -110,10 +110,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const shouldShowHeader = !hideHeaderRoutes.some((route) =>
     path.startsWith(route)
   );
+  console.log(shouldShowHeader);
 
   return (
-    <ProgressProvider>
-      {shouldShowHeader && <Header />}
+    <ProgressProvider >
+
       <header className="fixed font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
         <div className="w-full">
           <div
