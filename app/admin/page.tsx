@@ -570,7 +570,7 @@ function AdminContent() {
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
                               <span className="text-sm text-gray-900 font-medium font-ibm-plex">
-                                {ipoItem.ipo.open_date || 'TBA'}
+                                {ipoItem.ipo.ipo_dates.ipo_open_date || 'TBA'}
                               </span>
                             </div>
                           </td>
@@ -578,7 +578,7 @@ function AdminContent() {
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-gray-400 flex-shrink-0" />
                               <span className="text-sm text-gray-900 font-medium font-ibm-plex">
-                                {ipoItem.ipo.closing_date || 'TBA'}
+                                {ipoItem.ipo.ipo_dates.ipo_close_date || 'TBA'}
                               </span>
                             </div>
                           </td>
@@ -643,7 +643,7 @@ function AdminContent() {
                                   onClick={() => window.open(ipoItem.ipo.ipo_details.rhp_draft_prospectus_links[0].href!, '_blank')}
                                 >
                                   <ExternalLink className="h-4 w-4 mr-1.5 text-green-600 dark:text-green-400" />
-                                  DHRP
+                                  RHP
                                 </Button>
                               )}
                               {ipoItem.ipo.ipo_details?.drhp_draft_prospectus_links?.[0]?.href && (
@@ -654,7 +654,7 @@ function AdminContent() {
                                   onClick={() => window.open(ipoItem.ipo.ipo_details.drhp_draft_prospectus_links[0].href!, '_blank')}
                                 >
                                   <ExternalLink className="h-4 w-4 mr-1.5 text-green-600 dark:text-green-400" />
-                                  RHP
+                                  DRHP
                                 </Button>
                               )}
                               {ipoItem.ipo._id && (

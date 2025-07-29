@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Building2,
   TrendingUp,
@@ -27,12 +28,9 @@ export default function AllIPOsPage() {
     async function fetchAllIPOs() {
       setIsLoading(true);
       try {
-        
-        const response = await fetch(`/api/analysis`,
-            {
-                method: 'GET'
-            }
-        );
+        const response = await fetch(`/api/analysis`, {
+          method: 'GET'
+        });
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -70,37 +68,40 @@ export default function AllIPOsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6 sm:py-8">
-          <div className="mb-12">
-            <Skeleton className="h-10 w-48 bg-muted/50 mb-2" />
-            <Skeleton className="h-6 w-96 bg-muted/50" />
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
+          <div className="mb-8 sm:mb-12">
+            <Skeleton className="h-8 sm:h-10 w-40 sm:w-48 bg-muted/50 mb-2" />
+            <Skeleton className="h-5 sm:h-6 w-80 sm:w-96 bg-muted/50" />
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {Array(8).fill(0).map((_, index) => (
-              <div key={index} className="bg-background/60 backdrop-blur-sm border border-muted/50 rounded-xl p-6">
+              <div key={index} className="bg-background/60 backdrop-blur-sm border border-muted/50 rounded-xl p-4 sm:p-6">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 flex-1">
-                    <Skeleton className="h-12 w-12 rounded-full bg-muted/50" />
+                  <div className="flex items-center space-x-3 sm:space-x-4 flex-1">
+                    <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-muted/50" />
                     <div className="flex-1">
-                      <Skeleton className="h-6 w-48 mb-2 bg-muted/50" />
-                      <Skeleton className="h-4 w-64 bg-muted/50" />
+                      <Skeleton className="h-5 sm:h-6 w-32 sm:w-48 mb-2 bg-muted/50" />
+                      <Skeleton className="h-3 sm:h-4 w-40 sm:w-64 bg-muted/50" />
                     </div>
                   </div>
-                  <div className="flex items-center space-x-8">
+                  <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
                     <div className="text-center">
-                      <Skeleton className="h-4 w-16 mb-1 bg-muted/50" />
-                      <Skeleton className="h-5 w-20 bg-muted/50" />
+                      <Skeleton className="h-3 sm:h-4 w-12 sm:w-16 mb-1 bg-muted/50" />
+                      <Skeleton className="h-4 sm:h-5 w-16 sm:w-20 bg-muted/50" />
                     </div>
                     <div className="text-center">
-                      <Skeleton className="h-4 w-16 mb-1 bg-muted/50" />
-                      <Skeleton className="h-5 w-20 bg-muted/50" />
+                      <Skeleton className="h-3 sm:h-4 w-12 sm:w-16 mb-1 bg-muted/50" />
+                      <Skeleton className="h-4 sm:h-5 w-16 sm:w-20 bg-muted/50" />
                     </div>
                     <div className="text-center">
-                      <Skeleton className="h-4 w-20 mb-1 bg-muted/50" />
-                      <Skeleton className="h-5 w-24 bg-muted/50" />
+                      <Skeleton className="h-3 sm:h-4 w-16 sm:w-20 mb-1 bg-muted/50" />
+                      <Skeleton className="h-4 sm:h-5 w-20 sm:w-24 bg-muted/50" />
                     </div>
                     <Skeleton className="h-6 w-16 bg-muted/50" />
                     <Skeleton className="h-5 w-5 bg-muted/50" />
+                  </div>
+                  <div className="lg:hidden">
+                    <Skeleton className="h-6 w-16 bg-muted/50" />
                   </div>
                 </div>
               </div>
@@ -114,7 +115,7 @@ export default function AllIPOsPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-6 sm:py-8 text-center">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8 text-center">
           <Card className="max-w-2xl mx-auto bg-background/60 backdrop-blur-sm border border-muted/50">
             <CardHeader>
               <CardTitle className="text-red-600 dark:text-red-400 flex items-center justify-center gap-2">
@@ -140,28 +141,32 @@ export default function AllIPOsPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 sm:py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-primary">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 lg:py-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary truncate">
                 All IPO Analysis
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
+              <p className="text-xs sm:text-sm lg:text-base text-muted-foreground hidden sm:block">
                 Explore comprehensive insights and analysis for all available IPOs
               </p>
             </div>
             <Button
               variant="outline"
               asChild
-              className="border-primary/20 hover:bg-primary/10 text-primary"
+              size="sm"
+              className="border-primary/20 hover:bg-primary/10 text-primary flex-shrink-0"
             >
-              <Link href="/">Back to Home</Link>
+              <Link href="/">
+                <span className="hidden sm:inline">Back to Home</span>
+                <span className="sm:hidden">Home</span>
+              </Link>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 sm:py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
         {ipos.length === 0 ? (
           <Card className="max-w-2xl mx-auto bg-background/60 backdrop-blur-sm border border-muted/50">
             <CardHeader>
@@ -181,31 +186,38 @@ export default function AllIPOsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {ipos.map((ipo) => (
               <Link key={ipo._id} href={`/analysis/${ipo.ipo_table_id}`} className="group block">
-                <div className="bg-background/95 backdrop-blur-sm border border-muted/50 rounded-xl p-6 group-hover:shadow-xl group-hover:border-primary/30 transition-all duration-300 hover:scale-[1.01] hover:bg-background/100">
-                  <div className="flex items-center justify-between">
+                <div className="bg-background/95 backdrop-blur-sm border border-muted/50 rounded-xl p-4 sm:p-6 group-hover:shadow-xl group-hover:border-primary/30 transition-all duration-300 hover:scale-[1.01] hover:bg-background/100">
+                  <div className="flex items-center justify-between gap-3 sm:gap-4">
                     {/* Left Section - Company Info */}
-                    <div className="flex items-center space-x-4 flex-1 min-w-0">
-                      <div className="relative">
-                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center group-hover:from-primary/30 group-hover:to-primary/20 transition-all duration-300">
-                          <Building2 className="h-6 w-6 text-primary group-hover:scale-110 transition-transform duration-300" />
-                        </div>
-                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full animate-pulse opacity-75"></div>
+                    <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                      <div className="relative flex-shrink-0">
+                        <Avatar className="h-10 w-10 sm:h-12 sm:w-12 ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all duration-300">
+                          <AvatarImage 
+                            src={ipo.image_url} 
+                            alt={`${ipo.company_name || 'Company'} logo`}
+                            className="object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 group-hover:from-primary/30 group-hover:to-primary/20 transition-all duration-300">
+                            <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-primary group-hover:scale-110 transition-transform duration-300" />
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 sm:h-3 sm:w-3 bg-green-500 rounded-full animate-pulse opacity-75"></div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-200 truncate">
+                        <h3 className="text-sm sm:text-lg font-bold text-foreground group-hover:text-primary transition-colors duration-200 truncate">
                           {ipo.company_name}
                         </h3>
-                        <p className="text-sm text-muted-foreground truncate">
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           {ipo.ipo_details?.issue_size} • {ipo.ipo_details?.price_band}
                         </p>
                       </div>
                     </div>
 
-                    {/* Middle Section - Key Metrics */}
-                    <div className="hidden md:flex items-center space-x-8">
+                    {/* Desktop View - Key Metrics */}
+                    <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
                       <div className="text-center">
                         <div className="flex items-center justify-center space-x-1 text-xs text-muted-foreground mb-1">
                           <Calendar className="h-3 w-3" />
@@ -248,42 +260,54 @@ export default function AllIPOsPage() {
                     </div>
 
                     {/* Right Section - Status & Action */}
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
                       {getStatusBadge(ipo)}
                       
                       <div className="flex items-center text-primary/70 group-hover:text-primary transition-colors duration-200">
-                        <span className="hidden sm:inline text-sm font-medium mr-2">View Analysis</span>
-                        <ChevronRight className="h-5 w-5 transform group-hover:translate-x-1 transition-transform duration-200" />
+                        <span className="hidden md:inline text-sm font-medium mr-2">View Analysis</span>
+                        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:translate-x-1 transition-transform duration-200" />
                       </div>
                     </div>
                   </div>
 
-                  {/* Mobile View - Additional Info */}
-                  <div className="md:hidden mt-4 pt-4 border-t border-muted/20">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <span className="text-muted-foreground text-xs">Opens: </span>
-                        <span className="font-medium text-foreground">
+                  {/* Mobile/Tablet View - Additional Info */}
+                  <div className="lg:hidden mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-muted/20">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 text-xs sm:text-sm">
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-1 text-muted-foreground">
+                          <Calendar className="h-3 w-3" />
+                          <span>Opens:</span>
+                        </div>
+                        <div className="font-medium text-foreground pl-4">
                           {ipo.time?.issue_dates?.opening || "N/A"}
-                        </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground text-xs">Closes: </span>
-                        <span className="font-medium text-foreground">
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-1 text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          <span>Closes:</span>
+                        </div>
+                        <div className="font-medium text-foreground pl-4">
                           {ipo.time?.issue_dates?.closing || "N/A"}
-                        </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground text-xs">GMP Potential: </span>
-                        <span className={cn("font-bold", getScoreColor(ipo.ipo_details?.approximate_gains_potential || 0))}>
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-1 text-muted-foreground">
+                          <TrendingUp className="h-3 w-3" />
+                          <span>GMP Potential:</span>
+                        </div>
+                        <div className={cn("font-bold pl-4", getScoreColor(ipo.ipo_details?.approximate_gains_potential || 0))}>
                           {ipo.ipo_details?.approximate_gains_potential ? `+${ipo.ipo_details.approximate_gains_potential}%` : "N/A"}
-                        </span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="text-muted-foreground text-xs">Risk Score: </span>
-                        <span className={cn("font-bold", getScoreColor(ipo.summary_metrics?.risk_meter || 0))}>
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-1 text-muted-foreground">
+                          <Target className="h-3 w-3" />
+                          <span>Risk Score:</span>
+                        </div>
+                        <div className={cn("font-bold pl-4", getScoreColor(ipo.summary_metrics?.risk_meter || 0))}>
                           {ipo.summary_metrics?.risk_meter ? `${ipo.summary_metrics.risk_meter}/100` : "N/A"}
-                        </span>
+                        </div>
                       </div>
                     </div>
                   </div>

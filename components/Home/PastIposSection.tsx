@@ -10,18 +10,21 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
   const [itemsPerPage, setItemsPerPage] = useState(3);
+  const [isMobile, setIsMobile] = useState(false);
   
-  // Touch gesture refs
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 640) {
+      const mobileBreakpoint = 768; // Tailwind's 'md' breakpoint
+      setIsMobile(window.innerWidth < mobileBreakpoint);
+      
+      if (window.innerWidth < 640) { // Mobile
         setItemsPerPage(1);
-      } else if (window.innerWidth < 1024) {
+      } else if (window.innerWidth < 1024) { // Tablet
         setItemsPerPage(2);
-      } else {
+      } else { // Desktop
         setItemsPerPage(3);
       }
     };
@@ -33,15 +36,20 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
 
   const totalPages = Math.ceil(ipos.length / itemsPerPage);
 
+  // Auto-scroll effect - ONLY runs on desktop
   useEffect(() => {
-    if (!isPlaying || ipos.length <= itemsPerPage) return;
+    // Stop auto-play if it's mobile view, or if paused, or not enough items for a carousel
+    if (isMobile || !isPlaying || ipos.length <= itemsPerPage) {
+      return;
+    }
 
     const interval = setInterval(() => {
       setCurrentIndex(prev => (prev + 1) % totalPages);
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [isPlaying, totalPages, ipos.length, itemsPerPage]);
+  }, [isPlaying, totalPages, ipos.length, itemsPerPage, isMobile]);
+
 
   const nextSlide = () => {
     setCurrentIndex(prev => (prev + 1) % totalPages);
@@ -51,7 +59,6 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
     setCurrentIndex(prev => (prev - 1 + totalPages) % totalPages);
   };
 
-  // Touch gesture handlers
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.targetTouches[0].clientX;
   };
@@ -62,16 +69,14 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
 
   const handleTouchEnd = () => {
     if (touchStartX.current - touchEndX.current > 50) {
-      // Swiped left
       nextSlide();
     }
 
     if (touchStartX.current - touchEndX.current < -50) {
-      // Swiped right
       prevSlide();
     }
   };
-
+  
   useEffect(() => {
     setCurrentIndex(0);
   }, [itemsPerPage]);
@@ -79,13 +84,13 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
   return (
     <section className="bg-[#EEF9FF] py-10 app-container">
       <div className="max-w-7xl mx-auto mb-8">
-        <div className="flex flex-col items-center sm:items-start sm:flex-row sm:justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="text-center sm:text-left">
-            <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 flex items-start justify-center sm:justify-start gap-2 lg:gap-3 font-ibm-plex">
-              <div className="flex items-center justify-center mt-4">
-                <span className="text-[#D59527] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>&lt;</span>
-                <span className="text-[#D59527] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.2s' }}>&lt;</span>
-                <span className="text-[#D59527] font-bold text-lg sm:text-xl lg:text-2xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.4s' }}>&lt;</span>
+            <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-2 flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-3 font-ibm-plex">
+              <div className="flex items-center justify-center">
+                <span className="text-[#D59527] font-bold text-2xl md:text-3xl animate-[slideLeft_1.5s_ease-in-out_infinite]" style={{ animationDelay: '0s' }}>&lt;</span>
+                <span className="text-[#D59527] font-bold text-2xl md:text-3xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.2s' }}>&lt;</span>
+                <span className="text-[#D59527] font-bold text-2xl md:text-3xl animate-[slideLeft_1.5s_ease-in-out_infinite] -ml-1" style={{ animationDelay: '0.4s' }}>&lt;</span>
               </div>
               <div>
                 <div>Past IPOs</div>
@@ -93,11 +98,11 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
               </div>
             </h2>
             <style jsx>{`
-    @keyframes slideLeft {
-      0%, 100% { transform: translateX(0px); opacity: 1; }
-      50% { transform: translateX(-8px); opacity: 0.7; }
-    }
-  `}</style>
+              @keyframes slideLeft {
+                0%, 100% { transform: translateX(0px); opacity: 1; }
+                50% { transform: translateX(-8px); opacity: 0.7; }
+              }
+            `}</style>
           </div>
           <Link
             href="/ipos?filter=past"
@@ -121,7 +126,7 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
           <div className="space-y-6">
             <div
               className="relative overflow-hidden"
-              onMouseEnter={() => setIsPlaying(false)}
+              onMouseEnter={() => setIsPlaying(true)}
               onMouseLeave={() => setIsPlaying(true)}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
@@ -129,11 +134,11 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
             >
               <div
                 className="flex transition-transform duration-500 ease-in-out"
-                style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+                style={{ transform: `translateX(-${currentIndex * 100 / totalPages}%)`, width: `${totalPages * 100}%` }}
               >
                 {Array.from({ length: totalPages }).map((_, pageIndex) => (
-                  <div key={pageIndex} className="w-full flex-shrink-0">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 justify-items-center py-5">
+                  <div key={pageIndex} className="w-full flex-shrink-0" style={{ width: `${100 / totalPages}%` }}>
+                    <div className={`grid gap-4 sm:gap-6 justify-items-center py-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`}>
                       {ipos.slice(pageIndex * itemsPerPage, (pageIndex + 1) * itemsPerPage).map((ipo: HomePageIpoProps) => (
                         <div
                           key={ipo._id}

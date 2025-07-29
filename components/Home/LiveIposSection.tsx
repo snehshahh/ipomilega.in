@@ -22,7 +22,7 @@ const FlipWord = ({ words, className = "" }: { words: string[], className?: stri
   }, [words.length]);
 
   // Find the longest word to set consistent width
-  const longestWord = words.reduce((longest, current) => 
+  const longestWord = words.reduce((longest, current) =>
     current.length > longest.length ? current : longest, words[0]
   );
 
@@ -40,8 +40,8 @@ const FlipWord = ({ words, className = "" }: { words: string[], className?: stri
           }`}
           style={{
             transformStyle: 'preserve-3d',
-            transform: index === currentIndex 
-              ? 'perspective(400px) rotateX(0deg) translateY(0px)' 
+            transform: index === currentIndex
+              ? 'perspective(400px) rotateX(0deg) translateY(0px)'
               : index === (currentIndex - 1 + words.length) % words.length
               ? 'perspective(400px) rotateX(-90deg) translateY(-8px)'
               : 'perspective(400px) rotateX(90deg) translateY(8px)'
@@ -227,30 +227,30 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
 
               {/* Hero Content - Second on mobile, first on desktop */}
               <div className="text-center md:text-left space-y-6 order-2 md:order-1 w-full md:flex-1">
-                <h1 className="text-3xl sm:text-4xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight font-black font-dm-serif">
+                <h1 className="text-3xl sm:text-4xl md:text-3xl lg:text-4xl xl:text-5xl leading-tight font-black font-dm-serif text-center md:text-left">
                   Know The{' '}
-                  <FlipWord 
-                    words={['Risk.', 'Market.', 'Facts.']} 
+                  <FlipWord
+                    words={['Risk.', 'Market.', 'Facts.']}
                     className="text-[#B4292E] font-black"
                   />
                   <br />
                   Predict The{' '}
-                  <FlipWord 
-                    words={['Return.', 'Growth.', 'Profit.']} 
+                  <FlipWord
+                    words={['Return.', 'Growth.', 'Profit.']}
                     className="text-[#00914D] font-black"
                   />
                   <br />
                   Invest{' '}
-                  <FlipWord 
-                    words={['Smarter.', 'Better.', 'Wisely.']} 
+                  <FlipWord
+                    words={['Smarter.', 'Better.', 'Wisely.']}
                     className="text-[#D59527] font-black"
                   />
                 </h1>
-                
+
                 <p className="text-[#858585] max-w-xl mx-auto md:mx-0 text-base md:text-lg font-medium leading-relaxed">
                   IPO Milega helps you make informed IPO decisions by showing real-time risk levels and predicting returns based on your investment.
                 </p>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto md:mx-0">
                   <Link
                     href="/ipos"
@@ -277,22 +277,20 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
             </div>
           </div>
         </section>
-        
+
         <section ref={liveIpoSectionRef} className="py-10">
           <div className="max-w-7xl mx-auto mb-8">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <div className="text-center sm:text-left">
-                <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-2 font-ibm-plex">
-                  <div className="flex items-center justify-center lg:justify-start gap-2 lg:gap-3">
-                    <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-[#B4292E] rounded-full animate-pulse shadow-lg"></span>
-                    <div>
-                      <div>Live IPOs</div>
-                      <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">Current IPOs open for Investment</div>
-                    </div>
+                <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-2 font-ibm-plex flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-3">
+                  <span className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 bg-[#B4292E] rounded-full animate-pulse shadow-lg"></span>
+                  <div>
+                    <div>Live IPOs</div>
+                    <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">Current IPOs open for Investment</div>
                   </div>
                 </h2>
               </div>
-              <div className="flex justify-center lg:justify-end">
+              <div className="flex justify-center sm:justify-end">
                 <Link
                   href="/ipos?filter=live"
                   className="text-[#B4292E] font-ibm-plex hover:text-[#B4292E] font-bold flex items-center justify-center space-x-2 group text-sm sm:text-base bg-white hover:bg-gray-50 px-4 py-2 rounded-lg transition-all duration-200 shadow-md border border-gray-200"

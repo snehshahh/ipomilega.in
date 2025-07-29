@@ -3,6 +3,7 @@ export interface IpoComprehensiveAnalysis {
     ipo_table_id: string;
     company_name: string;
     fundamentals: IpoFundamentals;
+    image_url: string;
     risk_meter: {
         score: number;
         summary: string;

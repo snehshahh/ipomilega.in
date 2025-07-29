@@ -51,15 +51,13 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
             <div className="relative z-10">
                 <section className="py-10" ref={blogSectionRef}>
                     <div className="max-w-7xl mx-auto">
-                        <div className="flex flex-col items-center sm:items-start sm:flex-row sm:justify-between gap-4">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                             <div className="text-center sm:text-left">
-                                <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 font-ibm-plex">
-                                    <div className="flex items-center justify-center sm:justify-start gap-2 lg:gap-3">
-                                        <PenBox className="w-8 h-8 text-gray-600" />
-                                        <div>
-                                            <div>Blogs</div>
-                                            <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">IPO Recap: What&apos;s Closed, What&apos;s Gained</div>
-                                        </div>
+                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-2 font-ibm-plex flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-3">
+                                    <PenBox className="w-8 h-8 text-gray-600" />
+                                    <div>
+                                        <div>Blogs</div>
+                                        <div className="text-gray-600 mt-1 text-sm sm:text-base font-medium font-ibm-plex">IPO Recap: What&apos;s Closed, What&apos;s Gained</div>
                                     </div>
                                 </h2>
                             </div>
@@ -105,18 +103,16 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
                     <div className="max-w-7xl mx-auto">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                             <div className="text-center sm:text-left">
-                                <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl font-black text-gray-900 mb-2 font-ibm-plex">
-                                    <div className="flex items-center justify-center sm:justify-start gap-2 lg:gap-3">
-                                        <MailOpen className="w-8 h-8 text-gray-600 font-ibm-plex" />
-                                        <div>
-                                            <div>Stay Updated with IPOs</div>
-                                            <div className="text-gray-600 mt-2 font-ibm-plex text-sm sm:text-base font-medium">Get exclusive IPO insights, comprehensive market analysis, GMP updates, and investment opportunities delivered to your inbox weekly.</div>
-                                        </div>
+                                <h2 className="text-2xl md:text-3xl font-black text-gray-900 mb-2 font-ibm-plex flex flex-col items-center gap-2 sm:flex-row sm:items-center sm:gap-3">
+                                    <MailOpen className="w-8 h-8 text-gray-600" />
+                                    <div>
+                                        <div>Stay Updated with IPOs</div>
+                                        <div className="text-gray-600 mt-2 font-ibm-plex text-sm sm:text-base font-medium">Get exclusive IPO insights, comprehensive market analysis, GMP updates, and investment opportunities delivered to your inbox weekly.</div>
                                     </div>
                                 </h2>
                             </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row mt-3 gap-2 items-center justify-center sm:justify-start">
+                        <div className="flex flex-col sm:flex-row mt-3 gap-2 items-center sm:items-start justify-center sm:justify-start">
                             <Input
                                 type="email"
                                 placeholder="Enter your email address"

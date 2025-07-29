@@ -70,7 +70,7 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#EEF9FF]">
-      <div className="relative z-10 min-h-screen">
+      <div className="relative z-10 min-h-screen pt-15 md:pt-15 lg:pt-0">
         <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
         <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
         <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
