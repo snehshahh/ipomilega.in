@@ -3,19 +3,20 @@ import { connectToDatabase } from "@/lib/mongo";
 import { ObjectId } from "mongodb";
 
 interface BlogPost {
-    title: string;
-    slug: string;
-    ipo_id: string;
-    content: string;
-    excerpt: string;
-    tags: string[];
-    category: string;
-    status: "draft" | "published";
-    featured_image?: string;
-    meta_description: string;
-    created_at: string;
-    updated_at: string;
-    author: string;
+    _id: string
+    title: string
+    slug: string
+    content: string
+    excerpt: string
+    tags: string[]
+    category: string
+    status: string
+    meta_description: string
+    image_url?: string
+    author: string
+    ipo_id: string
+    created_at: string
+    updated_at: string
 }
 
 export async function GET() {
@@ -56,7 +57,22 @@ export async function POST(request: Request) {
         const body: BlogPost = await request.json();
         body.created_at = new Date().toISOString();
         body.updated_at = new Date().toISOString();
-        await db.collection("blogs").insertOne(body);
+        await db.collection("blogs").insertOne({
+            _id: new ObjectId(body._id),
+            title: body.title,
+            slug: body.slug,
+            content: body.content,
+            excerpt: body.excerpt,
+            tags: body.tags,
+            category: body.category,
+            status: body.status,
+            meta_description: body.meta_description,
+            image_url: body.image_url,
+            author: body.author,
+            ipo_id: body.ipo_id,
+            created_at: body.created_at,
+            updated_at: body.updated_at
+        });
 
         const slug = body.slug;
         await db.collection("blogs").updateOne(
