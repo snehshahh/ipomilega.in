@@ -207,7 +207,7 @@ function AdminContent() {
         const data = await response.json()
         setIpoList(data.data.all || [])
         setUpcomingIpoList(data.data.upcoming || [])
-        setBlogList(data.data.blogList || []);
+        setBlogList(data.data.blogs || []);
         setLiveIpoList(data.data.live || [])
         setPastIpoList(data.data.past || [])
       } catch (error) {

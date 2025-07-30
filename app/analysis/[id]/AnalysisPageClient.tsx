@@ -209,9 +209,10 @@ const ProgressCircle = ({
             transform="rotate(-90 18 18)"
             style={{ transition: "stroke-dashoffset 0.5s ease-in-out" }}
           />
+          {/* FIX: Manually adjusted 'y' for perfect visual centering */}
           <text
             x="18"
-            y="22"
+            y="21" // Nudged down slightly from the geometric center
             textAnchor="middle"
             fill="white"
             fontSize="8"
@@ -230,7 +231,6 @@ const ProgressCircle = ({
     </div>
   );
 };
-
 interface AnalysisPageClientProps {
   analysis: IpoComprehensiveAnalysis;
   ipo: Ipo;
@@ -407,7 +407,9 @@ export default function AnalysisPageClient({
     };
   }, [sectionOrder]);
 
+  // FIX START: Added direct state update for active tab
   const handleTabClick = (value: string) => {
+    setActiveTab(value); // Instantly update active tab for immediate feedback
     setSectionOrder((prev) => [value, ...prev.filter((tab) => tab !== value)]);
     setTimeout(() => {
       const section = sectionRefs.current[value];
@@ -415,6 +417,7 @@ export default function AnalysisPageClient({
         section.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 0);
   };
+  // FIX END
 
   if (!analysis) {
     return (
@@ -821,7 +824,9 @@ export default function AnalysisPageClient({
                           "Financial analysis not available"}
                       </p>
                       {analysis.fundamentals && (
-                        <div className="w-full sm:w-[70%] grid gap-4 grid-cols-1 sm:grid-cols-2">
+                        /* FIX START: Centered the cards container */
+                        <div className="w-full sm:w-[70%] grid gap-4 grid-cols-1 sm:grid-cols-2 mx-auto">
+                        {/* FIX END */}
                           {analysis.fundamentals.revenue_details
                             ?.total_revenue && (
                             <div className="bg-[#ffffff] rounded-[8px] shadow-[0px_0px_6px_#0000000c] pt-[9px] pr-[9px] pb-[9px] pl-[9px] sm:pt-[13px] sm:pr-[13px] sm:pb-[13px] sm:pl-[13px] md:pt-[18px] md:pr-[18px] md:pb-[18px] md:pl-[18px] flex flex-col items-center w-full">

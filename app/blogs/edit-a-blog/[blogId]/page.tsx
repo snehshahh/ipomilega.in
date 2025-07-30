@@ -29,8 +29,6 @@ export async function generateMetadata({
   const { id } = await params; // Await the params Promise
   const blog = await getBlogPost(id);
 
-  console.log("blog", blog);
-
   if (!blog) {
     return {
       title: "Blog Not Found",
@@ -65,7 +63,6 @@ export async function generateMetadata({
 export default async function BlogPage({ params }: { params: Promise<{ blogId: string }> }) {
   const { blogId } = await params; // Await the params Promise
   const blogdata = await getBlogPost(blogId);
-
 
   return <EditBlog blog={blogdata || {} as Blog} />;
 }

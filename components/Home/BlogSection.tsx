@@ -49,7 +49,6 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
       
           if (response.ok) {
             // Show a success message to the user
-            console.log(data.message);
             toast.success(data.message);    
             setEmail('');
           } else {

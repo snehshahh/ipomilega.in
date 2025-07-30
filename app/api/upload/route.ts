@@ -85,10 +85,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<UploadRes
       path: tempFilePath,
       buffer: buffer
     };
-
     // Upload to S3
     const url = await uploadToS3(multerFile, folder, documentId, collection);
-
     // Clean up temp file
     await unlink(tempFilePath).catch(err => console.warn('Failed to delete temp file:', err));
 

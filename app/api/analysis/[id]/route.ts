@@ -16,7 +16,6 @@ export async function GET(
         const analysisData = analysis.find((ana) => ana.ipo_table_id === id);
 
         const ipoTable = ipoList.find((ipo) => ipo._id.toString() === id);
-        console.log(ipoTable);
 
         return NextResponse.json({
             message: "Data retrieved successfully",

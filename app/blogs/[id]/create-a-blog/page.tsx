@@ -39,7 +39,6 @@ import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysi
 import { Ipo } from "@/app/models/ipo"
 import { useSession } from "@/lib/auth-client"
 import MarkdownRenderer from "@/components/MarkDown"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useProgressRouter } from "@/components/Progressbar/useProgressRouter"
 
 interface IpoandAnalysis {
@@ -73,6 +72,7 @@ export default function CreateBlogPage() {
   const [newTag, setNewTag] = useState('');
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null); // State for instant preview
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [blogPost, setBlogPost] = useState<BlogPost>({
     title: '',
@@ -93,6 +93,7 @@ export default function CreateBlogPage() {
     }
   }, [session.data, router]);
 
+  // Fetch IPO Data
   useEffect(() => {
     const fetchIpoData = async () => {
       try {
@@ -130,6 +131,16 @@ export default function CreateBlogPage() {
       fetchIpoData();
     }
   }, [ipoId]);
+
+  // Cleanup effect for the object URL to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+    };
+  }, [imagePreviewUrl]);
+
 
   const generateSlug = (title: string) => {
     return title
@@ -227,7 +238,14 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setSelectedImage(e.target.files[0]);
+      const file = e.target.files[0];
+      setSelectedImage(file);
+      // Revoke the old URL if it exists
+      if (imagePreviewUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
+      }
+      // Create a new temporary URL for instant preview
+      setImagePreviewUrl(URL.createObjectURL(file));
     }
   };
 
@@ -253,19 +271,48 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
       setIsSaving(true);
 
       // Check if slug exists
-      const slug = await fetch(`/api/blogs/slug/exists/${blogPost.slug}`);
-      const data = await slug.json();
-      if (data.exists) {
+      const slugResponse = await fetch(`/api/blogs/slug/exists/${blogPost.slug}`);
+      const slugData = await slugResponse.json();
+
+      if (slugData.exists) {
         setSlugExists(true);
         toast.error('Blog with this slug already exists');
         return;
       }
 
-      // Save blog post first
+      let imageUrl = blogPost.image_url;
+
+      // Upload image first if a new one is selected
+      if (selectedImage) {
+        const formData = new FormData();
+        formData.append('file', selectedImage);
+        formData.append('folder', 'blogs');
+        formData.append('documentId', ipoId);
+        formData.append('collection', 'blogs');
+
+        const uploadResponse = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (uploadResponse.ok) {
+          const uploadResult = await uploadResponse.json();
+          if (uploadResult.success) {
+            imageUrl = uploadResult.url;
+          } else {
+             throw new Error(uploadResult.error || 'Image upload failed');
+          }
+        } else {
+           throw new Error('Image upload request failed');
+        }
+      }
+
+      // Save blog post with the potentially new image URL
       const payload = {
         ...blogPost,
         status,
         ipo_id: ipoId,
+        image_url: imageUrl,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
@@ -281,60 +328,15 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
       if (!response.ok) {
         throw new Error('Failed to save blog post');
       }
-
+      
       const blogResponse = await response.json();
-      const blogId = blogResponse.data?._id;
-
-      // Upload image if selected
-      let imageUrl = blogPost.image_url;
-      if (selectedImage && blogId) {
-        const formData = new FormData();
-        formData.append('file', selectedImage);
-        formData.append('documentId', blogId);
-        formData.append('folder', 'blogs');
-        formData.append('collection', 'blogs');
-
-        const uploadResponse = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error('Failed to upload image');
-        }
-
-        const uploadResult = await uploadResponse.json();
-        if (uploadResult.success) {
-          imageUrl = uploadResult.url;
-
-          // Update blog post with image URL
-          await fetch(`/api/blogs/${blogId}`, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ image_url: imageUrl }),
-          });
-
-          setBlogPost(prev => ({
-            ...prev,
-            image_url: imageUrl,
-            _id: blogId
-          }));
-        }
-      }
-
-      if (status === 'published') {
-        toast.success('Blog post published successfully!');
-      } else {
-        toast.success('Draft saved successfully!');
-      }
-
+      console.log(blogResponse);
+      toast.success(status === 'published' ? 'Blog published successfully!' : 'Draft saved successfully!');
       router.push(`/admin`);
 
     } catch (error) {
       console.error('Error saving blog post:', error);
-      toast.error('Failed to save blog post');
+      toast.error((error as Error).message || 'Failed to save blog post');
     } finally {
       setIsSaving(false);
     }
@@ -544,54 +546,12 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                     <div className="space-y-2">
                       <Label>Content</Label>
                       <div className="flex items-center space-x-2 p-2 border rounded-lg bg-muted/20">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertFormatting('bold')}
-                        >
-                          <Bold className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertFormatting('italic')}
-                        >
-                          <Italic className="h-4 w-4" />
-                          </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertFormatting('heading')}
-                        >
-                          <Type className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertFormatting('list')}
-                        >
-                          <List className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertFormatting('quote')}
-                        >
-                          <Quote className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => insertFormatting('link')}
-                        >
-                          <LinkIcon className="h-4 w-4" />
-                        </Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting('bold')}><Bold className="h-4 w-4" /></Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting('italic')}><Italic className="h-4 w-4" /></Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting('heading')}><Type className="h-4 w-4" /></Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting('list')}><List className="h-4 w-4" /></Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting('quote')}><Quote className="h-4 w-4" /></Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting('link')}><LinkIcon className="h-4 w-4" /></Button>
                       </div>
                     </div>
 
@@ -607,15 +567,17 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                   </>
                 ) : (
                   /* Preview Mode */
-                  <div className="prose prose-lg max-w-none">
-                    {blogPost.image_url && (
-                      <Avatar>
-                        <AvatarImage src={blogPost.image_url} alt="Featured image" />
-                        <AvatarFallback>IP</AvatarFallback>
-                      </Avatar>
+                  <div className="prose prose-lg dark:prose-invert max-w-none">
+                    {(imagePreviewUrl || blogPost.image_url) && (
+                      <img 
+                        src={imagePreviewUrl || blogPost.image_url} 
+                        alt="Featured image preview"
+                        className="w-full rounded-lg mb-8" 
+                      />
                     )}
                     <h1>{blogPost.title}</h1>
                     <p className="text-muted-foreground italic">{blogPost.excerpt}</p>
+                    <hr />
                     <MarkdownRenderer content={blogPost.content} />
                   </div>
                 )}
@@ -627,9 +589,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
           <div className="space-y-6">
             {/* Status & Category */}
             <Card className="border-0 bg-background/60 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Publishing</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-lg">Publishing</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Category</Label>
@@ -637,9 +597,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                     value={blogPost.category}
                     onValueChange={(value) => handleInputChange('category', value)}
                   >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="IPO Analysis">IPO Analysis</SelectItem>
                       <SelectItem value="Market News">Market News</SelectItem>
@@ -652,7 +610,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                 <div className="space-y-2">
                   <Label>Author</Label>
                   <Input
-                    value={session?.data?.user?.name}
+                    value={session?.data?.user?.name || 'Admin'}
                     readOnly
                     placeholder="Author name"
                   />
@@ -662,12 +620,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
 
             {/* Tags */}
             <Card className="border-0 bg-background/60 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Tags className="h-5 w-5" />
-                  Tags
-                </CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-lg flex items-center gap-2"><Tags className="h-5 w-5" />Tags</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex gap-2">
                   <Input
@@ -676,9 +629,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                     placeholder="Add tag..."
                     onKeyPress={(e) => e.key === 'Enter' && addTag()}
                   />
-                  <Button size="sm" onClick={addTag}>
-                    Add
-                  </Button>
+                  <Button size="sm" onClick={addTag}>Add</Button>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {blogPost.tags.map((tag, index) => (
@@ -697,9 +648,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
 
             {/* SEO */}
             <Card className="border-0 bg-background/60 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">SEO Settings</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-lg">SEO Settings</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label>Meta Description</Label>
@@ -718,9 +667,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
 
             {/* Quick Actions */}
             <Card className="border-0 bg-background/60 backdrop-blur-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Actions</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle className="text-lg">Quick Actions</CardTitle></CardHeader>
               <CardContent className="space-y-2">
                 <input
                   type="file"
@@ -739,9 +686,14 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                   {selectedImage ? 'Change Featured Image' : 'Add Featured Image'}
                 </Button>
                 {selectedImage && (
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-muted-foreground truncate">
                     Selected: {selectedImage.name}
                   </div>
+                )}
+                {imagePreviewUrl && (
+                    <div className="mt-2">
+                        <img src={imagePreviewUrl} alt="Preview" className="w-full rounded-md object-cover"/>
+                    </div>
                 )}
               </CardContent>
             </Card>

@@ -155,7 +155,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
               });
             }
           } catch (error) {
-            console.log('IPO data not available or failed to load', error);
+            console.error('IPO data not available or failed to load', error);
           }
         }
       } catch (error) {

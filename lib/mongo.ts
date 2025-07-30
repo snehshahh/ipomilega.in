@@ -47,9 +47,7 @@ export async function connectToDatabase() {
     await client.connect();
     console.log("MongoDB connected successfully");
     const db = client.db(dbName);
-    console.log("Database selected successfully");
     await db.command({ ping: 1 });
-    console.log("Database ping successful");
     cachedDb = db;
     console.log("Database cached successfully");
     return { client, db };
