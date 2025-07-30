@@ -5,10 +5,12 @@ import { BlogCard } from "./BlogCard";
 import { MailOpen, PenBox } from "lucide-react";
 import { ProgressLink } from "@/components/Progressbar/ProgressLink";
 import { Input } from "../ui/input";
+import { toast } from "sonner"
 import { Button } from "../ui/button";
 
 export function BlogSection({ blogs }: { blogs: Blog[] }) {
     const [blogSectionHeight, setBlogSectionHeight] = useState(0);
+    const [email, setEmail] = useState('');
     console.log(blogSectionHeight);
     const blogSectionRef = useRef<HTMLDivElement>(null);
 
@@ -32,6 +34,34 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
             window.removeEventListener('resize', measureHeight);
         };
     }, []);
+
+    const subscribeToNewsletter = async (email: string) => {
+        try {
+          const response = await fetch('/api/subscription', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email }),
+          });
+      
+          const data = await response.json();
+      
+          if (response.ok) {
+            // Show a success message to the user
+            console.log(data.message);
+            toast.success(data.message);    
+            setEmail('');
+          } else {
+            // Show an error message
+            console.error(data.message);
+            toast.error(data.message);
+          }
+        } catch (error) {
+          console.error('Failed to subscribe:', error);
+          toast.error('Failed to subscribe');
+        }
+      };
 
     return (
         <div className="relative py-10 app-container">
@@ -115,11 +145,13 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
                         <div className="flex flex-col sm:flex-row mt-3 gap-2 items-center sm:items-start justify-center sm:justify-start">
                             <Input
                                 type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Enter your email address"
                                 className="max-w-md bg-background text-black font-ibm-plex"
                                 style={{ fontWeight: '500' }}
                             />
-                            <Button variant="default" className="font-ibm-plex" style={{ fontWeight: '500' }}>
+                            <Button onClick={() => subscribeToNewsletter(email)} variant="default" className="font-ibm-plex" style={{ fontWeight: '500' }}>
                                 Subscribe
                             </Button>
                         </div>
