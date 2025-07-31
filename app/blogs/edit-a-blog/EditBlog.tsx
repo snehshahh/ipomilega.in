@@ -97,7 +97,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
   useEffect(() => {
     if (session.data && !session.data.user) {
       router.push('/unauthorized');
-    }
+    } 
   }, [session.data, router]);
 
   // Initialize blog data from props or fetch from API
@@ -168,7 +168,10 @@ export default function EditBlog({ blog }: { blog: Blog }) {
     };
 
     initializeBlogData();
-  }, [blog, blogId, router]);
+    // ❌ Original problematic dependency array: [blog, blogId, router]
+    // ✅ By removing the `blog` object from the dependencies, this effect will now only
+    //    re-run if the blog's ID changes, preventing the infinite loop.
+  }, [blogId]);
 
   const generateSlug = (title: string) => {
     return title

@@ -21,6 +21,7 @@ import MarkdownRenderer from "@/components/MarkDown";
 import { Ipo } from "@/app/models/ipo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProgressRouter } from "@/components/Progressbar/useProgressRouter";
+import Image from "next/image";
 
 interface BlogPost {
   title: string;
@@ -92,9 +93,18 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background mt-20"
+    style={{
+      background: `
+        radial-gradient(circle at 20% 30%, rgba(240, 248, 255, 1), rgba(240, 248, 255, 0) 40%),
+        radial-gradient(circle at 70% 20%, rgba(173, 216, 230, 0.6), rgba(173, 216, 230, 0) 50%),
+        radial-gradient(circle at 30% 80%, rgba(135, 206, 250, 0.5), rgba(135, 206, 250, 0) 50%),
+        radial-gradient(circle at 90% 70%, rgba(173, 216, 250, 0.5), rgba(173, 216, 250, 0) 60%)
+      `,
+      backgroundColor: '#e6f4fe',
+    }}>
       {/* Navigation Header */}
-      <div className="border-b bg-background/60 backdrop-blur-sm sticky top-0 z-50">
+      <div className="border-b bg-[#e6f4fe] backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button variant="ghost" size="sm" asChild>
@@ -136,10 +146,13 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
             {/* Featured Image */}
             {blog.image_url && (
               <div className="relative mb-8 rounded-xl overflow-hidden shadow-lg">
-                <Avatar>
-                  <AvatarImage src={blog.image_url} alt={blog.title} />
-                  <AvatarFallback>IP</AvatarFallback>
-                </Avatar>
+                <Image
+                  src={blog.image_url}
+                  alt={blog.title}
+                  height={300}
+                  width={1000}
+                  className="object-cover"
+                />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
               </div>
             )}
@@ -218,8 +231,8 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div className="flex items-start space-x-4">
                       {ipoData.image_url ? (
-                        <div className="relative w-16 h-16 rounded-lg overflow-hidden shadow-md">
-                          <Avatar>
+                        <div className="relative">
+                          <Avatar className="h-16 w-16">
                             <AvatarImage src={ipoData.image_url} alt={ipoData.upcoming_ipo_2025} />
                             <AvatarFallback>IP</AvatarFallback>
                           </Avatar>
@@ -301,18 +314,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
 
           {/* Related Articles Section */}
           <section>
-            <h2 className="text-2xl font-bold mb-8 text-foreground">Related Articles</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card className="bg-muted/30 border group hover:bg-muted/50 transition-all duration-300">
-                <CardContent className="pt-6 text-center">
-                  <div className="text-muted-foreground mb-4">
-                    <TrendingUp className="h-12 w-12 mx-auto opacity-50" />
-                  </div>
-                  <p className="text-muted-foreground">
-                    Related articles will be displayed here based on tags and category.
-                  </p>
-                </CardContent>
-              </Card>
+            <div className="text-center">
 
               <Card className="bg-muted/30 border group hover:bg-muted/50 transition-all duration-300">
                 <CardContent className="pt-6 text-center" onClick={() => router.push("/ipos")}>
@@ -320,7 +322,7 @@ export default function BlogDisplay({ blog }: { blog: BlogPost }) {
                     <Building2 className="h-12 w-12 mx-auto opacity-50" />
                   </div>
                   <p className="text-muted-foreground">
-                    Discover more IPO insights and market analysis.
+                    Discover more IPO insights and market analysis here.
                   </p>
                 </CardContent>
               </Card>

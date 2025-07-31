@@ -300,7 +300,7 @@ function AdminContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <div className="min-h-screen font-ibm-plex bg-gradient-to-br from-blue-50 to-white">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center space-x-2">
@@ -318,7 +318,7 @@ function AdminContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <div className="min-h-screen font-ibm-plex bg-gradient-to-br from-blue-50 to-white">
         <div className="flex items-center justify-center min-h-screen p-4">
           <Card className="border-[#B4292E] max-w-md w-full bg-white/90 backdrop-blur-sm shadow-xl">
             <CardHeader className="text-center">
@@ -341,10 +341,10 @@ function AdminContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 px-4 py-15">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 px-4 py-15 font-ibm-plex">
       <div className="container mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Filter Tabs */}
-        <div className="flex flex-wrap gap-2 sm:gap-4 justify-center lg:justify-start">
+        <div className="flex flex-wrap gap-2 sm:gap-4 justify-center lg:justify-start font-ibm-plex">
           {filterOptions.map((filter) => (
             <button
               key={filter.value}
@@ -374,7 +374,7 @@ function AdminContent() {
         </div>
 
         {/* Dashboard Stats */}
-        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 font-ibm-plex">
           {dashboardStats.map((stat, index) => (
             <Card key={index} className="group hover:shadow-xl transition-all duration-300 sm:hover:scale-105 border-0 bg-white/80 backdrop-blur-sm shadow-lg">
               <CardContent className="p-4 sm:p-6">
