@@ -239,7 +239,7 @@ function IPOsContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 px-4 py-15">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 px-4 py-15 app-container">
       <div className="container mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Filter Tabs */}
         <div className="flex flex-wrap gap-2 sm:gap-4 justify-center lg:justify-start">

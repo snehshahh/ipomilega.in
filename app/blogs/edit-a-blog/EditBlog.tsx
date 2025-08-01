@@ -72,6 +72,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
   const router = useProgressRouter();
   const session = useSession();
   const blogId = blog._id || params.id || '';
+  const [isAdmin, setIsAdmin] = useState(false)
   const [ipoData, setIpoData] = useState<IpoandAnalysis | null>(null);
   const [isLoadingBlog, setIsLoadingBlog] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -93,12 +94,14 @@ export default function EditBlog({ blog }: { blog: Blog }) {
     author: 'Admin'
   });
 
-  // Handle redirect if user is not authenticated
   useEffect(() => {
-    if (session.data && !session.data.user) {
-      router.push('/unauthorized');
-    } 
-  }, [session.data, router]);
+    const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+      session?.data?.user?.email || ""
+    );
+    setIsAdmin(bool);
+
+  }, [session]);
+
 
   // Initialize blog data from props or fetch from API
   useEffect(() => {
@@ -362,6 +365,12 @@ export default function EditBlog({ blog }: { blog: Blog }) {
 
     setBlogPost(prev => ({ ...prev, content: newContent }));
   };
+
+  if (!isAdmin) {
+    router.push('/unauthorized')
+    return
+  }
+
 
   if (isLoadingBlog) {
     return (

@@ -35,17 +35,20 @@ import { useProgressRouter } from "@/components/Progressbar/useProgressRouter"
 import { useSearchParams } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Blog } from "../models/ipo";
+import { useSession } from "@/lib/auth-client";
 
 type FilterType = 'all' | 'live' | 'upcoming' | 'past'
 
 function AdminContent() {
   const [ipoList, setIpoList] = useState<HomePageIpoProps[]>([])
+  const [isAdmin, setIsAdmin] = useState(false)
   const [upcomingIpoList, setUpcomingIpoList] = useState<HomePageIpoProps[]>([])
   const [liveIpoList, setLiveIpoList] = useState<HomePageIpoProps[]>([])
   const [pastIpoList, setPastIpoList] = useState<HomePageIpoProps[]>([])
   const [blogList, setBlogList] = useState<Blog[]>([])
   const router = useProgressRouter()
   const searchParams = useSearchParams()
+  const session = useSession()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
@@ -53,6 +56,17 @@ function AdminContent() {
   const [currentPage, setCurrentPage] = useState(1)
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
   const itemsPerPage = 10
+
+  useEffect(() => {
+    const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+      session?.data?.user?.email || ""
+    );
+    setIsAdmin(bool);
+
+
+  }, [session]);
+
+
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -297,10 +311,14 @@ function AdminContent() {
       }
     }
   }
+  if (!isAdmin) {
+    router.push('/')
+    return
+  }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen font-ibm-plex bg-gradient-to-br from-blue-50 to-white">
+      <div className="min-h-screen font-ibm-plex bg-gradient-to-br from-blue-50 to-white app-container">
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center space-y-4">
             <div className="flex items-center justify-center space-x-2">
@@ -318,7 +336,7 @@ function AdminContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen font-ibm-plex bg-gradient-to-br from-blue-50 to-white">
+      <div className="min-h-screen font-ibm-plex bg-gradient-to-br from-blue-50 to-white app-container">
         <div className="flex items-center justify-center min-h-screen p-4">
           <Card className="border-[#B4292E] max-w-md w-full bg-white/90 backdrop-blur-sm shadow-xl">
             <CardHeader className="text-center">
@@ -341,7 +359,7 @@ function AdminContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 px-4 py-15 font-ibm-plex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-gray-50 px-4 py-15 font-ibm-plex app-container" >
       <div className="container mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
         {/* Filter Tabs */}
         <div className="flex flex-wrap gap-2 sm:gap-4 justify-center lg:justify-start font-ibm-plex">

@@ -67,6 +67,7 @@ export default function CreateBlogPage() {
   const ipoId = params.id as string;
   const [ipoData, setIpoData] = useState<IpoandAnalysis | null>(null);
   const [isLoadingIpo, setIsLoadingIpo] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false)
   const [isSaving, setIsSaving] = useState(false);
   const [slugExists, setSlugExists] = useState(false);
   const [newTag, setNewTag] = useState('');
@@ -86,12 +87,16 @@ export default function CreateBlogPage() {
     author: 'Admin'
   });
 
-  // Handle redirect if user is not authenticated
+
   useEffect(() => {
-    if (session.data && !session.data.user) {
-      router.push('/unauthorized');
-    }
-  }, [session.data, router]);
+    const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+      session?.data?.user?.email || ""
+    );
+    setIsAdmin(bool);
+
+
+  }, [session]);
+
 
   // Fetch IPO Data
   useEffect(() => {
@@ -379,6 +384,11 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
 
     setBlogPost(prev => ({ ...prev, content: newContent }));
   };
+
+  if (!isAdmin) {
+    router.push('/')
+    return
+  }
 
   if (isLoadingIpo) {
     return (
