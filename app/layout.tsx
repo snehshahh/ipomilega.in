@@ -16,6 +16,12 @@ import {
   LineChart,
   Rocket,
   Loader2,
+  DollarSign,
+  BarChart3,
+  Globe,
+  Building2,
+  Coins,
+  Activity,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -31,68 +37,192 @@ import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
 // import Header from "@/components/Header";
 
-// Array of loading "scenes" for the creative loader
+// Enhanced loading states with more variety and animations
 const loadingStates = [
   {
-    icon: <FileText className="h-10 w-10 text-[#0073E6]" />,
+    icon: <FileText className="h-12 w-12 text-[#0073E6] animate-pulse" />,
     text: "Reviewing IPO Documents...",
+    bgPattern: "📄",
   },
   {
-    icon: <Landmark className="h-10 w-10 text-[#0073E6]" />,
-    text: "Listing on the Stock Exchange...",
+    icon: <Building2 className="h-12 w-12 text-[#0073E6] animate-bounce" />,
+    text: "Evaluating Company Structure...",
+    bgPattern: "🏢",
   },
   {
-    icon: <LineChart className="h-10 w-10 text-[#0073E6]" />,
-    text: "Analyzing Market Growth...",
+    icon: <DollarSign className="h-12 w-12 text-[#0073E6] animate-spin" />,
+    text: "Calculating Valuation...",
+    bgPattern: "💰",
   },
   {
-    icon: <Rocket className="h-10 w-10 text-[#0073E6] animate-bounce" />,
-    text: "Preparing for Launch!",
+    icon: <BarChart3 className="h-12 w-12 text-[#0073E6] animate-pulse" />,
+    text: "Analyzing Market Trends...",
+    bgPattern: "📈",
+  },
+  {
+    icon: <Globe className="h-12 w-12 text-[#0073E6] animate-bounce" />,
+    text: "Expanding Global Reach...",
+    bgPattern: "🌍",
+  },
+  {
+    icon: <Landmark className="h-12 w-12 text-[#0073E6] animate-pulse" />,
+    text: "Listing on Stock Exchange...",
+    bgPattern: "🏛️",
+  },
+  {
+    icon: <Activity className="h-12 w-12 text-[#0073E6] animate-pulse" />,
+    text: "Monitoring Trading Activity...",
+    bgPattern: "📊",
+  },
+  {
+    icon: <Coins className="h-12 w-12 text-[#0073E6] animate-bounce" />,
+    text: "Generating Returns...",
+    bgPattern: "🪙",
+  },
+  {
+    icon: <Rocket className="h-12 w-12 text-[#0073E6] animate-bounce" />,
+    text: "Preparing for Launch! 🚀",
+    bgPattern: "🚀",
   },
 ];
 
-// The new creative IPO-themed loader component
+// Enhanced creative IPO-themed loader component
 function CreativeIPOLoader() {
   const [index, setIndex] = useState(0);
+  const [progress, setProgress] = useState(0);
 
-  // This effect cycles through the loading states every 2.5 seconds
+  // Cycle through loading states
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % loadingStates.length);
-    }, 500); // Change state every 2.5 seconds
+    }, 800);
 
     return () => clearInterval(interval);
   }, []);
 
+  // Simulate progress
+  useEffect(() => {
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) return 0; // Reset when complete
+        return prev + Math.random() * 3;
+      });
+    }, 150);
+
+    return () => clearInterval(progressInterval);
+  }, []);
+
+  // Generate floating background elements
+  const backgroundElements = Array.from({ length: 20 }, (_, i) => (
+    <motion.div
+      key={i}
+      className="absolute text-2xl opacity-10 select-none pointer-events-none"
+      initial={{
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+      }}
+      animate={{
+        x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
+        y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+      }}
+      transition={{
+        duration: 15 + Math.random() * 10,
+        repeat: Infinity,
+        repeatType: "reverse",
+      }}
+    >
+      {loadingStates[Math.floor(Math.random() * loadingStates.length)].bgPattern}
+    </motion.div>
+  ));
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center">
-      <div className="text-center space-y-6">
+    <div className="fixed inset-0 z-[100] min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center overflow-hidden">
+      {/* Animated background pattern */}
+      <div className="absolute inset-0 overflow-hidden">
+        {typeof window !== 'undefined' && backgroundElements}
+      </div>
+
+      {/* Main loader content */}
+      <div className="relative z-10 text-center space-y-8 max-w-md mx-auto px-6">
+        {/* IPO Milega Logo */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.5 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, type: "spring" }}
+          className="flex items-center justify-center space-x-3 mb-8"
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0073E6] text-white shadow-lg">
+            <TrendingUp className="h-6 w-6" />
+          </div>
+          <span className="text-3xl font-bold text-gray-900 tracking-tight">
+            IPO Milega
+          </span>
+        </motion.div>
+
+        {/* Main loading animation */}
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col items-center justify-center space-y-4 h-24" // Added fixed height
+            initial={{ opacity: 0, y: 30, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -30, scale: 0.8 }}
+            transition={{ duration: 0.6, type: "spring", bounce: 0.4 }}
+            className="flex flex-col items-center justify-center space-y-6"
           >
-            <div className="relative h-12 w-12 flex items-center justify-center">
-              {loadingStates[index].icon}
+            {/* Icon with glowing effect */}
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full bg-[#0073E6]/20 blur-xl animate-pulse"></div>
+              <div className="relative bg-white rounded-2xl p-6 shadow-2xl border border-blue-100">
+                {loadingStates[index].icon}
+              </div>
             </div>
-            <p className="text-xl font-black text-gray-900 font-ibm-plex tracking-wide">
-              {loadingStates[index].text}
-            </p>
+
+            {/* Loading text */}
+            <div className="space-y-2">
+              <p className="text-xl font-bold text-gray-900 font-ibm-plex tracking-wide">
+                {loadingStates[index].text}
+              </p>
+              
+              {/* Progress bar */}
+              <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-[#0073E6] to-blue-500 rounded-full"
+                  initial={{ width: "0%" }}
+                  animate={{ width: `${Math.min(progress, 100)}%` }}
+                  transition={{ duration: 0.8}}
+                />
+              </div>
+              <p className="text-sm text-gray-500 font-medium">
+                {Math.round(Math.min(progress, 100))}% Complete
+              </p>
+            </div>
           </motion.div>
         </AnimatePresence>
-        <div className="pt-4">
-          <Loader2 className="h-6 w-6 animate-spin text-gray-400 mx-auto" />
+
+        {/* Loading dots animation */}
+        <div className="flex justify-center space-x-2">
+          {[0, 1, 2].map((i) => (
+            <motion.div
+              key={i}
+              className="w-3 h-3 bg-[#0073E6] rounded-full"
+              animate={{
+                scale: [1, 1.5, 1],
+                opacity: [0.5, 1, 0.5],
+              }}
+              transition={{
+                duration: 1.5,
+                repeat: Infinity,
+                delay: i * 0.5,
+              }}
+            />
+          ))}
         </div>
       </div>
     </div>
   );
 }
 
-// Layout content component (no changes needed here)
+// Layout content component
 function LayoutContent({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
@@ -110,11 +240,9 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const shouldShowHeader = !hideHeaderRoutes.some((route) =>
     path.startsWith(route)
   );
-  console.log(shouldShowHeader);
 
   return (
-    <ProgressProvider >
-
+    <ProgressProvider>
       <header className="fixed font-ibm-plex top-0 z-50 w-full backdrop-blur-md bg-transparent border-b border-white/10">
         <div className="w-full">
           <div
@@ -224,7 +352,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main>
-        {/* The suspense boundary now uses the new loader */}
         <Suspense fallback={<CreativeIPOLoader />}>{children}</Suspense>
         <Toaster position="top-right" richColors />
       </main>
@@ -247,7 +374,6 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen items-center">
-        {/* This outer suspense can also use the creative loader */}
         <Suspense fallback={<CreativeIPOLoader />}>
           <LayoutContent>{children}</LayoutContent>
         </Suspense>
