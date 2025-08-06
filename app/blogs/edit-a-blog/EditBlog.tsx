@@ -365,11 +365,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
 
     setBlogPost(prev => ({ ...prev, content: newContent }));
   };
-
-  if (!isAdmin) {
-    router.push('/unauthorized')
-    return
-  }
+   console.log(isAdmin)
 
 
   if (isLoadingBlog) {

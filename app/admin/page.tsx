@@ -311,10 +311,7 @@ function AdminContent() {
       }
     }
   }
-  if (!isAdmin) {
-    router.push('/')
-    return
-  }
+  console.log(isAdmin)
 
   if (isLoading) {
     return (

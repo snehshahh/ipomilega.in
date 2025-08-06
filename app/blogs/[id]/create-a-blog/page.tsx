@@ -385,10 +385,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
     setBlogPost(prev => ({ ...prev, content: newContent }));
   };
 
-  if (!isAdmin) {
-    router.push('/')
-    return
-  }
+  console.log(isAdmin)
 
   if (isLoadingIpo) {
     return (
