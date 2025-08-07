@@ -103,7 +103,7 @@ export interface IpoComprehensiveAnalysis {
             assessment: string;
         };
     };
-    summary_metrics: {
+    summary_metrics?: {
         fundamentals_score: number;
         risk_meter: number;
         flexibility_score: number;
