@@ -16,6 +16,80 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Utility function to format date to "10 August 2025" format
+const formatDateToReadable = (dateInput: string | undefined | null): string => {
+  if (!dateInput) return "N/A";
+  
+  try {
+    let date: Date;
+    
+    // Try to parse the date - this handles most common formats
+    // Including: "2025-08-10", "08/10/2025", "10-08-2025", ISO strings, etc.
+    date = new Date(dateInput);
+    
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      // If direct parsing fails, try some common formats manually
+      const cleanedInput = dateInput.trim();
+      
+      // Try DD/MM/YYYY or DD-MM-YYYY format
+      const ddmmyyyyRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/;
+      const ddmmyyyyMatch = cleanedInput.match(ddmmyyyyRegex);
+      if (ddmmyyyyMatch) {
+        const [, day, month, year] = ddmmyyyyMatch;
+        date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      } else {
+        // If all parsing attempts fail, return the original string
+        return dateInput;
+      }
+    }
+    
+    // Check again if date is valid after manual parsing
+    if (isNaN(date.getTime())) {
+      return dateInput;
+    }
+    
+    // Format to "10 August 2025"
+    const options: Intl.DateTimeFormatOptions = {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    };
+    
+    return date.toLocaleDateString('en-GB', options);
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    // If any error occurs, return the original string
+    return dateInput;
+  }
+};
+
+// Utility function to parse date for calculations (returns Date object or null)
+const parseDate = (dateInput: string | undefined | null): Date | null => {
+  if (!dateInput) return null;
+  
+  try {
+    let date = new Date(dateInput);
+    
+    if (isNaN(date.getTime())) {
+      // Try DD/MM/YYYY or DD-MM-YYYY format manually
+      const cleanedInput = dateInput.trim();
+      const ddmmyyyyRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/;
+      const ddmmyyyyMatch = cleanedInput.match(ddmmyyyyRegex);
+      
+      if (ddmmyyyyMatch) {
+        const [, day, month, year] = ddmmyyyyMatch;
+        date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+      }
+    }
+    
+    return isNaN(date.getTime()) ? null : date;
+  } catch (error) {
+    console.error("Error parsing date:", error);
+    return null;
+  }
+};
+
 export default function AllIPOsPage() {
   const [ipos, setIpos] = useState<IpoComprehensiveAnalysis[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,13 +118,6 @@ export default function AllIPOsPage() {
     fetchAllIPOs();
   }, []);
 
-  // Renamed for clarity: specific for GMP %
-  const getGmpColor = (gmp: number) => {
-    if (gmp >= 50) return "text-green-600 dark:text-green-400";
-    if (gmp >= 20) return "text-yellow-600 dark:text-yellow-400";
-    return "text-red-600 dark:text-red-400";
-  };
-
   // New function for Risk Score, where lower is better
   const getRiskColor = (score: number) => {
     if (score > 70) return "text-red-600 dark:text-red-400";
@@ -58,21 +125,19 @@ export default function AllIPOsPage() {
     return "text-green-600 dark:text-green-400";
   }
 
-  // Improved and more robust date logic
+  // Updated status badge function using the new date parsing utility
   const getStatusBadge = (ipo: IpoComprehensiveAnalysis) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Normalize today's date
 
-    const openingStr = ipo.time?.issue_dates?.opening;
-    const closingStr = ipo.time?.issue_dates?.closing;
+    const openingDate = parseDate(ipo.time?.issue_dates?.opening);
+    const closingDate = parseDate(ipo.time?.issue_dates?.closing);
 
-    if (!openingStr || !closingStr) {
+    if (!openingDate || !closingDate) {
       return <Badge variant="secondary">Status Unknown</Badge>;
     }
     
-    const openingDate = new Date(openingStr);
     openingDate.setHours(0, 0, 0, 0);
-    const closingDate = new Date(closingStr);
     closingDate.setHours(0, 0, 0, 0);
 
     if (today > closingDate) {
@@ -82,14 +147,14 @@ export default function AllIPOsPage() {
       if (today.getTime() === closingDate.getTime()) {
         return <Badge className="bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 hover:bg-red-500/20 animate-pulse">Closing Today</Badge>;
       }
-      const daysLeft = (closingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+      const daysLeft = Math.ceil((closingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
        if (daysLeft === 1) {
          return <Badge className="bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20 hover:bg-orange-500/20">Closing Tomorrow</Badge>;
        }
       return <Badge className="bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20 hover:bg-yellow-500/20">{`Open (Closes in ${daysLeft} days)`}</Badge>;
     }
     if (today < openingDate) {
-      const daysToOpen = (openingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
+      const daysToOpen = Math.ceil((openingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
       if (daysToOpen === 0) { // This case handles if it's today
         return <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 hover:bg-green-500/20 animate-pulse">Opening Today</Badge>;
       }
@@ -272,10 +337,10 @@ export default function AllIPOsPage() {
                           <div className="flex items-center space-x-3"><Avatar className="h-10 w-10 ring-2 ring-primary/10"><AvatarImage src={ipo.image_url} alt={`${ipo.company_name || 'Company'} logo`} className="object-cover" /><AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10"><Building2 className="h-5 w-5 text-primary" /></AvatarFallback></Avatar><div className="min-w-0"><div className="text-sm font-semibold text-foreground truncate">{ipo.company_name}</div></div></div>
                         </td>
                         <td className="px-4 py-4"><div className="text-sm font-medium text-foreground">{ipo.ipo_details?.issue_size || "N/A"}</div></td>
-                        <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{ipo.time?.issue_dates?.opening || "N/A"}</div></td>
-                        <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{ipo.time?.issue_dates?.closing || "N/A"}</div></td>
+                        <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{formatDateToReadable(ipo.time?.issue_dates?.opening)}</div></td>
+                        <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{formatDateToReadable(ipo.time?.issue_dates?.closing)}</div></td>
                         <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{ipo.ipo_details?.price_band || "N/A"}</div></td>
-                        <td className="px-4 py-4 text-center"><div className={cn("text-sm font-bold", getGmpColor(ipo.ipo_details?.approximate_gains_potential || 0))}>{ipo.ipo_details?.approximate_gains_potential ? `+${ipo.ipo_details.approximate_gains_potential}%` : "N/A"}</div></td>
+                        <td className="px-4 py-4 text-center"><div className="text-sm font-bold text-green-600">{ipo.ipo_details?.gains_rationale || "N/A"}</div></td>
                         <td className="px-4 py-4 text-center"><div className={cn("text-sm font-bold", getRiskColor(ipo.summary_metrics?.risk_meter || 0))}>{ipo.summary_metrics?.risk_meter ? `${ipo.summary_metrics.risk_meter}/100` : "N/A"}</div></td>
                         <td className="px-4 py-4 text-center">{getStatusBadge(ipo)}</td>
                         <td className="px-4 py-4 text-center"><Link href={`/analysis/${ipo.ipo_table_id}`}><Button size="sm" variant="outline" className="border-primary/20 hover:bg-primary/10 text-primary hover:border-primary/40 transition-all duration-200"><Eye className="h-4 w-4 mr-1" />View</Button></Link></td>
@@ -294,10 +359,10 @@ export default function AllIPOsPage() {
                     {getStatusBadge(ipo)}
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-xs mb-3">
-                    <div><div className="text-muted-foreground mb-1">Opening</div><div className="font-medium text-foreground">{ipo.time?.issue_dates?.opening || "N/A"}</div></div>
-                    <div><div className="text-muted-foreground mb-1">Closing</div><div className="font-medium text-foreground">{ipo.time?.issue_dates?.closing || "N/A"}</div></div>
+                    <div><div className="text-muted-foreground mb-1">Opening</div><div className="font-medium text-foreground">{formatDateToReadable(ipo.time?.issue_dates?.opening)}</div></div>
+                    <div><div className="text-muted-foreground mb-1">Closing</div><div className="font-medium text-foreground">{formatDateToReadable(ipo.time?.issue_dates?.closing)}</div></div>
                     <div><div className="text-muted-foreground mb-1">Price Band</div><div className="font-medium text-foreground">{ipo.ipo_details?.price_band || "N/A"}</div></div>
-                    <div><div className="text-muted-foreground mb-1">GMP Potential</div><div className={cn("font-bold", getGmpColor(ipo.ipo_details?.approximate_gains_potential || 0))}>{ipo.ipo_details?.approximate_gains_potential ? `+${ipo.ipo_details.approximate_gains_potential}%` : "N/A"}</div></div>
+                    <div><div className="text-muted-foreground mb-1">GMP Potential</div><div className="font-bold text-green-600">{ipo.ipo_details?.gains_rationale || "N/A"}</div></div>
                   </div>
                   <div className="pt-3 border-t border-muted/20">
                     <Link href={`/analysis/${ipo.ipo_table_id}`} className="block">

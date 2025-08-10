@@ -93,27 +93,70 @@ const loadingStates = [
 function CreativeIPOLoader() {
   const [index, setIndex] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const [cycle, setCycle] = useState(0);
+  console.log("cycle", cycle)
 
-  // Cycle through loading states
+  // Ensure component is mounted
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Cycle through loading states - slower timing for better readability
+  useEffect(() => {
+    if (!mounted) return;
+
     const interval = setInterval(() => {
-      setIndex((prevIndex) => (prevIndex + 1) % loadingStates.length);
-    }, 800);
+      setIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % loadingStates.length;
+        // Track complete cycles
+        if (nextIndex === 0) {
+          setCycle(prev => prev + 1);
+        }
+        return nextIndex;
+      });
+    }, 2500); // Increased from 800ms to 2500ms for better readability
 
     return () => clearInterval(interval);
-  }, []);
+  }, [mounted]);
 
-  // Simulate progress
+  // Simulate smoother, continuous progress
   useEffect(() => {
+    if (!mounted) return;
+
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) return 0; // Reset when complete
-        return prev + Math.random() * 3;
+        // Progressive loading that doesn't reset abruptly
+        const increment = Math.random() * 1.5 + 0.5;
+        const newProgress = prev + increment;
+
+        // Smooth reset when reaching 100%
+        if (newProgress >= 100) {
+          return Math.random() * 10; // Start next cycle with small progress
+        }
+        return newProgress;
       });
-    }, 150);
+    }, 100); // Smoother updates
 
     return () => clearInterval(progressInterval);
-  }, []);
+  }, [mounted]);
+
+  // Don't render until mounted to avoid hydration issues
+  if (!mounted) {
+    return (
+      <div className="fixed inset-0 z-[100] font-ibm-plex min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
+        <div className="flex justify-center space-x-2">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="w-3 h-3 bg-[#0073E6] rounded-full animate-bounce"
+              style={{ animationDelay: `${i * 0.5}s` }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   // Generate floating background elements
   const backgroundElements = Array.from({ length: 20 }, (_, i) => (
@@ -121,12 +164,12 @@ function CreativeIPOLoader() {
       key={i}
       className="absolute text-2xl opacity-10 select-none pointer-events-none"
       initial={{
-        x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-        y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
       }}
       animate={{
-        x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1000),
-        y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 800),
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
       }}
       transition={{
         duration: 15 + Math.random() * 10,
@@ -139,10 +182,10 @@ function CreativeIPOLoader() {
   ));
 
   return (
-    <div className="fixed inset-0 z-[100] min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center overflow-hidden">
+    <div className="fixed inset-0 z-[100] font-ibm-plex min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center overflow-hidden">
       {/* Animated background pattern */}
       <div className="absolute inset-0 overflow-hidden">
-        {typeof window !== 'undefined' && backgroundElements}
+        {backgroundElements}
       </div>
 
       {/* Main loader content */}
@@ -166,10 +209,15 @@ function CreativeIPOLoader() {
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
-            initial={{ opacity: 0, y: 30, scale: 0.8 }}
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -30, scale: 0.8 }}
-            transition={{ duration: 0.6, type: "spring", bounce: 0.4 }}
+            exit={{ opacity: 0, y: -50, scale: 0.9 }}
+            transition={{
+              duration: 1.2,
+              type: "spring",
+              bounce: 0.3,
+              ease: "easeInOut"
+            }}
             className="flex flex-col items-center justify-center space-y-6"
           >
             {/* Icon with glowing effect */}
@@ -181,48 +229,86 @@ function CreativeIPOLoader() {
             </div>
 
             {/* Loading text */}
-            <div className="space-y-2">
-              <p className="text-xl font-bold text-gray-900 font-ibm-plex tracking-wide">
+            <div className="space-y-4">
+              <motion.p
+                className="text-2xl font-bold text-gray-900 font-ibm-plex tracking-wide"
+                key={`text-${index}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.3 }}
+              >
                 {loadingStates[index].text}
-              </p>
-              
+              </motion.p>
+
               {/* Progress bar */}
-              <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-80 h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-[#0073E6] to-blue-500 rounded-full"
-                  initial={{ width: "0%" }}
+                  className="h-full bg-gradient-to-r from-[#0073E6] via-blue-400 to-blue-600 rounded-full shadow-sm"
                   animate={{ width: `${Math.min(progress, 100)}%` }}
-                  transition={{ duration: 0.8}}
+                  transition={{
+                    duration: 0.8,
+                    ease: "easeInOut"
+                  }}
                 />
               </div>
-              <p className="text-sm text-gray-500 font-medium">
-                {Math.round(Math.min(progress, 100))}% Complete
-              </p>
+              <div className="flex justify-between w-80 text-xs text-gray-600">
+                <span>Loading...</span>
+                <span className="font-semibold">
+                  {Math.round(Math.min(progress, 100))}%
+                </span>
+              </div>
             </div>
           </motion.div>
         </AnimatePresence>
 
-        {/* Loading dots animation */}
-        <div className="flex justify-center space-x-2">
+        {/* Loading dots animation - slower and more visible */}
+        <div className="flex justify-center space-x-3 mt-8">
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
-              className="w-3 h-3 bg-[#0073E6] rounded-full"
+              className="w-4 h-4 bg-[#0073E6] rounded-full shadow-lg"
               animate={{
-                scale: [1, 1.5, 1],
-                opacity: [0.5, 1, 0.5],
+                scale: [1, 1.8, 1],
+                opacity: [0.4, 1, 0.4],
+                y: [0, -10, 0],
               }}
               transition={{
-                duration: 1.5,
+                duration: 2,
                 repeat: Infinity,
-                delay: i * 0.5,
+                delay: i * 0.6,
+                ease: "easeInOut",
               }}
             />
           ))}
         </div>
+
+        {/* Additional status indicator */}
+        <motion.div
+          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+        >
+        </motion.div>
       </div>
     </div>
   );
+}
+
+// Add a loading state hook with longer duration
+function useLoading() {
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Longer minimum loading time to show the full experience
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 8000); // Increased to 8 seconds to see multiple animation cycles
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return isLoading;
 }
 
 // Mobile Navigation Sidebar Component
@@ -260,7 +346,7 @@ function MobileSidebar({ isOpen, onClose, isAdmin }: {
             className="fixed inset-0 bg-black/50 z-40 sm:hidden"
             onClick={onClose}
           />
-          
+
           {/* Sidebar */}
           <motion.div
             initial={{ x: "-100%" }}
@@ -358,6 +444,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isLoading = useLoading(); // Add loading state
 
   const handleSignOut = async () => {
     await signOut();
@@ -368,7 +455,11 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   );
 
   const pathname = usePathname();
-  console.log(pathname);
+  console.log("pathname", pathname)
+  // Show loader during initial load
+  if (isLoading) {
+    return <CreativeIPOLoader />;
+  }
 
   return (
     <ProgressProvider>
@@ -388,7 +479,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
               >
                 <Menu className="h-5 w-5" />
               </Button>
-              
+
               {/* Logo */}
               <ProgressLink
                 href="/"
@@ -402,7 +493,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                 </span>
               </ProgressLink>
             </div>
-            
+
             <div className="flex items-center space-x-2 sm:space-x-4 text-xl">
               {/* Desktop Navigation */}
               <nav className="hidden sm:flex items-center space-x-1">
@@ -439,7 +530,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
                   Analysis
                 </ProgressLink>
               </nav>
-              
+
               {/* User Section */}
               {session ? (
                 <DropdownMenu>
@@ -499,14 +590,16 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* Mobile Sidebar */}
-      <MobileSidebar 
+      <MobileSidebar
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
         isAdmin={isAdmin}
       />
 
       <main>
-        <Suspense fallback={<CreativeIPOLoader />}>{children}</Suspense>
+        <Suspense fallback={<CreativeIPOLoader />}>
+          {children}
+        </Suspense>
         <Toaster position="top-right" richColors />
       </main>
       <LoginDialog isOpen={showLoginDialog} onClose={() => setShowLoginDialog(false)} />

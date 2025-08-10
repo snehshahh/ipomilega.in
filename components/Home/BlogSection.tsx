@@ -37,30 +37,30 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
 
     const subscribeToNewsletter = async (email: string) => {
         try {
-          const response = await fetch('/api/subscription', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email }),
-          });
-      
-          const data = await response.json();
-      
-          if (response.ok) {
-            // Show a success message to the user
-            toast.success(data.message);    
-            setEmail('');
-          } else {
-            // Show an error message
-            console.error(data.message);
-            toast.error(data.message);
-          }
+            const response = await fetch('/api/subscription', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Show a success message to the user
+                toast.success(data.message);
+                setEmail('');
+            } else {
+                // Show an error message
+                console.error(data.message);
+                toast.error(data.message);
+            }
         } catch (error) {
-          console.error('Failed to subscribe:', error);
-          toast.error('Failed to subscribe');
+            console.error('Failed to subscribe:', error);
+            toast.error('Failed to subscribe');
         }
-      };
+    };
 
     return (
         <div className="relative py-10 app-container">
@@ -68,12 +68,11 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
                 className="absolute inset-0 pointer-events-none"
                 style={{
                     background: `
-                    radial-gradient(circle at 20% 30%, rgba(240, 248, 255, 1), rgba(240, 248, 255, 0) 40%),
-                    radial-gradient(circle at 70% 20%, rgba(173, 216, 230, 0.6), rgba(173, 216, 230, 0) 50%),
-                    radial-gradient(circle at 30% 80%, rgba(135, 206, 250, 0.5), rgba(135, 206, 250, 0) 50%),
-                    radial-gradient(circle at 90% 70%, rgba(173, 216, 250, 0.5), rgba(173, 216, 250, 0) 60%)
-                  `,
-                    backgroundColor: '#e6f4fe',
+              radial-gradient(circle at 20% 30%, rgba(220, 232, 245, 1), rgba(220, 232, 245, 0) 40%),
+              radial-gradient(circle at 70% 20%, rgba(130, 175, 200, 0.6), rgba(130, 175, 200, 0) 50%),
+              radial-gradient(circle at 30% 80%, rgba(95, 165, 220, 0.5), rgba(95, 165, 220, 0) 50%),
+              radial-gradient(circle at 90% 70%, rgba(130, 175, 220, 0.5), rgba(130, 175, 220, 0) 60%)
+            `,
                     filter: 'blur(50px)'
                 }}
             />
@@ -111,12 +110,12 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
                         ) : (
                             <div className="space-y-6">
                                 <div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center py-5">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 justify-items-center py-5">
                                         {blogs.map((blog: Blog) => (
                                             <div
                                                 key={blog._id}
                                                 className="transition-all duration-300 hover:scale-105 w-full max-w-sm motion-safe:hover:shadow-xl"
-                                                >
+                                            >
                                                 <div className="h-full rounded-lg overflow-hidden bg-white shadow-lg hover:shadow-xl transition-shadow duration-300">
                                                     <BlogCard blog={blog} />
                                                 </div>

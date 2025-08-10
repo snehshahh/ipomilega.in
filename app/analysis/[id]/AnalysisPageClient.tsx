@@ -234,8 +234,8 @@ export default function AnalysisPageClient({
   };
 
   const overallScore =
-    (analysis.summary_metrics?.fundamentals_score ?? 0 +
-      analysis.summary_metrics?.performance_score ?? 0) / 2;
+    ((analysis.summary_metrics?.fundamentals_score ?? 0) +
+      (analysis.summary_metrics?.performance_score ?? 0)) / 2;
 
   // Helper function to get the upper price from the price band
   const getDisplayPrice = () => {
@@ -923,7 +923,7 @@ export default function AnalysisPageClient({
                     analysis.ipo_details.profitability_of_allotment.score
                   )}`}
                 >
-                  {analysis.ipo_details.approximate_gains_potential}%
+                  ~ {analysis.ipo_details.gains_rationale.includes("%") ? analysis.ipo_details.gains_rationale : `${analysis.ipo_details.gains_rationale}%`}
                 </p>
               </div>
               <div className="mb-2">

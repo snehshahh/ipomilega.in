@@ -1,12 +1,12 @@
 "use client";
 import { useEffect, useState, Suspense, ChangeEvent } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import {
-  Search, Building2, Calendar, TrendingUp, Shield, ChevronRight, LineChart, PieChart, ChevronLeft, RefreshCw, Clock, XCircle, Activity, Loader2, Upload, Copy, Eye, ExternalLink, PenTool, Plus, Edit
+  Search, Building2, Calendar, TrendingUp, Shield, ChevronRight, LineChart, PieChart, ChevronLeft, Clock, XCircle, Activity, Loader2, Upload, Copy, Eye, ExternalLink, PenTool, Plus, Edit
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HomePageIpoProps } from "../types/homepage"
@@ -18,7 +18,7 @@ import { Blog } from "../models/ipo";
 import { useSession } from "@/lib/auth-client";
 import { IpoAnalysisModal } from "@/components/Admin/IpoAnalysisModal";
 
-type FilterType = 'all' | 'live' | 'upcoming' | 'past'
+type FilterType = 'all' | 'live' | 'upcoming' | 'past' | 'recently_added'
 
 function AdminContent() {
   const [ipoList, setIpoList] = useState<HomePageIpoProps[]>([])
@@ -26,6 +26,7 @@ function AdminContent() {
   const [upcomingIpoList, setUpcomingIpoList] = useState<HomePageIpoProps[]>([])
   const [liveIpoList, setLiveIpoList] = useState<HomePageIpoProps[]>([])
   const [pastIpoList, setPastIpoList] = useState<HomePageIpoProps[]>([])
+  const [recentlyAddedIpoList, setRecentlyAddedIpoList] = useState<HomePageIpoProps[]>([])
   const [blogList, setBlogList] = useState<Blog[]>([])
   const router = useProgressRouter()
   const searchParams = useSearchParams()
@@ -44,6 +45,11 @@ function AdminContent() {
     );
     setIsAdmin(bool);
   }, [session]);
+
+  // Helper function to check if analysis exists for an IPO
+  const hasAnalysis = (ipoItem: HomePageIpoProps) => {
+    return ipoItem.analysis !== null && ipoItem.analysis !== undefined;
+  }
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -86,6 +92,7 @@ function AdminContent() {
         toast.error(data.error || "Failed to upload logo")
       }
     } catch (error) {
+      console.error("Error uploading logo:", error)
       toast.error("Error uploading logo")
     }
   }
@@ -96,14 +103,28 @@ function AdminContent() {
 
   useEffect(() => {
     const filterParam = searchParams.get('filter') as FilterType
-    if (filterParam && ['all', 'live', 'upcoming', 'past'].includes(filterParam)) {
+    if (filterParam && ['all', 'live', 'upcoming', 'past', 'recently_added'].includes(filterParam)) {
       setActiveFilter(filterParam)
     }
   }, [searchParams])
 
-  const refreshData = () => {
+  const refreshData = async () => {
     setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 1000)
+    try {
+      const response = await fetch('/api/ipo/upcoming')
+      if (!response.ok) throw new Error('Failed to fetch IPO data')
+      const data = await response.json()
+      setIpoList(data.data.all || [])
+      setUpcomingIpoList(data.data.upcoming || [])
+      setBlogList(data.data.blogs || [])
+      setLiveIpoList(data.data.live || [])
+      setPastIpoList(data.data.past || [])
+      setRecentlyAddedIpoList(data.data.recently_added || [])
+    } catch (error) {
+      console.error("Error refreshing data:", error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const getCurrentIpoList = () => {
@@ -111,6 +132,7 @@ function AdminContent() {
       case 'live': return liveIpoList
       case 'upcoming': return upcomingIpoList
       case 'past': return pastIpoList
+      case 'recently_added': return recentlyAddedIpoList
       default: return ipoList
     }
   }
@@ -123,7 +145,7 @@ function AdminContent() {
     )
     setFilteredIpos(filtered)
     setCurrentPage(1)
-  }, [searchQuery, ipoList, liveIpoList, upcomingIpoList, pastIpoList, activeFilter])
+  }, [searchQuery, ipoList, liveIpoList, upcomingIpoList, pastIpoList, recentlyAddedIpoList, activeFilter])
 
   const handleFilterChange = (filter: FilterType) => {
     setActiveFilter(filter)
@@ -148,7 +170,9 @@ function AdminContent() {
         setBlogList(data.data.blogs || [])
         setLiveIpoList(data.data.live || [])
         setPastIpoList(data.data.past || [])
+        setRecentlyAddedIpoList(data.data.recently_added || [])
       } catch (error) {
+        console.error("Error fetching IPO data:", error)
         setError('Failed to load IPO data')
       } finally {
         setIsLoading(false)
@@ -175,8 +199,10 @@ function AdminContent() {
     { label: "Total Market Cap", value: totalSize, icon: PieChart, color: "text-[#D59527]" }
   ]
 
+  console.log("isAdmin", isAdmin)
   const filterOptions = [
     { value: 'all', label: 'All IPOs', count: ipoList.length, icon: Building2 },
+    { value: 'recently_added', label: 'Recently Added', count: recentlyAddedIpoList.length, icon: Plus },
     { value: 'live', label: 'Live IPOs', count: liveIpoList.length, icon: Activity },
     { value: 'upcoming', label: 'Upcoming IPOs', count: upcomingIpoList.length, icon: Calendar },
     { value: 'past', label: 'Past IPOs', count: pastIpoList.length, icon: Clock }
@@ -196,7 +222,7 @@ function AdminContent() {
   if (error) return <ErrorFallback error={error} />
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 mt-10 via-white to-gray-50 px-4 py-8 font-ibm-plex">
+    <div className="min-h-screen app-container bg-gradient-to-br from-blue-50 mt-10 via-white to-gray-50 px-4 py-8 font-ibm-plex">
       <div className="container mx-auto space-y-8">
         <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 lg:justify-start">
           {filterOptions.map(filter => (
@@ -269,7 +295,9 @@ function AdminContent() {
                         <td className="p-4"><div className="font-black">₹{ipoItem.ipo.ipo_size}</div></td>
                         <td className="p-4">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <IpoAnalysisModal  ipoItem={ipoItem} onAnalysisAdded={refreshData} />
+                            {!hasAnalysis(ipoItem) && (
+                              <IpoAnalysisModal ipoItem={ipoItem} onAnalysisAdded={refreshData} />
+                            )}
                             {!ipoItem.ipo.image_url && <label><input type="file" accept="image/*" onChange={e => handleLogoUpload(e, ipoItem.ipo._id!)} className="hidden" /><Button asChild variant="outline" size="sm" className="h-9 px-3 border-primary/20 hover:bg-primary/10"><span className="flex items-center"><Upload className="h-4 w-4 mr-1.5 text-primary" />Logo</span></Button></label>}
                             <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => copyToClipboard(ipoItem.ipo._id!)}><Copy className="h-4 w-4 mr-1.5 text-primary" />ID</Button>
                             {ipoItem.ipo.detail_url && <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => window.open(ipoItem.ipo.detail_url!, '_blank')}><Eye className="h-4 w-4 mr-1.5 text-primary" />View</Button>}

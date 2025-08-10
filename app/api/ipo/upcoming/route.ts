@@ -37,15 +37,25 @@ export async function GET() {
         
         const today = new Date();
         today.setHours(0, 0, 0, 0);
+        const twoDaysAgo = new Date();
+        twoDaysAgo.setDate(today.getDate() - 2);
         const currentYear = today.getFullYear();
         
         const upcomingIpos: Ipo[] = [];
         const liveIpos: Ipo[] = [];
         const pastIpos: Ipo[] = [];
         const tbaIpos: Ipo[] = [];
+        const recentlyAddedIpos: Ipo[] = [];
         
         ipoList.forEach((ipo: unknown) => {
-            const ipoData = ipo as Ipo; // Assuming ipo matches Ipo interface (add validation if needed)
+            const ipoData = ipo as Ipo;
+
+            if (ipoData.scraped_at) {
+                const scrapedDate = new Date(ipoData.scraped_at);
+                if (!isNaN(scrapedDate.getTime()) && scrapedDate >= twoDaysAgo) {
+                    recentlyAddedIpos.push(ipoData);
+                }
+            }
             
             let openDateString = '';
             let closeDateString = '';
@@ -111,70 +121,36 @@ export async function GET() {
             return nameA.localeCompare(nameB);
         });
 
+        const sortedRecentlyAddedIpos = recentlyAddedIpos.sort((a, b) => {
+            const dateA = a.scraped_at ? new Date(a.scraped_at).getTime() : 0;
+            const dateB = b.scraped_at ? new Date(b.scraped_at).getTime() : 0;
+            return dateB - dateA;
+        });
+
         const analysisList = await db.collection("ipo_comprehensive_analysis").find({}).toArray();
         const blogsList = await db.collection("blogs").find({}).toArray();
+
+        const createFinalList = (list: Ipo[]): HomePageIpoProps[] => {
+            return list.map((ipo: Ipo) => {
+                const analysisData = analysisList.find((analysis: unknown) => {
+                    const analysisTyped = analysis as IpoComprehensiveAnalysis;
+                    return analysisTyped.ipo_table_id === ipo._id.toString();
+                }) as IpoComprehensiveAnalysis | undefined;
+                return {
+                    _id: ipo._id.toString(),
+                    ipo,
+                    analysis: analysisData || null,
+                };
+            });
+        };
         
-        const finalLiveIpos: HomePageIpoProps[] = [];
-        const finalUpcomingIpos: HomePageIpoProps[] = [];
-        const finalPastIpos: HomePageIpoProps[] = [];
-        const finalTbaIpos: HomePageIpoProps[] = [];
-        const finalAllIpos: HomePageIpoProps[] = [];
+        const finalLiveIpos = createFinalList(sortedLiveIpos);
+        const finalUpcomingIpos = createFinalList(sortedUpcomingIpos);
+        const finalPastIpos = createFinalList(sortedPastIposWithExistingPerformance);
+        const finalTbaIpos = createFinalList(sortedTbaIpos);
+        const finalRecentlyAddedIpos = createFinalList(sortedRecentlyAddedIpos);
+        const finalAllIpos = createFinalList(ipoList as unknown as Ipo[]);
 
-        sortedLiveIpos.forEach((ipo: Ipo) => {
-            const analysisData = analysisList.find((analysis: unknown) => {
-                const analysisTyped = analysis as IpoComprehensiveAnalysis;
-                return analysisTyped.ipo_table_id === ipo._id.toString();
-            }) as IpoComprehensiveAnalysis | undefined;
-            
-            finalLiveIpos.push({
-                _id: ipo._id.toString(),
-                ipo,
-                analysis: analysisData || null, // Convert undefined to null
-            });
-        });
-
-        sortedUpcomingIpos.forEach((ipo: Ipo) => {
-            const analysisData = analysisList.find((analysis: unknown) => {
-                const analysisTyped = analysis as IpoComprehensiveAnalysis;
-                return analysisTyped.ipo_table_id === ipo._id.toString();
-            }) as IpoComprehensiveAnalysis | undefined;
-            
-            finalUpcomingIpos.push({
-                _id: ipo._id.toString(),
-                ipo,
-                analysis: analysisData || null,
-            });
-        });
-
-        sortedPastIposWithExistingPerformance.forEach((ipo: Ipo) => {
-            const analysisData = analysisList.find((analysis: unknown) => {
-                const analysisTyped = analysis as IpoComprehensiveAnalysis;
-                return analysisTyped.ipo_table_id === ipo._id.toString();
-            }) as IpoComprehensiveAnalysis | undefined;
-            
-            finalPastIpos.push({
-                _id: ipo._id.toString(),
-                ipo,
-                analysis: analysisData || null,
-            });
-        });
-
-        sortedTbaIpos.forEach((ipo: Ipo) => {
-            const analysisData = analysisList.find((analysis: unknown) => {
-                const analysisTyped = analysis as IpoComprehensiveAnalysis;
-                return analysisTyped.ipo_table_id === ipo._id.toString();
-            }) as IpoComprehensiveAnalysis | undefined;
-            
-            finalTbaIpos.push({
-                _id: ipo._id.toString(),
-                ipo,
-                analysis: analysisData || null,
-            });
-        });
-
-        // Populate finalAllIpos if needed (e.g., combine all IPOs)
-        finalAllIpos.push(...finalLiveIpos, ...finalUpcomingIpos, ...finalPastIpos, ...finalTbaIpos);
-        
         return NextResponse.json({
             message: "Data retrieved successfully",
             success: true,
@@ -184,6 +160,7 @@ export async function GET() {
                 past: finalPastIpos,
                 tba: finalTbaIpos,
                 all: finalAllIpos,
+                recently_added: finalRecentlyAddedIpos,
                 blogs: blogsList as unknown as Blog[],
             },
             counts: {
@@ -191,6 +168,7 @@ export async function GET() {
                 live: finalLiveIpos.length,
                 past: finalPastIpos.length,
                 tba: finalTbaIpos.length,
+                recently_added: finalRecentlyAddedIpos.length,
                 total: ipoList.length,
             },
         });

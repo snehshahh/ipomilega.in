@@ -14,32 +14,296 @@ import {
     Activity,
     Clock,
     TrendingUp,
-    FileText,
     Save,
     Copy,
-    Building2,
-    ArrowLeft,
-    ExternalLink
+    ExternalLink,
+    Link as LinkIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
+import { Ipo } from '@/app/models/ipo';
+import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar';
 
-// Updated prompts for each analysis step
+// Type definitions for analysis data
+interface RiskAnalysis {
+    score: number;
+    summary: string;
+    key_risks: string[];
+    risk_categories: {
+        financial_risks: string[];
+        market_risks: string[];
+        operational_risks: string[];
+        regulatory_risks: string[];
+    };
+    risk_mitigation: string;
+}
+
+interface PerformanceAnalysis {
+    score: number;
+    summary: string;
+    historical_growth: {
+        pattern: string;
+        rate: string;
+        consistency: string;
+    };
+    key_achievements: string[];
+    management_quality: {
+        experience: string;
+        track_record: string;
+        score: number;
+    };
+    market_comparison: string;
+    future_potential: {
+        growth_forecast: string;
+        upcoming_projects: string[];
+    };
+    consistency_analysis: {
+        operational_years: number;
+        revenue_stability: string;
+        rationale: string;
+    };
+}
+
+interface FlexibilityAnalysis {
+    score: number;
+    summary: string;
+    market_adaptability: {
+        score: number;
+        description: string;
+    };
+    financial_stability: {
+        score: number;
+        description: string;
+    };
+    operational_agility: {
+        score: number;
+        description: string;
+    };
+    product_diversification: string;
+    pivoting_history: string[];
+    future_adaptability_potential: string;
+}
+
+interface FundamentalsAnalysis {
+    score: number;
+    summary: string;
+    market_position: string;
+    business_model: string;
+    revenue_details: {
+        total_revenue: number;
+        revenue_cagr: number;
+        revenue_trend: string;
+    };
+    profit_analysis: {
+        net_profit: number;
+        profit_margin: number;
+        ebitda: number | null;
+        profit_trend: string;
+    };
+    assets_and_liabilities: {
+        total_assets: number;
+        total_liabilities: number | null;
+        debt_to_equity_ratio: number | null;
+    };
+    financial_ratios: {
+        current_ratio: string | null;
+        quick_ratio: string | null;
+        return_on_equity: string | null;
+    };
+}
+
+interface TimeAnalysis {
+    score: number;
+    summary: string;
+    issue_dates: {
+        opening: string;
+        closing: string;
+    };
+    listing_details: {
+        expected_date: string;
+        exchanges: string[];
+    };
+    allotment_timeline: {
+        date: string;
+        process: string;
+    };
+    key_milestones: Array<{
+        date: string;
+        event: string;
+    }>;
+    market_timing_assessment: string;
+    time_to_market: {
+        score: number;
+        rationale: string;
+    };
+}
+
+// Analysis data type union
+type AnalysisDataType = RiskAnalysis | PerformanceAnalysis | FlexibilityAnalysis | FundamentalsAnalysis | TimeAnalysis;
+
+// Complete analysis data interface
+interface AnalysisData {
+    risk?: RiskAnalysis;
+    performance?: PerformanceAnalysis;
+    flexibility?: FlexibilityAnalysis;
+    fundamentals?: FundamentalsAnalysis;
+    time?: TimeAnalysis;
+}
+
+// Updated prompts (removed ipo_details section)
 const analysisPrompts = {
-    risk: "Analyze risk factors for, focusing strictly on risks and avoiding overlap with financial performance, flexibility, or IPO timing. Avoid Page Numbers, and the summary should be 1-2 lines Not more than that. Also please dont give any * * in case you want to make it bold give precise formatting.\n\nRISK FACTORS TEXT (RHP):READ THE REFRENCE FROM THE PDF\nSCRAPED DATA CONTEXT:READ THE REFRENCE FROM THE PDF\n\nReturn JSON with:\n- risk_meter: number (1-10, based on the following rubric):\n  - 1-3: Low risk (few significant risks, strong mitigation plans, stable industry).\n  - 4-6: Moderate risk (some risks in 1-2 categories, moderate mitigation, competitive industry).\n  - 7-10: High risk (multiple significant risks across categories, weak mitigation, volatile industry).\n- risk_summary: string (1-2 lines, explaining the severity and likelihood of risks compared to typical IPOs in the same sector).\n- key_risks: list of 5-7 significant risks (e.g., 'High dependence on single supplier', 'Regulatory changes in X market').\n- risk_categories: {{\n    financial_risks: list of financial risks (e.g., 'High debt levels', 'Cash flow volatility'),\n    market_risks: list of market/competition risks (e.g., 'Intense competition from X', 'Market saturation'),\n    operational_risks: list of operational risks (e.g., 'Supply chain disruptions', 'Key personnel dependency'),\n    regulatory_risks: list of regulatory risks (e.g., 'Pending litigation', 'New compliance requirements')\n  }}\n- risk_mitigation: string (specific strategies the company has outlined to address these risks, e.g., 'Diversifying suppliers', 'Hedging against currency fluctuations').",
-    performance: "Analyze the performance, focusing on historical growth, operational achievements, and future potential. Do not consider financial metrics, risks, or flexibility, as these are evaluated separately. Avoid Page Numbers, and the summary should be 1-2 lines Not more than that. Also please dont give any * * in case you want to make it bold give precise formatting.\n\nPERFORMANCE INFORMATION (RHP): READ THE REFRENCE FROM THE PDF\nSCRAPED PERFORMANCE DATA: READ THE REFRENCE FROM THE PDF\n\nReturn JSON with:\n- performance_score: number (1-10, based on the following rubric):\n  - 8-10: Strong performance (consistent operational growth, significant market achievements, clear future growth plans).\n  - 5-7: Moderate performance (steady growth, some achievements, moderate future potential).\n  - 1-4: Weak performance (stagnant growth, few achievements, unclear future plans).\n- performance_summary: string (1-2 lines, comparing performance to competitors or industry leaders).\n- historical_growth: {{pattern: string (e.g., 'Exponential', 'Stable'), rate: string (e.g., '10% annual growth'), consistency: string (e.g., 'High', 'Variable')}}\n- key_achievements: list of strings (e.g., 'Launched X product in 2023', 'Expanded to Y markets').\n- management_quality: {{experience: string, track_record: string, score: number (1-10)}}\n- market_comparison: string (e.g., 'Outperforms peers in X segment', 'Lags behind in Y metric').\n- future_potential: {{growth_forecast: string, upcoming_projects: list of strings}}\n- consistency_analysis: {{operational_years: number, revenue_stability: string, rationale: string}}",
-    flexibility: "Analyze the flexibility, focusing on its ability to adapt to market changes, operational agility, and strategic pivoting. Do not consider financial metrics or risks, as these are evaluated separately. Avoid Page Numbers, and the summary should be 1-2 lines Not more than that. Also please dont give any * * in case you want to make it bold give precise formatting.\n\nFLEXIBILITY INFORMATION (RHP):READ THE REFRENCE FROM THE PDF\nSCRAPED DATA CONTEXT: READ THE REFRENCE FROM THE PDF\n\nReturn JSON with:\n- flexibility_score: number (1-10, based on the following rubric):\n  - 8-10: High adaptability (proven pivots, diversified products, agile operations, strong strategic plans).\n  - 5-7: Moderate adaptability (some successful pivots, limited diversification, stable operations).\n  - 1-4: Low adaptability (rigid business model, no pivoting history, slow response to market changes).\n- flexibility_summary: string (1-2 lines, comparing adaptability to competitors in the same industry).\n- market_adaptability: {{score: number (1-10), description: string (e.g., 'Quickly adjusts to consumer trends')}}\n- financial_stability: {{score: number (1-10), description: string (e.g., 'Strong cash reserves for pivoting')}}\n- operational_agility: {{score: number (1-10), description: string (e.g., 'Streamlined supply chain')}}\n- product_diversification: string (e.g., 'Multiple product lines across X segments').\n- pivoting_history: list of strings (e.g., 'Shifted to e-commerce in 2020', 'Entered new market in 2022').\n- future_adaptability_potential: string (e.g., 'Plans to leverage AI for operational efficiency').",
-    fundamentals: "Analyze the financial fundamentals, focusing strictly on financial health and market position. Do not consider risks, operational flexibility, or IPO timing, as these are evaluated separately. Avoid Page Numbers, and the summary should be 1-2 lines Not more than that. Also please dont give any * * in case you want to make it bold give precise formatting.\n\nFINANCIAL DATA FROM RHP: READ THE REFRENCE FROM THE PDF\nSCRAPED FINANCIAL DATA: READ THE REFRENCE FROM THE PDF\nBUSINESS DESCRIPTION (SCRAPED): READ THE REFRENCE FROM THE PDF\n\nReturn JSON with:\n- fundamentals_score: number (1-10, based on the following rubric):\n  - 8-10: Strong revenue growth (>15% CAGR), high profitability (>10% net margin), low debt-to-equity (<0.5), and leading market position in a growing industry.\n  - 5-7: Moderate revenue growth (5-15% CAGR), stable profitability (5-10% net margin), moderate debt-to-equity (0.5-1.0), and competitive but not leading market position.\n  - 1-4: Low or negative revenue growth (<5% CAGR), low or negative profitability (<5% net margin), high debt-to-equity (>1.0), or weak market position.\n- fundamentals_summary: string (1-2 lines, explaining financial strengths and weaknesses relative to industry benchmarks, e.g., S&P 500 or sector-specific peers).\n- market_position: string (e.g., 'Market leader in X segment', 'Niche player with limited share').\n- business_model: string (e.g., 'Subscription-based SaaS', 'Manufacturing with B2B focus').\n- revenue_details: {{total_revenue: number (millions), revenue_cagr: number (%), revenue_trend: string (e.g., 'Consistent growth', 'Volatile')}}\n- profit_analysis: {{net_profit: number (millions), profit_margin: number (%), ebitda: number (millions), profit_trend: string (e.g., 'Improving', 'Declining')}}\n- assets_and_liabilities: {{total_assets: number (millions), total_liabilities: number (millions), debt_to_equity_ratio: number}}\n- financial_ratios: {{current_ratio: number, quick_ratio: number, return_on_equity: number (%)}}.",
-    time: "Analyze the timing, focusing on market conditions, IPO schedule, and strategic timing. Do not consider financial performance, risks, or operational flexibility. Avoid Page Numbers, and the summary should be 1-2 lines Not more than that. Also please dont give any * * in case you want to make it bold give precise formatting.\n\nTIME INFORMATION (RHP): READ THE REFRENCE FROM THE PDF\nSCRAPED TIME DATA: READ THE REFRENCE FROM THE PDF\n\nReturn JSON with:\n- time_score: number (1-10, based on the following rubric):\n  - 8-10: Optimal timing (favorable market conditions, strong investor sentiment, well-aligned milestones).\n  - 5-7: Moderate timing (neutral market conditions, standard IPO schedule, some alignment with milestones).\n  - 1-4: Poor timing (volatile market, weak investor sentiment, misaligned milestones).\n- time_summary: string (1-2 lines, explaining why the timing is favorable or unfavorable compared to recent IPO trends).\n- issue_dates: {{opening: string (YYYY-MM-DD), closing: string (YYYY-MM-DD)}}\n- listing_details: {{expected_date: string (YYYY-MM-DD), exchanges: list of strings}}\n- allotment_timeline: {{date: string (YYYY-MM-DD), process: string}}\n- key_milestones: list of {{date: string, event: string}}\n- market_timing_assessment: string (e.g., 'Favorable due to bullish market', 'Risky due to economic uncertainty').\n- time_to_market: {{score: number (1-10), rationale: string (e.g., 'Efficient IPO process')}}",
-    ipo_details: "Analyze IPO details, focusing on the IPO structure and potential investor gains. Do not consider financial performance, risks, or operational flexibility. Issue size Must be strictly Numbers. Avoid Page Numbers, and the summary should be 1-2 lines Not more than that. Also please dont give any * * in case you want to make it bold give precise formatting.\n\nIPO DETAILS (RHP): READ THE REFRENCE FROM THE PDF\nSCRAPED IPO DATA: READ THE REFRENCE FROM THE PDF\n\nReturn JSON with:\n- issue_size: string (e.g., 'INR 500 crore')\n- price_band: string (e.g., 'INR 100-120')\n- lot_size: number\n- allocation_details: {{retail: number (%), qib: number (%), nii: number (%)}}\n- approximate_gains_potential: number (1-10, based on the following rubric):\n  - 8-10: High gains potential (attractive price band, high retail allocation, strong market demand).\n  - 5-7: Moderate gains potential (reasonable pricing, balanced allocation, moderate demand).\n  - 1-4: Low gains potential (overpriced, low retail allocation, weak demand).\n- gains_rationale: string (e.g., 'Attractive pricing relative to peers', 'Oversubscription expected').\n- profitability_of_allotment: {{score: number (1-10), assessment: string (e.g., 'High likelihood of listing gains')}}"
+    risk: `Analyze risk factors for this IPO. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only.
+
+RISK FACTORS TEXT (RHP): READ THE REFERENCE FROM THE PDF
+SCRAPED DATA CONTEXT: READ THE REFERENCE FROM THE PDF
+
+Return JSON with this exact structure:
+{
+  "score": number (1-10),
+  "summary": "string (1-2 lines explaining risk severity)",
+  "key_risks": ["array of 5-7 significant risk strings"],
+  "risk_categories": {
+    "financial_risks": ["array of financial risk strings"],
+    "market_risks": ["array of market/competition risk strings"],
+    "operational_risks": ["array of operational risk strings"],
+    "regulatory_risks": ["array of regulatory risk strings"]
+  },
+  "risk_mitigation": "string describing company's risk mitigation strategies"
+}`,
+
+    performance: `Analyze the performance focusing on historical growth, achievements, and future potential. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only.
+
+PERFORMANCE INFORMATION (RHP): READ THE REFERENCE FROM THE PDF
+SCRAPED PERFORMANCE DATA: READ THE REFERENCE FROM THE PDF
+
+Return JSON with this exact structure:
+{
+  "score": number (1-10),
+  "summary": "string (1-2 lines comparing to competitors)",
+  "historical_growth": {
+    "pattern": "string (e.g., 'Exponential', 'Stable')",
+    "rate": "string (e.g., '10% annual growth')",
+    "consistency": "string (e.g., 'High', 'Variable')"
+  },
+  "key_achievements": ["array of significant achievement strings"],
+  "management_quality": {
+    "experience": "string describing management experience",
+    "track_record": "string describing management track record",
+    "score": number (1-10)
+  },
+  "market_comparison": "string comparing to industry peers",
+  "future_potential": {
+    "growth_forecast": "string describing growth prospects",
+    "upcoming_projects": ["array of upcoming initiative strings"]
+  },
+  "consistency_analysis": {
+    "operational_years": number,
+    "revenue_stability": "string describing revenue stability",
+    "rationale": "string explaining consistency rationale"
+  }
+}`,
+
+    flexibility: `Analyze flexibility focusing on market adaptability, operational agility, and strategic pivoting. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only.
+
+FLEXIBILITY INFORMATION (RHP): READ THE REFERENCE FROM THE PDF
+SCRAPED DATA CONTEXT: READ THE REFERENCE FROM THE PDF
+
+Return JSON with this exact structure:
+{
+  "score": number (1-10),
+  "summary": "string (1-2 lines comparing adaptability to competitors)",
+  "market_adaptability": {
+    "score": number (1-10),
+    "description": "string describing market adaptation ability"
+  },
+  "financial_stability": {
+    "score": number,
+    "description": "string describing financial stability"
+  },
+  "operational_agility": {
+    "score": number (1-10),
+    "description": "string describing operational flexibility"
+  },
+  "product_diversification": "string describing product range and diversification",
+  "pivoting_history": ["array of historical pivot strings"],
+  "future_adaptability_potential": "string describing future adaptation potential"
+}`,
+
+    fundamentals: `Analyze financial fundamentals focusing on financial health and market position. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only. Provide numerical values without currency symbols or units.
+
+FINANCIAL DATA FROM RHP: READ THE REFERENCE FROM THE PDF
+SCRAPED FINANCIAL DATA: READ THE REFERENCE FROM THE PDF
+BUSINESS DESCRIPTION: READ THE REFERENCE FROM THE PDF
+
+Return JSON with this exact structure:
+{
+  "score": number (1-10),
+  "summary": "string (1-2 lines explaining financial strengths/weaknesses)",
+  "market_position": "string describing market position",
+  "business_model": "string describing business model",
+  "revenue_details": {
+    "total_revenue": number (in millions, numerical value only),
+    "revenue_cagr": number (percentage as number, e.g., 15.5),
+    "revenue_trend": "string describing revenue trend"
+  },
+  "profit_analysis": {
+    "net_profit": number (in millions, numerical value only),
+    "profit_margin": number (percentage as number, e.g., 12.5),
+    "ebitda": number (in millions, numerical value only, can be null),
+    "profit_trend": "string describing profit trend"
+  },
+  "assets_and_liabilities": {
+    "total_assets": number (in millions, numerical value only),
+    "total_liabilities": number (in millions, numerical value only, can be null),
+    "debt_to_equity_ratio": number (ratio as number, e.g., 0.75, can be null)
+  },
+  "financial_ratios": {
+    "current_ratio": "string (e.g., '1.5:1', can be null)",
+    "quick_ratio": "string (e.g., '1.2:1', can be null)",
+    "return_on_equity": "string (e.g., '15%', can be null)"
+  }
+}`,
+
+    time: `Analyze timing focusing on market conditions, IPO schedule, and strategic timing. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only. Use YYYY-MM-DD format for all dates.
+
+TIME INFORMATION (RHP): READ THE REFERENCE FROM THE PDF
+SCRAPED TIME DATA: READ THE REFERENCE FROM THE PDF
+
+Return JSON with this exact structure:
+{
+  "score": number (1-10),
+  "summary": "string (1-2 lines explaining timing favorability)",
+  "issue_dates": {
+    "opening": "string (YYYY-MM-DD format)",
+    "closing": "string (YYYY-MM-DD format)"
+  },
+  "listing_details": {
+    "expected_date": "string (YYYY-MM-DD format)",
+    "exchanges": ["array of exchange name strings"]
+  },
+  "allotment_timeline": {
+    "date": "string (YYYY-MM-DD format)",
+    "process": "string describing allotment process"
+  },
+  "key_milestones": [
+    {
+      "date": "string (YYYY-MM-DD format)",
+      "event": "string describing milestone event"
+    }
+  ],
+  "market_timing_assessment": "string assessing current market conditions",
+  "time_to_market": {
+    "score": number (1-10),
+    "rationale": "string explaining timing score rationale"
+  }
+}`
 };
 
 interface AnalysisStep {
     id: keyof typeof analysisPrompts;
     title: string;
     description: string;
-    icon: React.ComponentType<any>;
+    icon: React.ComponentType<{ className?: string }>;
     color: string;
     required: boolean;
 }
@@ -47,28 +311,24 @@ interface AnalysisStep {
 interface IpoAnalysisModalProps {
     ipoItem: {
         _id: string;
-        ipo: {
-            _id?: string;
-            upcoming_ipo_2025?: string;
-            image_url?: string;
-        };
+        ipo: Ipo;
     };
     onAnalysisAdded: () => void;
 }
 
+// Removed ipo_details from analysis steps
 const analysisSteps: AnalysisStep[] = [
-    { id: 'risk', title: 'Risk Analysis', description: 'Evaluate potential risks.', icon: Shield, color: 'text-red-600', required: true },
-    { id: 'performance', title: 'Performance', description: 'Analyze historical growth.', icon: TrendingUp, color: 'text-green-600', required: true },
-    { id: 'flexibility', title: 'Flexibility', description: 'Assess market adaptability.', icon: Activity, color: 'text-blue-600', required: true },
-    { id: 'fundamentals', title: 'Fundamentals', description: 'Review financial health.', icon: LineChart, color: 'text-purple-600', required: true },
-    { id: 'time', title: 'Time Analysis', description: 'Check market timing.', icon: Clock, color: 'text-orange-600', required: true },
-    { id: 'ipo_details', title: 'IPO Details', description: 'Define IPO structure.', icon: FileText, color: 'text-gray-600', required: false }
+    { id: 'risk', title: 'Risk Analysis', description: 'Evaluate potential risks and mitigation strategies.', icon: Shield, color: 'text-red-600', required: true },
+    { id: 'performance', title: 'Performance', description: 'Analyze historical growth and achievements.', icon: TrendingUp, color: 'text-green-600', required: true },
+    { id: 'flexibility', title: 'Flexibility', description: 'Assess market adaptability and agility.', icon: Activity, color: 'text-blue-600', required: true },
+    { id: 'fundamentals', title: 'Fundamentals', description: 'Review financial health and ratios.', icon: LineChart, color: 'text-purple-600', required: true },
+    { id: 'time', title: 'Time Analysis', description: 'Check market timing and milestones.', icon: Clock, color: 'text-orange-600', required: true }
 ];
 
 export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
-    const [analysisData, setAnalysisData] = useState<Record<string, any>>({});
+    const [analysisData, setAnalysisData] = useState<AnalysisData>({});
     const [jsonInput, setJsonInput] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
@@ -76,6 +336,10 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
 
     const currentStepData = analysisSteps[currentStep];
     const isLastStep = currentStep === analysisSteps.length - 1;
+
+    // Get RHP and DRHP links from the correct ipo_details structure
+    const rhpLink = ipoItem.ipo.ipo_details?.rhp_draft_prospectus_links?.[0]?.href;
+    const drhpLink = ipoItem.ipo.ipo_details?.drhp_draft_prospectus_links?.[0]?.href;
 
     useEffect(() => {
         if (isOpen) {
@@ -91,21 +355,21 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
     // Auto-load data when step changes
     useEffect(() => {
         const stepId = analysisSteps[currentStep].id;
-        if (analysisData[stepId]) {
-            setJsonInput(JSON.stringify(analysisData[stepId], null, 2));
+        const stepData = analysisData[stepId];
+        if (stepData) {
+            setJsonInput(JSON.stringify(stepData, null, 2));
         } else {
             setJsonInput('');
         }
         setJsonError(null);
     }, [currentStep, analysisData]);
 
-
-    const validateJson = (jsonString: string): { isValid: boolean; data?: any; error?: string } => {
+    const validateJson = (jsonString: string): { isValid: boolean; data?: AnalysisDataType; error?: string } => {
         if (!jsonString.trim()) {
             return { isValid: false, error: 'JSON data cannot be empty.' };
         }
         try {
-            const data = JSON.parse(jsonString);
+            const data = JSON.parse(jsonString) as AnalysisDataType;
             return { isValid: true, data };
         } catch (error) {
             return { isValid: false, error: `Invalid JSON format: ${error instanceof Error ? error.message : 'Unknown error'}` };
@@ -124,7 +388,7 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
 
     const saveCurrentStep = (input: string) => {
         const validation = validateJson(input);
-        if (validation.isValid) {
+        if (validation.isValid && validation.data) {
             const stepId = currentStepData.id;
             setAnalysisData(prev => ({ ...prev, [stepId]: validation.data }));
             setCompletedSteps(prev => new Set(prev).add(stepId));
@@ -160,6 +424,36 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
         }
     };
 
+    // Function to map IPO details from existing Ipo interface to comprehensive analysis format
+    const mapIpoDetails = (ipo: Ipo) => {
+        // Extract retail, qib, nii percentages from the ipo_details or use defaults
+        const retailQuota = parseFloat(ipo.ipo_details?.retail_quota || '35');
+        const qibQuota = parseFloat(ipo.ipo_details?.qib_quota || '50');  
+        const niiQuota = parseFloat(ipo.ipo_details?.nii_quota || '15');
+
+        // Extract lot size from ipo_market_lot array or use default
+        const lotSize = ipo.ipo_market_lot?.[0]?.lot_size ? parseInt(ipo.ipo_market_lot[0].lot_size) : 0;
+
+        return {
+            opening: ipo.ipo_dates?.ipo_open_date || '',
+            closing: ipo.ipo_dates?.ipo_close_date || '',
+            issue_size: ipo.ipo_details?.issue_size || ipo.ipo_size || '',
+            price_band: ipo.ipo_details?.ipo_price_band || ipo.price_band || '',
+            lot_size: lotSize,
+            allocation_details: {
+                retail: retailQuota,
+                qib: qibQuota,
+                nii: niiQuota
+            },
+            approximate_gains_potential: 0, // Default value, can be updated later
+            gains_rationale: ipo.gmp_price_gain || '', // Default value, can be updated later
+            profitability_of_allotment: {
+                score: 0, // Default value, can be updated later
+                assessment: '' // Default value, can be updated later
+            }
+        };
+    };
+
     const handleSave = async () => {
         let isCurrentStepSaved = true;
         if (jsonInput.trim()) {
@@ -171,9 +465,10 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
             return;
         }
 
-        // Use a callback with setAnalysisData to get the most up-to-date state
-        // This is crucial because state updates might be async.
-        const finalAnalysisData = jsonInput.trim() ? { ...analysisData, [currentStepData.id]: JSON.parse(jsonInput) } : analysisData;
+        // Get final analysis data with current step if there's input
+        const finalAnalysisData = jsonInput.trim() ? 
+            { ...analysisData, [currentStepData.id]: JSON.parse(jsonInput) } : 
+            analysisData;
 
         const requiredSteps = analysisSteps.filter(step => step.required);
         const firstMissingStep = requiredSteps.find(step => !finalAnalysisData[step.id]);
@@ -187,17 +482,43 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
 
         setIsSubmitting(true);
         try {
+            // Map IPO details from the existing IPO data
+            const mappedIpoDetails = mapIpoDetails(ipoItem.ipo);
+
+            // Calculate summary metrics from the collected data
+            const summaryMetrics = {
+                fundamentals_score: finalAnalysisData.fundamentals?.score || 0,
+                risk_meter: finalAnalysisData.risk?.score || 0,
+                flexibility_score: finalAnalysisData.flexibility?.score || 0,
+                time_score: finalAnalysisData.time?.score || 0,
+                performance_score: finalAnalysisData.performance?.score || 0,
+                approximate_gains_potential: mappedIpoDetails.approximate_gains_potential,
+                profitability_of_allotment: mappedIpoDetails.profitability_of_allotment.score,
+                total_revenue: finalAnalysisData.fundamentals?.revenue_details?.total_revenue || 0,
+                net_profit: finalAnalysisData.fundamentals?.profit_analysis?.net_profit || 0,
+                total_assets: finalAnalysisData.fundamentals?.assets_and_liabilities?.total_assets || 0
+            };
+
+            // Transform data to match the IpoComprehensiveAnalysis interface structure
             const payload = {
                 ipo_table_id: ipoItem.ipo._id,
-                company_name: ipoItem.ipo.upcoming_ipo_2025 || 'Unknown Company',
+                company_name: ipoItem.ipo.ipo_name || ipoItem.ipo.upcoming_ipo_2025 || 'Unknown Company',
                 image_url: ipoItem.ipo.image_url || '',
-                ...finalAnalysisData
+                fundamentals: finalAnalysisData.fundamentals || {},
+                risk_meter: finalAnalysisData.risk || {},
+                flexibility: finalAnalysisData.flexibility || {},
+                time: finalAnalysisData.time || {},
+                performance: finalAnalysisData.performance || {},
+                ipo_details: mappedIpoDetails, // Use mapped IPO details
+                summary_metrics: summaryMetrics
             };
+
             const response = await fetch('/api/analysis/manipulate-analysis', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
+            
             const result = await response.json();
             if (!response.ok) throw new Error(result.message || 'Failed to save analysis');
 
@@ -206,7 +527,9 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
             onAnalysisAdded();
 
         } catch (error) {
-            toast.error('Failed to save analysis', { description: error instanceof Error ? error.message : 'Unknown error' });
+            toast.error('Failed to save analysis', { 
+                description: error instanceof Error ? error.message : 'Unknown error' 
+            });
         } finally {
             setIsSubmitting(false);
         }
@@ -225,22 +548,55 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
                     <DialogTitle className="text-xl font-bold flex items-center gap-3">
                         <div className="flex items-center gap-2 justify-between w-full">
                             <div className="flex items-center gap-2">
-                                <div className="p-2 rounded-lg bg-blue-600/10">
-
-                                    <Building2 className="h-6 w-6 text-blue-600" />
+                                <div className="p-2 w-12 h-12 rounded-lg bg-blue-600/10 ">
+                                <Avatar>
+                                    {ipoItem.ipo.image_url ? (
+                                        <AvatarImage src={ipoItem.ipo.image_url || ''} />
+                                    ) : (
+                                        <AvatarFallback>{ipoItem.ipo.ipo_name || ipoItem.ipo.upcoming_ipo_2025 || 'Unknown Company'}</AvatarFallback>
+                                    )}
+                                </Avatar>
                                 </div>
                                 <div>
-                                    <div>Add Comprehensive Analysis</div>
-                                    <div className="text-sm font-medium text-gray-600 mt-1">
-                                        {ipoItem.ipo.upcoming_ipo_2025 || 'Unknown Company'}
+                                    <div>
+                                        {ipoItem.ipo.ipo_name || ipoItem.ipo.upcoming_ipo_2025 || 'Unknown Company'}
                                     </div>
+                                    <div className="text-sm font-medium text-gray-600 mt-1">Add Comprehensive Analysis</div>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
-                            <Button onClick={() => window.open("https://notebooklm.google.com/", "_blank")} className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
-                                <ExternalLink className="h-4 w-4 mr-1.5" />
-                                Open NoteBookLLM
-                            </Button>
+                                {/* RHP Link */}
+                                {rhpLink && (
+                                    <Button 
+                                        onClick={() => window.open(rhpLink, "_blank")} 
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <LinkIcon className="h-4 w-4" />
+                                        RHP
+                                    </Button>
+                                )}
+                                {/* DRHP Link */}
+                                {drhpLink && (
+                                    <Button 
+                                        onClick={() => window.open(drhpLink, "_blank")} 
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex items-center gap-2"
+                                    >
+                                        <LinkIcon className="h-4 w-4" />
+                                        DRHP
+                                    </Button>
+                                )}
+                                {/* NotebookLM Link */}
+                                <Button 
+                                    onClick={() => window.open("https://notebooklm.google.com/", "_blank")} 
+                                    className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
+                                >
+                                    <ExternalLink className="h-4 w-4" />
+                                    NotebookLM
+                                </Button>
                             </div>
                         </div>
                     </DialogTitle>

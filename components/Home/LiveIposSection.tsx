@@ -188,13 +188,11 @@ export function LiveIposSection({ ipos, count }: IpoSectionProps) {
           style={{
             height: `calc(100vh + ${liveIpoSectionHeight * 0.5}px)`,
             background: `
-              radial-gradient(circle at 20% 30%, rgba(240, 248, 255, 1), rgba(240, 248, 255, 0) 40%),
-              radial-gradient(circle at 70% 20%, rgba(173, 216, 230, 0.6), rgba(173, 216, 230, 0) 50%),
-              radial-gradient(circle at 30% 80%, rgba(135, 206, 250, 0.5), rgba(135, 206, 250, 0) 50%),
-              radial-gradient(circle at 90% 70%, rgba(173, 216, 250, 0.5), rgba(173, 216, 250, 0) 60%)
+              radial-gradient(circle at 20% 30%, rgba(220, 232, 245, 1), rgba(220, 232, 245, 0) 40%),
+              radial-gradient(circle at 70% 20%, rgba(130, 175, 200, 0.6), rgba(130, 175, 200, 0) 50%),
+              radial-gradient(circle at 30% 80%, rgba(95, 165, 220, 0.5), rgba(95, 165, 220, 0) 50%),
+              radial-gradient(circle at 90% 70%, rgba(130, 175, 220, 0.5), rgba(130, 175, 220, 0) 60%)
             `,
-            backgroundColor: '#e6f4fe',
-            filter: 'blur(50px)'
           }}
         />
         <div

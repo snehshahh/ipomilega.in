@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     }
   }
 
-  const overallScore = ((analysis.summary_metrics.fundamentals_score + analysis.summary_metrics.performance_score) / 2).toFixed(1)
+  const overallScore = ((analysis.summary_metrics?.fundamentals_score ?? 0) + (analysis.summary_metrics?.performance_score ?? 0) / 2).toFixed(1)
   const gainsPercentage = analysis.ipo_details.approximate_gains_potential
   
   const title = `${analysis.company_name} IPO Analysis - Score ${overallScore}/10 | ${gainsPercentage}% Potential Gains`
@@ -133,7 +133,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 // Generate JSON-LD structured data
 function generateStructuredData(analysis: IpoComprehensiveAnalysis, id: string) {
-  const overallScore = ((analysis.summary_metrics.fundamentals_score + analysis.summary_metrics.performance_score) / 2).toFixed(1)
+  const overallScore = ((analysis.summary_metrics?.fundamentals_score ?? 0 + (analysis.summary_metrics?.performance_score ?? 0)) / 2).toFixed(1)
   
   return {
     '@context': 'https://schema.org',
