@@ -23,33 +23,24 @@ const formatDateToReadable = (dateInput: string | undefined | null): string => {
   try {
     let date: Date;
     
-    // Try to parse the date - this handles most common formats
-    // Including: "2025-08-10", "08/10/2025", "10-08-2025", ISO strings, etc.
     date = new Date(dateInput);
     
-    // Check if the date is valid
     if (isNaN(date.getTime())) {
-      // If direct parsing fails, try some common formats manually
       const cleanedInput = dateInput.trim();
-      
-      // Try DD/MM/YYYY or DD-MM-YYYY format
       const ddmmyyyyRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/;
       const ddmmyyyyMatch = cleanedInput.match(ddmmyyyyRegex);
       if (ddmmyyyyMatch) {
         const [, day, month, year] = ddmmyyyyMatch;
         date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
       } else {
-        // If all parsing attempts fail, return the original string
         return dateInput;
       }
     }
     
-    // Check again if date is valid after manual parsing
     if (isNaN(date.getTime())) {
       return dateInput;
     }
     
-    // Format to "10 August 2025"
     const options: Intl.DateTimeFormatOptions = {
       day: 'numeric',
       month: 'long',
@@ -59,7 +50,6 @@ const formatDateToReadable = (dateInput: string | undefined | null): string => {
     return date.toLocaleDateString('en-GB', options);
   } catch (error) {
     console.error("Error formatting date:", error);
-    // If any error occurs, return the original string
     return dateInput;
   }
 };
@@ -72,7 +62,6 @@ const parseDate = (dateInput: string | undefined | null): Date | null => {
     let date = new Date(dateInput);
     
     if (isNaN(date.getTime())) {
-      // Try DD/MM/YYYY or DD-MM-YYYY format manually
       const cleanedInput = dateInput.trim();
       const ddmmyyyyRegex = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/;
       const ddmmyyyyMatch = cleanedInput.match(ddmmyyyyRegex);
@@ -118,17 +107,18 @@ export default function AllIPOsPage() {
     fetchAllIPOs();
   }, []);
 
-  // New function for Risk Score, where lower is better
+  // FIXED: Risk color logic now aligns with a 1-10 score.
+  // Lower score is better (less risk).
   const getRiskColor = (score: number) => {
-    if (score > 70) return "text-red-600 dark:text-red-400";
-    if (score > 40) return "text-yellow-600 dark:text-yellow-400";
-    return "text-green-600 dark:text-green-400";
+    if (score > 7) return "text-red-600 dark:text-red-400"; // High Risk
+    if (score > 6) return "text-yellow-600 dark:text-yellow-400"; // Medium Risk
+    return "text-green-600 dark:text-green-400"; // Low Risk
   }
 
   // Updated status badge function using the new date parsing utility
   const getStatusBadge = (ipo: IpoComprehensiveAnalysis) => {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Normalize today's date
+    today.setHours(0, 0, 0, 0);
 
     const openingDate = parseDate(ipo.time?.issue_dates?.opening);
     const closingDate = parseDate(ipo.time?.issue_dates?.closing);
@@ -155,7 +145,7 @@ export default function AllIPOsPage() {
     }
     if (today < openingDate) {
       const daysToOpen = Math.ceil((openingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      if (daysToOpen === 0) { // This case handles if it's today
+      if (daysToOpen === 0) {
         return <Badge className="bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20 hover:bg-green-500/20 animate-pulse">Opening Today</Badge>;
       }
       if (daysToOpen === 1) {
@@ -168,8 +158,6 @@ export default function AllIPOsPage() {
   };
 
   if (isLoading) {
-    // Your loading state component is well-designed and doesn't need changes.
-    // I've included it here for completeness.
     return (
       <div className="min-h-screen bg-background">
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 lg:py-8">
@@ -177,7 +165,6 @@ export default function AllIPOsPage() {
             <Skeleton className="h-8 sm:h-10 w-40 sm:w-48 bg-muted/50 mb-2" />
             <Skeleton className="h-5 sm:h-6 w-80 sm:w-96 bg-muted/50" />
           </div>
-          {/* Desktop Loading */}
           <div className="hidden lg:block bg-background/60 backdrop-blur-sm border border-muted/50 rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -210,7 +197,6 @@ export default function AllIPOsPage() {
               </table>
             </div>
           </div>
-          {/* Mobile Loading */}
           <div className="md:hidden space-y-3">
             {Array(6).fill(0).map((_, index) => (
               <div key={index} className="bg-background/60 backdrop-blur-sm border border-muted/50 rounded-xl p-4">
@@ -275,7 +261,6 @@ export default function AllIPOsPage() {
         `,
         backgroundColor: '#e6f4fe',
       }}>
-      {/* Header */}
       <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 lg:py-6">
           <div className="flex items-center justify-between gap-4">
@@ -308,7 +293,6 @@ export default function AllIPOsPage() {
           </Card>
         ) : (
           <>
-            {/* Desktop Table View */}
             <div className="hidden lg:block bg-background/95 backdrop-blur-sm border border-muted/50 rounded-xl overflow-hidden">
                 <table className="w-full">
                   <thead className="bg-muted/20 border-b border-muted/50">
@@ -341,7 +325,8 @@ export default function AllIPOsPage() {
                         <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{formatDateToReadable(ipo.time?.issue_dates?.closing)}</div></td>
                         <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{ipo.ipo_details?.price_band || "N/A"}</div></td>
                         <td className="px-4 py-4 text-center"><div className="text-sm font-bold text-green-600">{ipo.ipo_details?.gains_rationale || "N/A"}</div></td>
-                        <td className="px-4 py-4 text-center"><div className={cn("text-sm font-bold", getRiskColor(ipo.summary_metrics?.risk_meter || 0))}>{ipo.summary_metrics?.risk_meter ? `${ipo.summary_metrics.risk_meter}/100` : "N/A"}</div></td>
+                        {/* FIXED: Displaying risk score out of 10 and using corrected color logic */}
+                        <td className="px-4 py-4 text-center"><div className={cn("text-sm font-bold", getRiskColor(ipo.summary_metrics?.risk_meter || 0))}>{ipo.summary_metrics?.risk_meter ? `${ipo.summary_metrics.risk_meter}/10` : "N/A"}</div></td>
                         <td className="px-4 py-4 text-center">{getStatusBadge(ipo)}</td>
                         <td className="px-4 py-4 text-center"><Link href={`/analysis/${ipo.ipo_table_id}`}><Button size="sm" variant="outline" className="border-primary/20 hover:bg-primary/10 text-primary hover:border-primary/40 transition-all duration-200"><Eye className="h-4 w-4 mr-1" />View</Button></Link></td>
                       </tr>
@@ -350,7 +335,6 @@ export default function AllIPOsPage() {
                 </table>
             </div>
 
-            {/* Mobile Card View */}
             <div className="md:hidden space-y-3">
               {ipos.map((ipo) => (
                 <div key={ipo._id} className="bg-background/95 backdrop-blur-sm border border-muted/50 rounded-xl p-4">

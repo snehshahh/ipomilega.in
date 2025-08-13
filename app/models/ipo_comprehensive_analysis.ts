@@ -133,9 +133,9 @@ interface IpoDetailsComprehensive {
     price_band: string; // Maps from ipo_details.ipo_price_band or price_band
     lot_size: number; // Maps from ipo_market_lot[0].lot_size (parsed as number)
     allocation_details: {
-        retail: number; // Maps from ipo_details.retail_quota (parsed as percentage)
-        qib: number; // Maps from ipo_details.qib_quota (parsed as percentage)
-        nii: number; // Maps from ipo_details.nii_quota (parsed as percentage)
+        retail: string; // Maps from ipo_details.retail_quota (parsed as percentage)
+        qib: string; // Maps from ipo_details.qib_quota (parsed as percentage)
+        nii: string; // Maps from ipo_details.nii_quota (parsed as percentage)
     };
     approximate_gains_potential: number; // Default 0, can be updated
     gains_rationale: string; // Default empty, can be updated

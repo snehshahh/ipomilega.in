@@ -143,7 +143,7 @@ type AnalysisDataType = RiskAnalysis | PerformanceAnalysis | FlexibilityAnalysis
 
 // Complete analysis data interface
 interface AnalysisData {
-    risk?: RiskAnalysis;
+    risk_meter?: RiskAnalysis;
     performance?: PerformanceAnalysis;
     flexibility?: FlexibilityAnalysis;
     fundamentals?: FundamentalsAnalysis;
@@ -152,14 +152,14 @@ interface AnalysisData {
 
 // Updated prompts (removed ipo_details section)
 const analysisPrompts = {
-    risk: `Analyze risk factors for this IPO. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only.
+    risk_meter: `Analyze risk factors for this IPO. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only.
 
 RISK FACTORS TEXT (RHP): READ THE REFERENCE FROM THE PDF
 SCRAPED DATA CONTEXT: READ THE REFERENCE FROM THE PDF
 
 Return JSON with this exact structure:
 {
-  "score": number (1-10),
+  "score": number (1-10, lower is better),
   "summary": "string (1-2 lines explaining risk severity)",
   "key_risks": ["array of 5-7 significant risk strings"],
   "risk_categories": {
@@ -217,8 +217,8 @@ Return JSON with this exact structure:
     "description": "string describing market adaptation ability"
   },
   "financial_stability": {
-    "score": number,
-    "description": "string describing financial stability"
+    "score": number | null,
+    "description": "string | null"
   },
   "operational_agility": {
     "score": number (1-10),
@@ -249,18 +249,18 @@ Return JSON with this exact structure:
   "profit_analysis": {
     "net_profit": number (in millions, numerical value only),
     "profit_margin": number (percentage as number, e.g., 12.5),
-    "ebitda": number (in millions, numerical value only, can be null),
+    "ebitda": number | null,
     "profit_trend": "string describing profit trend"
   },
   "assets_and_liabilities": {
     "total_assets": number (in millions, numerical value only),
-    "total_liabilities": number (in millions, numerical value only, can be null),
-    "debt_to_equity_ratio": number (ratio as number, e.g., 0.75, can be null)
+    "total_liabilities": number | null,
+    "debt_to_equity_ratio": number | null
   },
   "financial_ratios": {
-    "current_ratio": "string (e.g., '1.5:1', can be null)",
-    "quick_ratio": "string (e.g., '1.2:1', can be null)",
-    "return_on_equity": "string (e.g., '15%', can be null)"
+    "current_ratio": "string | null (e.g., '1.5:1')",
+    "quick_ratio": "string | null (e.g., '1.2:1')",
+    "return_on_equity": "string | null (e.g., '15%')"
   }
 }`,
 
@@ -318,7 +318,7 @@ interface IpoAnalysisModalProps {
 
 // Removed ipo_details from analysis steps
 const analysisSteps: AnalysisStep[] = [
-    { id: 'risk', title: 'Risk Analysis', description: 'Evaluate potential risks and mitigation strategies.', icon: Shield, color: 'text-red-600', required: true },
+    { id: 'risk_meter', title: 'Risk Analysis', description: 'Evaluate potential risks and mitigation strategies.', icon: Shield, color: 'text-red-600', required: true },
     { id: 'performance', title: 'Performance', description: 'Analyze historical growth and achievements.', icon: TrendingUp, color: 'text-green-600', required: true },
     { id: 'flexibility', title: 'Flexibility', description: 'Assess market adaptability and agility.', icon: Activity, color: 'text-blue-600', required: true },
     { id: 'fundamentals', title: 'Fundamentals', description: 'Review financial health and ratios.', icon: LineChart, color: 'text-purple-600', required: true },
@@ -355,7 +355,7 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
     // Auto-load data when step changes
     useEffect(() => {
         const stepId = analysisSteps[currentStep].id;
-        const stepData = analysisData[stepId];
+        const stepData = analysisData[stepId as keyof AnalysisData];
         if (stepData) {
             setJsonInput(JSON.stringify(stepData, null, 2));
         } else {
@@ -390,7 +390,7 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
         const validation = validateJson(input);
         if (validation.isValid && validation.data) {
             const stepId = currentStepData.id;
-            setAnalysisData(prev => ({ ...prev, [stepId]: validation.data }));
+            setAnalysisData(prev => ({ ...prev, [stepId as keyof AnalysisData]: validation.data }));
             setCompletedSteps(prev => new Set(prev).add(stepId));
             setJsonError(null);
             return true;
@@ -426,33 +426,56 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
 
     // Function to map IPO details from existing Ipo interface to comprehensive analysis format
     const mapIpoDetails = (ipo: Ipo) => {
-        // Extract retail, qib, nii percentages from the ipo_details or use defaults
-        const retailQuota = parseFloat(ipo.ipo_details?.retail_quota || '35');
-        const qibQuota = parseFloat(ipo.ipo_details?.qib_quota || '50');  
-        const niiQuota = parseFloat(ipo.ipo_details?.nii_quota || '15');
+        const retailQuota = ipo.ipo_details?.retail_quota || '35';
+        const qibQuota = ipo.ipo_details?.qib_quota || '50';  
+        const niiQuota = ipo.ipo_details?.nii_quota || '15';
 
-        // Extract lot size from ipo_market_lot array or use default
-        const lotSize = ipo.ipo_market_lot?.[0]?.lot_size ? parseInt(ipo.ipo_market_lot[0].lot_size) : 0;
+        // FIXED: Safely parse lot_size with optional chaining and a fallback.
+        const lotSize = parseInt(ipo.ipo_market_lot?.[0]?.lot_size || '0');
 
         return {
             opening: ipo.ipo_dates?.ipo_open_date || '',
             closing: ipo.ipo_dates?.ipo_close_date || '',
-            issue_size: ipo.ipo_details?.issue_size || ipo.ipo_size || '',
-            price_band: ipo.ipo_details?.ipo_price_band || ipo.price_band || '',
+            issue_size: ipo.ipo_size || '',
+            price_band: ipo.price_band || '',
             lot_size: lotSize,
             allocation_details: {
                 retail: retailQuota,
                 qib: qibQuota,
                 nii: niiQuota
             },
-            approximate_gains_potential: 0, // Default value, can be updated later
-            gains_rationale: ipo.gmp_price_gain || '', // Default value, can be updated later
+            approximate_gains_potential: 0,
+            gains_rationale: ipo.gmp_price_gain || '',
             profitability_of_allotment: {
-                score: 0, // Default value, can be updated later
-                assessment: '' // Default value, can be updated later
+                score: 0,
+                assessment: ''
             }
         };
     };
+
+    const mapTimeDetails = (ipo: Ipo) => {
+        return {
+            score: 0,
+            summary: '',
+            issue_dates: {
+                opening: ipo.ipo_dates?.ipo_open_date || '',
+                closing: ipo.ipo_dates?.ipo_close_date || '',
+            },
+            listing_details: {
+                expected_date: ipo.ipo_dates?.ipo_listing_date || '',
+            },
+            allotment_timeline: {
+                date: ipo.ipo_dates?.ipo_close_date || '',
+            },
+            key_milestones: [],
+            market_timing_assessment: '',
+            time_to_market: {
+                score: 0,
+                rationale: '',
+            },
+        };
+    };
+
 
     const handleSave = async () => {
         let isCurrentStepSaved = true;
@@ -466,12 +489,12 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
         }
 
         // Get final analysis data with current step if there's input
-        const finalAnalysisData = jsonInput.trim() ? 
-            { ...analysisData, [currentStepData.id]: JSON.parse(jsonInput) } : 
+        const finalAnalysisData = jsonInput.trim() ?
+            { ...analysisData, [currentStepData.id]: JSON.parse(jsonInput) } :
             analysisData;
 
         const requiredSteps = analysisSteps.filter(step => step.required);
-        const firstMissingStep = requiredSteps.find(step => !finalAnalysisData[step.id]);
+        const firstMissingStep = requiredSteps.find(step => !finalAnalysisData[step.id as keyof AnalysisData]);
 
         if (firstMissingStep) {
             const missingStepIndex = analysisSteps.findIndex(s => s.id === firstMissingStep.id);
@@ -484,13 +507,14 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
         try {
             // Map IPO details from the existing IPO data
             const mappedIpoDetails = mapIpoDetails(ipoItem.ipo);
+            const mappTimeDetails = mapTimeDetails(ipoItem.ipo);
 
             // Calculate summary metrics from the collected data
             const summaryMetrics = {
                 fundamentals_score: finalAnalysisData.fundamentals?.score || 0,
-                risk_meter: finalAnalysisData.risk?.score || 0,
+                risk_meter: finalAnalysisData.risk_meter?.score || 0, // Changed from .risk to .risk_meter
                 flexibility_score: finalAnalysisData.flexibility?.score || 0,
-                time_score: finalAnalysisData.time?.score || 0,
+                time_score: mappTimeDetails?.score || 0,
                 performance_score: finalAnalysisData.performance?.score || 0,
                 approximate_gains_potential: mappedIpoDetails.approximate_gains_potential,
                 profitability_of_allotment: mappedIpoDetails.profitability_of_allotment.score,
@@ -505,9 +529,9 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
                 company_name: ipoItem.ipo.ipo_name || ipoItem.ipo.upcoming_ipo_2025 || 'Unknown Company',
                 image_url: ipoItem.ipo.image_url || '',
                 fundamentals: finalAnalysisData.fundamentals || {},
-                risk_meter: finalAnalysisData.risk || {},
+                risk_meter: finalAnalysisData.risk_meter || {},
                 flexibility: finalAnalysisData.flexibility || {},
-                time: finalAnalysisData.time || {},
+                time: mappTimeDetails || {},
                 performance: finalAnalysisData.performance || {},
                 ipo_details: mappedIpoDetails, // Use mapped IPO details
                 summary_metrics: summaryMetrics
@@ -518,7 +542,7 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
-            
+
             const result = await response.json();
             if (!response.ok) throw new Error(result.message || 'Failed to save analysis');
 
@@ -527,8 +551,8 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
             onAnalysisAdded();
 
         } catch (error) {
-            toast.error('Failed to save analysis', { 
-                description: error instanceof Error ? error.message : 'Unknown error' 
+            toast.error('Failed to save analysis', {
+                description: error instanceof Error ? error.message : 'Unknown error'
             });
         } finally {
             setIsSubmitting(false);
@@ -549,13 +573,13 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
                         <div className="flex items-center gap-2 justify-between w-full">
                             <div className="flex items-center gap-2">
                                 <div className="p-2 w-12 h-12 rounded-lg bg-blue-600/10 ">
-                                <Avatar>
-                                    {ipoItem.ipo.image_url ? (
-                                        <AvatarImage src={ipoItem.ipo.image_url || ''} />
-                                    ) : (
-                                        <AvatarFallback>{ipoItem.ipo.ipo_name || ipoItem.ipo.upcoming_ipo_2025 || 'Unknown Company'}</AvatarFallback>
-                                    )}
-                                </Avatar>
+                                    <Avatar>
+                                        {ipoItem.ipo.image_url ? (
+                                            <AvatarImage src={ipoItem.ipo.image_url || ''} />
+                                        ) : (
+                                            <AvatarFallback>{ipoItem.ipo.ipo_name || ipoItem.ipo.upcoming_ipo_2025 || 'Unknown Company'}</AvatarFallback>
+                                        )}
+                                    </Avatar>
                                 </div>
                                 <div>
                                     <div>
@@ -567,8 +591,8 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
                             <div className="flex items-center gap-2">
                                 {/* RHP Link */}
                                 {rhpLink && (
-                                    <Button 
-                                        onClick={() => window.open(rhpLink, "_blank")} 
+                                    <Button
+                                        onClick={() => window.open(rhpLink, "_blank")}
                                         variant="outline"
                                         size="sm"
                                         className="flex items-center gap-2"
@@ -579,8 +603,8 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
                                 )}
                                 {/* DRHP Link */}
                                 {drhpLink && (
-                                    <Button 
-                                        onClick={() => window.open(drhpLink, "_blank")} 
+                                    <Button
+                                        onClick={() => window.open(drhpLink, "_blank")}
                                         variant="outline"
                                         size="sm"
                                         className="flex items-center gap-2"
@@ -590,8 +614,8 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
                                     </Button>
                                 )}
                                 {/* NotebookLM Link */}
-                                <Button 
-                                    onClick={() => window.open("https://notebooklm.google.com/", "_blank")} 
+                                <Button
+                                    onClick={() => window.open("https://notebooklm.google.com/", "_blank")}
                                     className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
                                 >
                                     <ExternalLink className="h-4 w-4" />

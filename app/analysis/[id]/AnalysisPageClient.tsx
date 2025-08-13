@@ -602,7 +602,7 @@ export default function AnalysisPageClient({
             <hr className="my-8 border-t border-gray-200" />
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-8 gap-x-4 justify-items-center">
               {investorData.map((item, i) => (
-                <ProgressCircle key={i} label={item.label} value={item.value} />
+                <ProgressCircle key={i} label={item.label} value={ parseFloat(item.value)} />
               ))}
             </div>
           </section>
