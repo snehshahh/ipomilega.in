@@ -9,18 +9,23 @@ export async function GET(
     try {
         const id = (await params).id
         const { db } = await connectToDatabase();
-        const analysisList = await db.collection("ipo_comprehensive_analysis").find({}).toArray();
+        const analysisList = await db.collection("ipo_comprehensive_analysis").findOne({ ipo_table_id: id });
         const ipoList = await db.collection("ipos").find({}).toArray();
-        const analysis = analysisList || [];
 
-        const analysisData = analysis.find((ana) => ana.ipo_table_id === id);
+
+        if (!analysisList) {
+            return NextResponse.json({
+                message: "Data not found",
+                success: false,
+            }, { status: 404 });
+        }
 
         const ipoTable = ipoList.find((ipo) => ipo._id.toString() === id);
 
         return NextResponse.json({
             message: "Data retrieved successfully",
             success: true,
-            ipos_analysis: analysisData,
+            ipos_analysis: analysisList,
             ipo: ipoTable,
         });
     }

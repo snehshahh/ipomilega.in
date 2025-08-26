@@ -1,8 +1,10 @@
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import AnalysisPageClient from './AnalysisPageClient'
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis"
 import { Ipo } from '@/app/models/ipo';
+import {  ArrowLeftCircle, Clock, FileSearch } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import Link from 'next/link';
 
 // Server-side function to fetch analysis data
 async function getAnalysisData(id: string): Promise<{ ipos_analysis: IpoComprehensiveAnalysis; ipo: Ipo } | null> {
@@ -187,9 +189,58 @@ function generateStructuredData(analysis: IpoComprehensiveAnalysis, id: string) 
 export default async function AnalysisPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const analysis = await getAnalysisData(id)
-  
+
   if (!analysis) {
-    notFound()
+    return (
+      <div className="min-h-screen font-ibm-plex bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+        <CardContent className="p-8 text-center space-y-6">
+          {/* Icon and Status */}
+          <div className="space-y-4">
+            <div className="mx-auto w-16 h-16 bg-[#93c5fd] rounded-full flex items-center justify-center">
+              <FileSearch className="h-8 w-8 text-white" />
+            </div>
+            
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
+                Analysis In Progress
+              </h1>
+              <p className="text-slate-600 leading-relaxed">
+                We&apos;re currently preparing a comprehensive analysis for this IPO. 
+                Our team is working diligently to provide you with detailed insights.
+              </p>
+            </div>
+          </div>
+
+          {/* Status indicator */}
+          <div className="flex items-center justify-center gap-3 p-4 bg-[#93c5fd] rounded-lg border border-[#93c5fd]">
+            <Clock className="h-5 w-5 text-white animate-pulse" />
+            <span className="text-sm font-medium text-white">
+              Expected completion: Soon
+            </span>
+          </div>
+
+          {/* Actions */}
+          <div className="space-y-3 pt-2">
+            <Link href="/" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800">
+              <ArrowLeftCircle className="h-5 w-5" />
+              Back to Home
+            </Link>
+          </div>
+
+          {/* Additional info */}
+          {/* <div className="pt-4 border-t border-slate-200">
+            <p className="text-xs text-slate-500">
+              Want to be notified when ready?{" "}
+              <button className="text-blue-600 hover:text-blue-700 underline underline-offset-2 font-medium">
+                Set up alerts
+              </button>
+            </p>
+          </div> */}
+        </CardContent>
+      </Card>
+    </div>
+    )
   }
 
   const structuredData = generateStructuredData(analysis.ipos_analysis, id)

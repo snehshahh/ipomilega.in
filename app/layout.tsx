@@ -295,21 +295,6 @@ function CreativeIPOLoader() {
   );
 }
 
-// Add a loading state hook with longer duration
-function useLoading() {
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Longer minimum loading time to show the full experience
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 8000); // Increased to 8 seconds to see multiple animation cycles
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return isLoading;
-}
 
 // Mobile Navigation Sidebar Component
 function MobileSidebar({ isOpen, onClose, isAdmin }: {
@@ -444,7 +429,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const isLoading = useLoading(); // Add loading state
 
   const handleSignOut = async () => {
     await signOut();
@@ -456,10 +440,6 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
 
   const pathname = usePathname();
   console.log("pathname", pathname)
-  // Show loader during initial load
-  if (isLoading) {
-    return <CreativeIPOLoader />;
-  }
 
   return (
     <ProgressProvider>

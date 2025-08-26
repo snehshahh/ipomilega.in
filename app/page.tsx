@@ -1,9 +1,17 @@
+import { Suspense } from 'react';
+
+// Add resource preloading
+export async function generateStaticParams() {
+  return [];
+}
+
 import { BlogSection } from '@/components/Home/BlogSection';
 import { LiveIposSection } from '@/components/Home/LiveIposSection';
 import { PastIposSection } from '@/components/Home/PastIposSection';
 import { UpcomingIposSection } from '@/components/Home/UpcomingIpos';
 import { getHomePageData } from '@/lib/data-fetching';
 import { Metadata } from 'next';
+import { HomePageData } from './types/homepage';
 
 export const metadata: Metadata = {
   title: 'IPO Milega - Your Gateway to IPO Investments | Live, Upcoming & Past IPOs',
@@ -66,15 +74,43 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const homeData = await getHomePageData();
-
+  // Move data fetching outside of component for better performance
+  const homeDataPromise = getHomePageData();
+  
   return (
     <div className="min-h-screen relative overflow-hidden bg-[#EEF9FF]">
       <div className="relative z-10 min-h-screen pt-15 md:pt-15 lg:pt-0">
-        <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
-        <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
-        <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
-        <BlogSection blogs={homeData.blogList} />
+        <Suspense fallback={<HomePageSkeleton />}>
+          <HomeContent dataPromise={homeDataPromise} />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+
+// Create a new component to handle the data
+async function HomeContent({ dataPromise }: { dataPromise: Promise<HomePageData> }) {
+  const homeData = await dataPromise;
+  
+  return (
+    <>
+      <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
+      <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
+      <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
+      <BlogSection blogs={homeData.blogList} />
+    </>
+  );
+}
+
+// Add a lightweight skeleton
+function HomePageSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <div className="h-96 bg-gray-200 rounded-lg mb-8"></div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
+        ))}
       </div>
     </div>
   );

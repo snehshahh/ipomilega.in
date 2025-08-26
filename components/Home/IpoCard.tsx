@@ -84,15 +84,17 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
         <div className="flex flex-col items-left justify-left">
           <div className="flex flex-row items-center justify-left gap-3">
             <Avatar className="w-15 h-15 sm:w-16 sm:h-16 flex-shrink-0">
-              {
-                ipo?.image_url ? (
-                  <AvatarImage src={ipo.image_url} />
-                ) : (
-                  <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
-                    {getInitials(ipo?.upcoming_ipo_2025 || '')}
-                  </AvatarFallback>
-                )
-              }
+              {ipo?.image_url ? (
+                <AvatarImage
+                  src={ipo.image_url}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
+                  {getInitials(ipo?.upcoming_ipo_2025 || '')}
+                </AvatarFallback>
+              )}
             </Avatar>
             <div className="flex flex-col items-left justify-left min-w-0 flex-1">
               <h2 className="text-base sm:text-lg font-semibold truncate">{ipo?.upcoming_ipo_2025 || 'Company Name'}</h2>
@@ -182,15 +184,17 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
         <div className="flex flex-col items-left justify-left">
           <div className="flex flex-row items-center justify-left gap-3">
             <Avatar className="w-15 h-15 sm:w-16 sm:h-16 flex-shrink-0">
-              {
-                ipo?.image_url ? (
-                  <AvatarImage src={ipo.image_url} />
-                ) : (
-                  <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
-                    {getInitials(ipo?.upcoming_ipo_2025 || '')}
-                  </AvatarFallback>
-                )
-              }
+              {ipo?.image_url ? (
+                <AvatarImage
+                  src={ipo.image_url}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
+                  {getInitials(ipo?.upcoming_ipo_2025 || '')}
+                </AvatarFallback>
+              )}
             </Avatar>
             <div className="flex flex-col items-left justify-left min-w-0 flex-1">
               <h2 className="text-base sm:text-lg font-semibold truncate">{ipo?.upcoming_ipo_2025 || 'Company Name'}</h2>
@@ -268,15 +272,17 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
         <div className="flex flex-col items-left justify-left">
           <div className="flex flex-row items-center justify-left gap-3">
             <Avatar className="w-15 h-15 sm:w-16 sm:h-16 flex-shrink-0">
-              {
-                ipo?.image_url ? (
-                  <AvatarImage src={ipo.image_url} />
-                ) : (
-                  <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
-                    {getInitials(ipo?.upcoming_ipo_2025 || '')}
-                  </AvatarFallback>
-                )
-              }
+              {ipo?.image_url ? (
+                <AvatarImage
+                  src={ipo.image_url}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
+                  {getInitials(ipo?.upcoming_ipo_2025 || '')}
+                </AvatarFallback>
+              )}
             </Avatar>
             <div className="flex flex-col items-left justify-left min-w-0 flex-1">
               <h2 className="text-base sm:text-lg font-semibold truncate">{ipo?.upcoming_ipo_2025 || 'Company Name'}</h2>
