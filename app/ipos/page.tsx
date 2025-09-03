@@ -407,12 +407,12 @@ function IPOsContent() {
                       </div>
 
                       <div className="flex items-center gap-2 pt-3 flex-wrap">
-                        {ipoItem._id && (
+                        {ipoItem.ipo.slug && (
                           <Button
                             variant="outline"
                             size="sm"
                             className="h-8 px-2 text-xs border-[#B4292E]/20 hover:bg-[#B4292E]/10 text-[#B4292E] font-bold"
-                            onClick={() => router.push(`/analysis/${ipoItem._id}`)}
+                            onClick={() => router.push(`/analysis/${ipoItem.ipo.slug}`)}
                           >
                             <LineChart className="h-3 w-3 mr-1" />
                             Analysis
@@ -490,12 +490,12 @@ function IPOsContent() {
                           </td>
                           <td className="p-4">
                             <div className="flex items-center gap-2 flex-wrap">
-                              {ipoItem._id && (
+                              {ipoItem.ipo.slug && (
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   className="h-9 px-3 text-sm border-[#B4292E]/20 hover:bg-[#B4292E]/10 text-[#B4292E] font-bold"
-                                  onClick={() => router.push(`/analysis/${ipoItem._id}`)}
+                                  onClick={() => router.push(`/analysis/${ipoItem.ipo.slug}`)}
                                 >
                                   <LineChart className="h-4 w-4 mr-1.5" />
                                   Analysis

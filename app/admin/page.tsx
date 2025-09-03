@@ -310,7 +310,7 @@ function AdminContent() {
                                 {getBlogsForIpo(ipoItem.ipo._id!).map(blog => <DropdownMenuItem key={blog._id} onClick={() => handleEditBlog(blog._id!)}><Edit className="h-4 w-4 mr-2" />Edit: {blog.title?.substring(0, 20)}...</DropdownMenuItem>)}
                               </DropdownMenuContent>
                             </DropdownMenu>
-                            <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => router.push(`/analysis/${ipoItem.ipo._id}`)}><LineChart className="h-4 w-4 mr-1.5 text-red-600" />Analysis</Button>
+                            <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => router.push(`/analysis/${ipoItem.ipo.slug}`)}><LineChart className="h-4 w-4 mr-1.5 text-red-600" />Analysis</Button>
                           </div>
                         </td>
                       </tr>

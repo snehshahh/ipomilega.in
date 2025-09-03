@@ -138,8 +138,18 @@ interface TimeAnalysis {
     };
 }
 
+interface SummaryAnalysis {
+    approximate_gains_potential: number;
+    gains_rationale: string;
+    profitability_of_allotment: {
+        score: number;
+        assessment: string;
+    };
+}
+
+
 // Analysis data type union
-type AnalysisDataType = RiskAnalysis | PerformanceAnalysis | FlexibilityAnalysis | FundamentalsAnalysis | TimeAnalysis;
+type AnalysisDataType = RiskAnalysis | PerformanceAnalysis | FlexibilityAnalysis | FundamentalsAnalysis | TimeAnalysis | SummaryAnalysis;
 
 // Complete analysis data interface
 interface AnalysisData {
@@ -148,11 +158,12 @@ interface AnalysisData {
     flexibility?: FlexibilityAnalysis;
     fundamentals?: FundamentalsAnalysis;
     time?: TimeAnalysis;
+    summary?: SummaryAnalysis;
 }
 
-// Updated prompts (removed ipo_details section)
+// Updated prompts to include summary
 const analysisPrompts = {
-    risk_meter: `Analyze risk factors for this IPO. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only.
+    risk_meter: `**CRITICAL: Do not mention page numbers. Keep all summaries and descriptions under 20 words.** Analyze risk factors for this IPO.
 
 RISK FACTORS TEXT (RHP): READ THE REFERENCE FROM THE PDF
 SCRAPED DATA CONTEXT: READ THE REFERENCE FROM THE PDF
@@ -160,7 +171,7 @@ SCRAPED DATA CONTEXT: READ THE REFERENCE FROM THE PDF
 Return JSON with this exact structure:
 {
   "score": number (1-10, lower is better),
-  "summary": "string (1-2 lines explaining risk severity)",
+  "summary": "string (A summary explaining risk severity. Max 20 words.)",
   "key_risks": ["array of 5-7 significant risk strings"],
   "risk_categories": {
     "financial_risks": ["array of financial risk strings"],
@@ -168,10 +179,10 @@ Return JSON with this exact structure:
     "operational_risks": ["array of operational risk strings"],
     "regulatory_risks": ["array of regulatory risk strings"]
   },
-  "risk_mitigation": "string describing company's risk mitigation strategies"
+  "risk_mitigation": "string (Describe risk mitigation strategies. Max 20 words.)"
 }`,
 
-    performance: `Analyze the performance focusing on historical growth, achievements, and future potential. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only.
+    performance: `**CRITICAL: Do not mention page numbers. Keep all summaries and descriptions under 20 words.** Analyze the performance.
 
 PERFORMANCE INFORMATION (RHP): READ THE REFERENCE FROM THE PDF
 SCRAPED PERFORMANCE DATA: READ THE REFERENCE FROM THE PDF
@@ -179,7 +190,7 @@ SCRAPED PERFORMANCE DATA: READ THE REFERENCE FROM THE PDF
 Return JSON with this exact structure:
 {
   "score": number (1-10),
-  "summary": "string (1-2 lines comparing to competitors)",
+  "summary": "string (A summary comparing to competitors. Max 20 words.)",
   "historical_growth": {
     "pattern": "string (e.g., 'Exponential', 'Stable')",
     "rate": "string (e.g., '10% annual growth')",
@@ -187,23 +198,23 @@ Return JSON with this exact structure:
   },
   "key_achievements": ["array of significant achievement strings"],
   "management_quality": {
-    "experience": "string describing management experience",
-    "track_record": "string describing management track record",
+    "experience": "string (Describe management experience. Max 20 words.)",
+    "track_record": "string (Describe management track record. Max 20 words.)",
     "score": number (1-10)
   },
-  "market_comparison": "string comparing to industry peers",
+  "market_comparison": "string (Compare to industry peers. Max 20 words.)",
   "future_potential": {
-    "growth_forecast": "string describing growth prospects",
+    "growth_forecast": "string (Describe growth prospects. Max 20 words.)",
     "upcoming_projects": ["array of upcoming initiative strings"]
   },
   "consistency_analysis": {
     "operational_years": number,
     "revenue_stability": "string describing revenue stability",
-    "rationale": "string explaining consistency rationale"
+    "rationale": "string (Explain consistency rationale. Max 20 words.)"
   }
 }`,
 
-    flexibility: `Analyze flexibility focusing on market adaptability, operational agility, and strategic pivoting. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only.
+    flexibility: `**CRITICAL: Do not mention page numbers. Keep all summaries and descriptions under 20 words.** Analyze flexibility.
 
 FLEXIBILITY INFORMATION (RHP): READ THE REFERENCE FROM THE PDF
 SCRAPED DATA CONTEXT: READ THE REFERENCE FROM THE PDF
@@ -211,25 +222,25 @@ SCRAPED DATA CONTEXT: READ THE REFERENCE FROM THE PDF
 Return JSON with this exact structure:
 {
   "score": number (1-10),
-  "summary": "string (1-2 lines comparing adaptability to competitors)",
+  "summary": "string (A summary comparing adaptability. Max 20 words.)",
   "market_adaptability": {
     "score": number (1-10),
-    "description": "string describing market adaptation ability"
+    "description": "string (Describe market adaptation ability. Max 20 words.)"
   },
   "financial_stability": {
     "score": number | null,
-    "description": "string | null"
+    "description": "string | null (Describe financial stability. Max 20 words.)"
   },
   "operational_agility": {
     "score": number (1-10),
-    "description": "string describing operational flexibility"
+    "description": "string (Describe operational flexibility. Max 20 words.)"
   },
-  "product_diversification": "string describing product range and diversification",
+  "product_diversification": "string (Describe product diversification. Max 20 words.)",
   "pivoting_history": ["array of historical pivot strings"],
-  "future_adaptability_potential": "string describing future adaptation potential"
+  "future_adaptability_potential": "string (Describe future adaptation potential. Max 20 words.)"
 }`,
 
-    fundamentals: `Analyze financial fundamentals focusing on financial health and market position. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only. Provide numerical values without currency symbols or units.
+    fundamentals: `**CRITICAL: Do not mention page numbers. Keep all summaries and descriptions under 20 words.** Analyze financial fundamentals.
 
 FINANCIAL DATA FROM RHP: READ THE REFERENCE FROM THE PDF
 SCRAPED FINANCIAL DATA: READ THE REFERENCE FROM THE PDF
@@ -238,9 +249,9 @@ BUSINESS DESCRIPTION: READ THE REFERENCE FROM THE PDF
 Return JSON with this exact structure:
 {
   "score": number (1-10),
-  "summary": "string (1-2 lines explaining financial strengths/weaknesses)",
-  "market_position": "string describing market position",
-  "business_model": "string describing business model",
+  "summary": "string (Explain financial strengths/weaknesses. Max 20 words.)",
+  "market_position": "string (Describe market position. Max 20 words.)",
+  "business_model": "string (Describe business model. Max 20 words.)",
   "revenue_details": {
     "total_revenue": number (in millions, numerical value only),
     "revenue_cagr": number (percentage as number, e.g., 15.5),
@@ -264,7 +275,7 @@ Return JSON with this exact structure:
   }
 }`,
 
-    time: `Analyze timing focusing on market conditions, IPO schedule, and strategic timing. Avoid page numbers and do not use ** for bold formatting. Summary should be 1-2 lines only. Use YYYY-MM-DD format for all dates.
+    time: `**CRITICAL: Do not mention page numbers. Keep all summaries and descriptions under 20 words.** Analyze timing. Use YYYY-MM-DD for dates.
 
 TIME INFORMATION (RHP): READ THE REFERENCE FROM THE PDF
 SCRAPED TIME DATA: READ THE REFERENCE FROM THE PDF
@@ -272,7 +283,7 @@ SCRAPED TIME DATA: READ THE REFERENCE FROM THE PDF
 Return JSON with this exact structure:
 {
   "score": number (1-10),
-  "summary": "string (1-2 lines explaining timing favorability)",
+  "summary": "string (Explain timing favorability. Max 20 words.)",
   "issue_dates": {
     "opening": "string (YYYY-MM-DD format)",
     "closing": "string (YYYY-MM-DD format)"
@@ -283,7 +294,7 @@ Return JSON with this exact structure:
   },
   "allotment_timeline": {
     "date": "string (YYYY-MM-DD format)",
-    "process": "string describing allotment process"
+    "process": "string (Describe allotment process. Max 20 words.)"
   },
   "key_milestones": [
     {
@@ -291,10 +302,24 @@ Return JSON with this exact structure:
       "event": "string describing milestone event"
     }
   ],
-  "market_timing_assessment": "string assessing current market conditions",
+  "market_timing_assessment": "string (Assess current market conditions. Max 20 words.)",
   "time_to_market": {
     "score": number (1-10),
-    "rationale": "string explaining timing score rationale"
+    "rationale": "string (Explain timing score rationale. Max 20 words.)"
+  }
+}`,
+    summary: `**CRITICAL: Do not mention page numbers. Keep all descriptions under 20 words.** Provide a final investment summary.
+
+ALL PREVIOUS ANALYSIS CONTEXT: Use the analysis you've already generated for other sections.
+SCRAPED GMP/GAINS DATA: READ THE REFERENCE FROM THE PDF
+
+Return JSON with this exact structure:
+{
+  "approximate_gains_potential": number (percentage as number, e.g., 25.5),
+  "gains_rationale": "string (Briefly explain gain potential. Max 20 words.)",
+  "profitability_of_allotment": {
+    "score": number (1-10, based on overall analysis),
+    "assessment": "string (e.g., 'High probability of gains due to strong fundamentals.') (Max 20 words.)"
   }
 }`
 };
@@ -316,13 +341,14 @@ interface IpoAnalysisModalProps {
     onAnalysisAdded: () => void;
 }
 
-// Removed ipo_details from analysis steps
+// Added 'summary' to analysis steps
 const analysisSteps: AnalysisStep[] = [
     { id: 'risk_meter', title: 'Risk Analysis', description: 'Evaluate potential risks and mitigation strategies.', icon: Shield, color: 'text-red-600', required: true },
     { id: 'performance', title: 'Performance', description: 'Analyze historical growth and achievements.', icon: TrendingUp, color: 'text-green-600', required: true },
     { id: 'flexibility', title: 'Flexibility', description: 'Assess market adaptability and agility.', icon: Activity, color: 'text-blue-600', required: true },
     { id: 'fundamentals', title: 'Fundamentals', description: 'Review financial health and ratios.', icon: LineChart, color: 'text-purple-600', required: true },
-    { id: 'time', title: 'Time Analysis', description: 'Check market timing and milestones.', icon: Clock, color: 'text-orange-600', required: true }
+    { id: 'time', title: 'Time Analysis', description: 'Check market timing and milestones.', icon: Clock, color: 'text-orange-600', required: true },
+    { id: 'summary', title: 'Investment Summary', description: 'Provide final verdict and gain potential.', icon: CheckCircle, color: 'text-indigo-600', required: true }
 ];
 
 export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalProps) {
@@ -427,15 +453,12 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
     // Function to map IPO details from existing Ipo interface to comprehensive analysis format
     const mapIpoDetails = (ipo: Ipo) => {
         const retailQuota = ipo.ipo_details?.retail_quota || '35';
-        const qibQuota = ipo.ipo_details?.qib_quota || '50';  
+        const qibQuota = ipo.ipo_details?.qib_quota || '50';
         const niiQuota = ipo.ipo_details?.nii_quota || '15';
 
-        // FIXED: Safely parse lot_size with optional chaining and a fallback.
         const lotSize = parseInt(ipo.ipo_market_lot?.[0]?.lot_size || '0');
 
         return {
-            opening: ipo.ipo_dates?.ipo_open_date || '',
-            closing: ipo.ipo_dates?.ipo_close_date || '',
             issue_size: ipo.ipo_size || '',
             price_band: ipo.price_band || '',
             lot_size: lotSize,
@@ -452,30 +475,6 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
             }
         };
     };
-
-    const mapTimeDetails = (ipo: Ipo) => {
-        return {
-            score: 0,
-            summary: '',
-            issue_dates: {
-                opening: ipo.ipo_dates?.ipo_open_date || '',
-                closing: ipo.ipo_dates?.ipo_close_date || '',
-            },
-            listing_details: {
-                expected_date: ipo.ipo_dates?.ipo_listing_date || '',
-            },
-            allotment_timeline: {
-                date: ipo.ipo_dates?.ipo_close_date || '',
-            },
-            key_milestones: [],
-            market_timing_assessment: '',
-            time_to_market: {
-                score: 0,
-                rationale: '',
-            },
-        };
-    };
-
 
     const handleSave = async () => {
         let isCurrentStepSaved = true;
@@ -505,19 +504,27 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
 
         setIsSubmitting(true);
         try {
-            // Map IPO details from the existing IPO data
+            // Map factual IPO details from the existing IPO data
             const mappedIpoDetails = mapIpoDetails(ipoItem.ipo);
-            const mappTimeDetails = mapTimeDetails(ipoItem.ipo);
+            const summaryData = finalAnalysisData.summary;
+
+            // Merge analytical summary data into the factual IPO details
+            const finalIpoDetails = {
+                ...mappedIpoDetails,
+                approximate_gains_potential: summaryData?.approximate_gains_potential ?? 0,
+                gains_rationale: summaryData?.gains_rationale ?? '',
+                profitability_of_allotment: summaryData?.profitability_of_allotment ?? { score: 0, assessment: '' },
+            };
 
             // Calculate summary metrics from the collected data
             const summaryMetrics = {
                 fundamentals_score: finalAnalysisData.fundamentals?.score || 0,
-                risk_meter: finalAnalysisData.risk_meter?.score || 0, // Changed from .risk to .risk_meter
+                risk_meter: finalAnalysisData.risk_meter?.score || 0,
                 flexibility_score: finalAnalysisData.flexibility?.score || 0,
-                time_score: mappTimeDetails?.score || 0,
+                time_score: finalAnalysisData.time?.score || 0,
                 performance_score: finalAnalysisData.performance?.score || 0,
-                approximate_gains_potential: mappedIpoDetails.approximate_gains_potential,
-                profitability_of_allotment: mappedIpoDetails.profitability_of_allotment.score,
+                approximate_gains_potential: finalIpoDetails.approximate_gains_potential,
+                profitability_of_allotment: finalIpoDetails.profitability_of_allotment.score,
                 total_revenue: finalAnalysisData.fundamentals?.revenue_details?.total_revenue || 0,
                 net_profit: finalAnalysisData.fundamentals?.profit_analysis?.net_profit || 0,
                 total_assets: finalAnalysisData.fundamentals?.assets_and_liabilities?.total_assets || 0
@@ -531,9 +538,9 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
                 fundamentals: finalAnalysisData.fundamentals || {},
                 risk_meter: finalAnalysisData.risk_meter || {},
                 flexibility: finalAnalysisData.flexibility || {},
-                time: mappTimeDetails || {},
+                time: finalAnalysisData.time || {},
                 performance: finalAnalysisData.performance || {},
-                ipo_details: mappedIpoDetails, // Use mapped IPO details
+                ipo_details: finalIpoDetails, // Use merged IPO details
                 summary_metrics: summaryMetrics
             };
 

@@ -8,9 +8,14 @@ export async function GET(
 ) {
     try {
         const id = (await params).id
+        console.log("id",id)
         const { db } = await connectToDatabase();
-        const analysisList = await db.collection("ipo_comprehensive_analysis").findOne({ ipo_table_id: id });
         const ipoList = await db.collection("ipos").find({}).toArray();
+
+        const ipoTable = ipoList.find((ipo) => ipo.slug === id);
+        const ipoTableId = ipoTable?._id.toString();
+        console.log("ipoTableId",ipoTableId)
+        const analysisList = await db.collection("ipo_comprehensive_analysis").findOne({ ipo_table_id: ipoTableId });
 
 
         if (!analysisList) {
@@ -20,7 +25,6 @@ export async function GET(
             }, { status: 404 });
         }
 
-        const ipoTable = ipoList.find((ipo) => ipo._id.toString() === id);
 
         return NextResponse.json({
             message: "Data retrieved successfully",

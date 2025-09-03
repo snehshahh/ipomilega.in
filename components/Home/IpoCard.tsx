@@ -43,7 +43,7 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
   const router = useProgressRouter();
 
   const handleViewAnalysis = (ipo: Ipo) => {
-    router.push(`/analysis/${ipo?._id}`);
+    router.push(`/analysis/${ipo?.slug}`);
   };
   const getDaysUntilClosing = () => {
     if (!ipo?.closing_date) return 0;
@@ -149,7 +149,7 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
   const router = useProgressRouter();
 
   const handleViewAnalysis = (ipo: Ipo) => {
-    router.push(`/analysis/${ipo?._id}`);
+    router.push(`/analysis/${ipo?.slug}`);
   };
   const getDaysUntilOpening = () => {
     if (!ipo?.open_date) return 0;
@@ -248,7 +248,7 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
   const router = useProgressRouter();
 
   const handleViewAnalysis = (ipo: Ipo) => {
-    router.push(`/analysis/${ipo?._id}`);
+    router.push(`/analysis/${ipo?.slug}`);
   };
   const riskScore = analysis?.risk_meter?.score || 0;
   const riskBorderColor = getRiskBorderColor(riskScore);

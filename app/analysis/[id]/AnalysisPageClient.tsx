@@ -261,7 +261,7 @@ export default function AnalysisPageClient({
     listing: `${((dotSegments.opening + dotSegments.closing) / totalDots) * 100
       }%`,
     allotment: `${((dotSegments.opening + dotSegments.closing + dotSegments.listing) /
-        totalDots) *
+      totalDots) *
       100
       }%`,
   };
@@ -602,10 +602,61 @@ export default function AnalysisPageClient({
             <hr className="my-8 border-t border-gray-200" />
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-8 gap-x-4 justify-items-center">
               {investorData.map((item, i) => (
-                <ProgressCircle key={i} label={item.label} value={ parseFloat(item.value)} />
+                <ProgressCircle key={i} label={item.label} value={parseFloat(item.value)} />
               ))}
             </div>
           </section>
+        </div>
+      </section>
+
+      {/* Section 3: Investment Summary - Gradient Background */}
+      <section className="main-background">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Card className="bg-white/80 backdrop-blur-sm border shadow-lg">
+            <CardHeader>
+              <CardTitle className="heading-card-title text-foreground pt-4 text-2xl sm:text-lg font-ibm-plex">
+                Investment Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-6 grid-cols-1 sm:grid-cols-3 text-center px-6">
+              <div className="mb-2">
+                <p className="summary-score-label mb-2 text-base font-ibm-plex">
+                  Profitability Score
+                </p>
+                <p
+                  className={`summary-score-value mt-4 text-lg font-ibm-plex ${getScoreColor(
+                    analysis.ipo_details.profitability_of_allotment.score
+                  )}`}
+                >
+                  {analysis.ipo_details.profitability_of_allotment.score}/10
+                </p>
+              </div>
+              <div className="mb-2">
+                <p className="summary-score-label mb-2 text-base font-ibm-plex">
+                  Potential Gains
+                </p>
+                <p
+                  className={`summary-score-value mt-4 text-lg font-ibm-plex ${getScoreColor(
+                    analysis.ipo_details.profitability_of_allotment.score
+                  )}`}
+                >
+                  {analysis.ipo_details.gains_rationale.includes("%") ? analysis.ipo_details.gains_rationale : `${analysis.ipo_details.gains_rationale}%`}
+                </p>
+              </div>
+              <div className="mb-2">
+                <p className="summary-score-label mb-2 text-base font-ibm-plex">
+                  Assessment
+                </p>
+                <p
+                  className={`summary-assessment-text mt-4 text-sm font-ibm-plex ${getScoreColor(
+                    analysis.ipo_details.profitability_of_allotment.score
+                  )}`}
+                >
+                  {analysis.ipo_details.profitability_of_allotment.assessment}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
@@ -623,8 +674,8 @@ export default function AnalysisPageClient({
                     key={tab}
                     onClick={() => handleTabClick(tab)}
                     className={`sticky-tab-button text-sm py-2 px-2 sm:px-3 transition-colors capitalize font-medium font-ibm-plex ${activeTab === tab
-                        ? "bg-[#99CCFF] text-[#0073E6] shadow-md"
-                        : "hover:bg-[#99CCFF]/50 text-[#0073E6]"
+                      ? "bg-[#99CCFF] text-[#0073E6] shadow-md"
+                      : "hover:bg-[#99CCFF]/50 text-[#0073E6]"
                       }`}
                   >
                     {tab}
@@ -892,56 +943,7 @@ export default function AnalysisPageClient({
         </div>
       </section>
 
-      {/* Section 3: Investment Summary - Gradient Background */}
-      <section className="main-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <Card className="bg-white/80 backdrop-blur-sm border shadow-lg">
-            <CardHeader>
-              <CardTitle className="heading-card-title text-foreground pt-4 text-2xl sm:text-lg font-ibm-plex">
-                Investment Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-6 grid-cols-1 sm:grid-cols-3 text-center px-6">
-              <div className="mb-2">
-                <p className="summary-score-label mb-2 text-base font-ibm-plex">
-                  Profitability Score
-                </p>
-                <p
-                  className={`summary-score-value mt-4 text-lg font-ibm-plex ${getScoreColor(
-                    analysis.ipo_details.profitability_of_allotment.score
-                  )}`}
-                >
-                  {analysis.ipo_details.profitability_of_allotment.score}/10
-                </p>
-              </div>
-              <div className="mb-2">
-                <p className="summary-score-label mb-2 text-base font-ibm-plex">
-                  Potential Gains
-                </p>
-                <p
-                  className={`summary-score-value mt-4 text-lg font-ibm-plex ${getScoreColor(
-                    analysis.ipo_details.profitability_of_allotment.score
-                  )}`}
-                >
-                  ~ {analysis.ipo_details.gains_rationale.includes("%") ? analysis.ipo_details.gains_rationale : `${analysis.ipo_details.gains_rationale}%`}
-                </p>
-              </div>
-              <div className="mb-2">
-                <p className="summary-score-label mb-2 text-base font-ibm-plex">
-                  Assessment
-                </p>
-                <p
-                  className={`summary-assessment-text mt-4 text-sm font-ibm-plex ${getScoreColor(
-                    analysis.ipo_details.profitability_of_allotment.score
-                  )}`}
-                >
-                  {analysis.ipo_details.profitability_of_allotment.assessment}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
+
     </div>
   );
 }
