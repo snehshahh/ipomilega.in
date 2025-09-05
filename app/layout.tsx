@@ -4,28 +4,20 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useSession, signOut } from "@/lib/auth-client";
-import { useState, Suspense, useEffect } from "react";
+import { useState, Suspense } from "react";
 import { LoginDialog } from "@/components/ui/login";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   ChevronDown,
   LogOut,
   TrendingUp,
-  Landmark,
-  FileText,
   LineChart,
-  Rocket,
-  DollarSign,
-  BarChart3,
-  Globe,
-  Building2,
-  Coins,
-  Activity,
   Menu,
   X,
   Home,
   BookOpen,
   BarChart,
+  Loader,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -39,262 +31,6 @@ import { ProgressProvider } from "@/components/Progressbar/ProgressProvider";
 import { ProgressLink } from "@/components/Progressbar/ProgressLink";
 import { AnimatePresence, motion } from "framer-motion";
 import { usePathname } from "next/navigation";
-
-// Enhanced loading states with more variety and animations
-const loadingStates = [
-  {
-    icon: <FileText className="h-12 w-12 text-[#0073E6] animate-pulse" />,
-    text: "Reviewing IPO Documents...",
-    bgPattern: "📄",
-  },
-  {
-    icon: <Building2 className="h-12 w-12 text-[#0073E6] animate-bounce" />,
-    text: "Evaluating Company Structure...",
-    bgPattern: "🏢",
-  },
-  {
-    icon: <DollarSign className="h-12 w-12 text-[#0073E6] animate-spin" />,
-    text: "Calculating Valuation...",
-    bgPattern: "💰",
-  },
-  {
-    icon: <BarChart3 className="h-12 w-12 text-[#0073E6] animate-pulse" />,
-    text: "Analyzing Market Trends...",
-    bgPattern: "📈",
-  },
-  {
-    icon: <Globe className="h-12 w-12 text-[#0073E6] animate-bounce" />,
-    text: "Expanding Global Reach...",
-    bgPattern: "🌍",
-  },
-  {
-    icon: <Landmark className="h-12 w-12 text-[#0073E6] animate-pulse" />,
-    text: "Listing on Stock Exchange...",
-    bgPattern: "🏛️",
-  },
-  {
-    icon: <Activity className="h-12 w-12 text-[#0073E6] animate-pulse" />,
-    text: "Monitoring Trading Activity...",
-    bgPattern: "📊",
-  },
-  {
-    icon: <Coins className="h-12 w-12 text-[#0073E6] animate-bounce" />,
-    text: "Generating Returns...",
-    bgPattern: "🪙",
-  },
-  {
-    icon: <Rocket className="h-12 w-12 text-[#0073E6] animate-bounce" />,
-    text: "Preparing for Launch! 🚀",
-    bgPattern: "🚀",
-  },
-];
-
-// Enhanced creative IPO-themed loader component
-function CreativeIPOLoader() {
-  const [index, setIndex] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const [mounted, setMounted] = useState(false);
-  const [cycle, setCycle] = useState(0);
-  console.log("cycle", cycle)
-
-  // Ensure component is mounted
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Cycle through loading states - slower timing for better readability
-  useEffect(() => {
-    if (!mounted) return;
-
-    const interval = setInterval(() => {
-      setIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % loadingStates.length;
-        // Track complete cycles
-        if (nextIndex === 0) {
-          setCycle(prev => prev + 1);
-        }
-        return nextIndex;
-      });
-    }, 2500); // Increased from 800ms to 2500ms for better readability
-
-    return () => clearInterval(interval);
-  }, [mounted]);
-
-  // Simulate smoother, continuous progress
-  useEffect(() => {
-    if (!mounted) return;
-
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        // Progressive loading that doesn't reset abruptly
-        const increment = Math.random() * 1.5 + 0.5;
-        const newProgress = prev + increment;
-
-        // Smooth reset when reaching 100%
-        if (newProgress >= 100) {
-          return Math.random() * 10; // Start next cycle with small progress
-        }
-        return newProgress;
-      });
-    }, 100); // Smoother updates
-
-    return () => clearInterval(progressInterval);
-  }, [mounted]);
-
-  // Don't render until mounted to avoid hydration issues
-  if (!mounted) {
-    return (
-      <div className="fixed inset-0 z-[100] font-ibm-plex min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center">
-        <div className="flex justify-center space-x-2">
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="w-3 h-3 bg-[#0073E6] rounded-full animate-bounce"
-              style={{ animationDelay: `${i * 0.5}s` }}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // Generate floating background elements
-  const backgroundElements = Array.from({ length: 20 }, (_, i) => (
-    <motion.div
-      key={i}
-      className="absolute text-2xl opacity-10 select-none pointer-events-none"
-      initial={{
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-      }}
-      animate={{
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-      }}
-      transition={{
-        duration: 15 + Math.random() * 10,
-        repeat: Infinity,
-        repeatType: "reverse",
-      }}
-    >
-      {loadingStates[Math.floor(Math.random() * loadingStates.length)].bgPattern}
-    </motion.div>
-  ));
-
-  return (
-    <div className="fixed inset-0 z-[100] font-ibm-plex min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-100 flex items-center justify-center overflow-hidden">
-      {/* Animated background pattern */}
-      <div className="absolute inset-0 overflow-hidden">
-        {backgroundElements}
-      </div>
-
-      {/* Main loader content */}
-      <div className="relative z-10 text-center space-y-8 max-w-md mx-auto px-6">
-        {/* IPO Milega Logo */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, type: "spring" }}
-          className="flex items-center justify-center space-x-3 mb-8"
-        >
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0073E6] text-white shadow-lg">
-            <TrendingUp className="h-6 w-6" />
-          </div>
-          <span className="text-3xl font-bold text-gray-900 tracking-tight">
-            IPO Milega
-          </span>
-        </motion.div>
-
-        {/* Main loading animation */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -50, scale: 0.9 }}
-            transition={{
-              duration: 1.2,
-              type: "spring",
-              bounce: 0.3,
-              ease: "easeInOut"
-            }}
-            className="flex flex-col items-center justify-center space-y-6"
-          >
-            {/* Icon with glowing effect */}
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full bg-[#0073E6]/20 blur-xl animate-pulse"></div>
-              <div className="relative bg-white rounded-2xl p-6 shadow-2xl border border-blue-100">
-                {loadingStates[index].icon}
-              </div>
-            </div>
-
-            {/* Loading text */}
-            <div className="space-y-4">
-              <motion.p
-                className="text-2xl font-bold text-gray-900 font-ibm-plex tracking-wide"
-                key={`text-${index}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.3 }}
-              >
-                {loadingStates[index].text}
-              </motion.p>
-
-              {/* Progress bar */}
-              <div className="w-80 h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-                <motion.div
-                  className="h-full bg-gradient-to-r from-[#0073E6] via-blue-400 to-blue-600 rounded-full shadow-sm"
-                  animate={{ width: `${Math.min(progress, 100)}%` }}
-                  transition={{
-                    duration: 0.8,
-                    ease: "easeInOut"
-                  }}
-                />
-              </div>
-              <div className="flex justify-between w-80 text-xs text-gray-600">
-                <span>Loading...</span>
-                <span className="font-semibold">
-                  {Math.round(Math.min(progress, 100))}%
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Loading dots animation - slower and more visible */}
-        <div className="flex justify-center space-x-3 mt-8">
-          {[0, 1, 2].map((i) => (
-            <motion.div
-              key={i}
-              className="w-4 h-4 bg-[#0073E6] rounded-full shadow-lg"
-              animate={{
-                scale: [1, 1.8, 1],
-                opacity: [0.4, 1, 0.4],
-                y: [0, -10, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                delay: i * 0.6,
-                ease: "easeInOut",
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Additional status indicator */}
-        <motion.div
-          className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-        >
-        </motion.div>
-      </div>
-    </div>
-  );
-}
-
 
 // Mobile Navigation Sidebar Component
 function MobileSidebar({ isOpen, onClose, isAdmin }: {
@@ -577,7 +313,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
       />
 
       <main>
-        <Suspense fallback={<CreativeIPOLoader />}>
+        <Suspense fallback={<Loader />}>
           {children}
         </Suspense>
         <Toaster position="top-right" richColors />
@@ -601,7 +337,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen items-center">
-        <Suspense fallback={<CreativeIPOLoader />}>
+        <Suspense fallback={<Loader />}>
           <LayoutContent>{children}</LayoutContent>
         </Suspense>
       </body>

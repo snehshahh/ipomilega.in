@@ -7,15 +7,13 @@ import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysi
 import { Ipo } from "@/app/models/ipo";
 import "@/app/styles/analysis.css";
 
-
-
 // Props for the main component
 interface AnalysisPageClientProps {
   analysis: IpoComprehensiveAnalysis;
   ipo: Ipo;
 }
 
-// Helper component for timeline markers (Desktop)
+// Helper component for timeline markers
 const TimelineMarker = ({
   label,
   date,
@@ -52,69 +50,6 @@ const TimelineMarker = ({
     </div>
   );
 };
-
-// Helper component for timeline markers (Mobile - Upper Row)
-const TimelineMarkerMobileUpper = ({
-  label,
-  date,
-  position,
-}: {
-  label: string;
-  date: string;
-  position: string;
-}) => {
-  const formattedDate = new Date(date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
-  return (
-    <div
-      className={`absolute top-0 h-full flex flex-col justify-between items-start text-left`}
-      style={{ left: position }}
-    >
-      <p className="text-lg font-medium -translate-y-8 font-ibm-plex">
-        {label}
-      </p>
-      <p className="text-lg font-semibold translate-y-8 font-ibm-plex">
-        {formattedDate}
-      </p>
-    </div>
-  );
-};
-
-// Helper component for timeline markers (Mobile - Lower Row)
-const TimelineMarkerMobileLower = ({
-  label,
-  date,
-  position,
-}: {
-  label: string;
-  date: string;
-  position: string;
-}) => {
-  const formattedDate = new Date(date).toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-
-  return (
-    <div
-      className={`absolute top-0 h-full flex flex-col justify-between items-start text-left`}
-      style={{ left: position }}
-    >
-      <p className="text-lg font-medium -translate-y-8 font-ibm-plex">
-        {label}
-      </p>
-      <p className="text-lg font-semibold translate-y-8 font-ibm-plex">
-        {formattedDate}
-      </p>
-    </div>
-  );
-};
-
 
 // Helper component for circular progress indicators
 const ProgressCircle = ({
@@ -235,7 +170,8 @@ export default function AnalysisPageClient({
 
   const overallScore =
     ((analysis.summary_metrics?.fundamentals_score ?? 0) +
-      (analysis.summary_metrics?.performance_score ?? 0)) / 2;
+      (analysis.summary_metrics?.performance_score ?? 0)) /
+    2;
 
   // Helper function to get the upper price from the price band
   const getDisplayPrice = () => {
@@ -251,67 +187,111 @@ export default function AnalysisPageClient({
     }
     return "N/A";
   };
-
-  // --- Timeline Calculation ---
-  const dotSegments = { opening: 10, closing: 15, listing: 8, allotment: 12 };
-  const totalDots = Object.values(dotSegments).reduce((a, b) => a + b, 0);
-  const markerPositions = {
-    opening: "0%",
-    closing: `${(dotSegments.opening / totalDots) * 100}%`,
-    listing: `${((dotSegments.opening + dotSegments.closing) / totalDots) * 100
-      }%`,
-    allotment: `${((dotSegments.opening + dotSegments.closing + dotSegments.listing) /
-      totalDots) *
-      100
-      }%`,
-  };
-  const displayPrice = getDisplayPrice();
-  const showPriceBox = displayPrice !== "N/A";
-  const priceBoxPosition = `${((dotSegments.opening + dotSegments.closing / 2) / totalDots) * 100
-    }%`;
+  
+  // --- DYNAMIC Timeline Calculation ---
+  // This new block calculates positions based on actual dates, making it fully dynamic.
 
   const timelineData = {
     opening: analysis.time?.issue_dates?.opening || "",
     closing: analysis.time?.issue_dates?.closing || "",
-    listing: analysis.time?.listing_details?.expected_date || "",
     allotment: analysis.time?.allotment_timeline?.date || "",
+    today: new Date().toISOString().split("T")[0],
+    listing: analysis.time?.listing_details?.expected_date || "",
   };
 
-  const getDotColorClass = (index: number) => {
-    if (
-      index >= dotSegments.opening &&
-      index < dotSegments.opening + dotSegments.closing
-    )
-      return "bg-[#B4292E]";
-    if (
-      index >= dotSegments.opening + dotSegments.closing &&
-      index < totalDots - dotSegments.allotment
-    )
-      return "bg-[#E4CA28]";
-    if (index >= totalDots - dotSegments.allotment) return "bg-[#0073E6]";
-    return "bg-[#00914D]";
+  // Helper to safely parse dates and check validity
+  const parseDate = (dateString: string) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? null : date;
   };
 
+  const openingDate = parseDate(timelineData.opening);
+  const listingDate = parseDate(timelineData.listing);
+
+  let isTimelineValid = false;
+  let positions = {
+    opening: 0,
+    closing: 0,
+    allotment: 0,
+    today: 0,
+    listing: 100,
+  };
+  let gradientStyle = {};
+
+  if (openingDate && listingDate) {
+    const openingTime = openingDate.getTime();
+    const listingTime = listingDate.getTime();
+    const totalDuration = listingTime - openingTime;
+
+    // Ensure we don't divide by zero if dates are the same
+    if (totalDuration > 0) {
+      isTimelineValid = true;
+
+      // Helper function to calculate a date's percentage position on the timeline
+      const calculatePosition = (dateString: string): number => {
+        const date = parseDate(dateString);
+        if (!date) return 0;
+        const position = ((date.getTime() - openingTime) / totalDuration) * 100;
+        // Clamp the position between 0% and 100%
+        return Math.max(0, Math.min(100, position));
+      };
+
+      positions = {
+        opening: 0,
+        closing: calculatePosition(timelineData.closing),
+        allotment: calculatePosition(timelineData.allotment),
+        today: calculatePosition(timelineData.today),
+        listing: 100,
+      };
+
+      // Define colors for different phases
+      const openingColor = "#00914D"; // Green
+      const subscriptionColor = "#B4292E"; // Red
+      const processingColor = "#E4CA28"; // Yellow
+      const listingColor = "#0073E6"; // Blue
+
+      // Create a dynamic linear-gradient based on the date positions
+      gradientStyle = {
+        background: `linear-gradient(to right,
+          ${openingColor} ${positions.opening}%,
+          ${subscriptionColor} ${positions.closing}%,
+          ${processingColor} ${positions.allotment}%,
+          ${listingColor} ${positions.listing}%
+        )`,
+      };
+    }
+  }
+
+  const displayPrice = getDisplayPrice();
+  const showPriceBox = displayPrice !== "N/A";
+  // Position the price box dynamically between opening and closing
+  const priceBoxPosition = `${(positions.opening + positions.closing) / 2}%`;
+
+  // Helper to parse percentages, used in the investor data fallback
+  const parsePercentage = (value: string): number => {
+    if (!value) return 0;
+    const match = value.match(/(\d+(?:\.\d+)?)/);
+    return match ? parseFloat(match[1]) : 0;
+  };
+  
   // Data for investor allocation split
   const investorData = [
     {
       label: "Retail Investor",
-      value: analysis.ipo_details?.allocation_details?.retail ?? 0,
+      value: analysis.ipo_details?.allocation_details?.retail || parsePercentage(ipo.ipo_details?.retail_quota || "35"),
     },
     {
       label: "NII",
-      value: analysis.ipo_details?.allocation_details?.nii ?? 0,
+      value: analysis.ipo_details?.allocation_details?.nii || parsePercentage(ipo.ipo_details?.nii_quota || "15"),
     },
     {
       label: "QIB",
-      value: analysis.ipo_details?.allocation_details?.qib ?? 0,
+      value: analysis.ipo_details?.allocation_details?.qib || parsePercentage(ipo.ipo_details?.qib_quota || "50"),
     },
     {
       label: "Total",
-      value:
-        (analysis.ipo_details?.allocation_details?.retail ?? 0) +
-        (analysis.ipo_details?.allocation_details?.nii ?? 0) +
-        (analysis.ipo_details?.allocation_details?.qib ?? 0),
+      value: 100, // Total is always 100%
     },
   ];
 
@@ -321,8 +301,9 @@ export default function AnalysisPageClient({
       try {
         await navigator.share({
           title: `${analysis.company_name} IPO Analysis`,
-          text: `Check out this comprehensive IPO analysis of ${analysis.company_name
-            }. Score: ${overallScore.toFixed(1)}/10`,
+          text: `Check out this comprehensive IPO analysis of ${
+            analysis.company_name
+          }. Score: ${overallScore.toFixed(1)}/10`,
           url: window.location.href,
         });
       } catch (error) {
@@ -334,7 +315,6 @@ export default function AnalysisPageClient({
       alert("Link copied to clipboard");
     }
   };
-
 
   // Handle tab clicks for smooth scrolling
   const handleTabClick = (value: string) => {
@@ -428,8 +408,9 @@ export default function AnalysisPageClient({
                 },
                 {
                   label: "Potential Gains",
-                  value: `~${analysis.ipo_details?.approximate_gains_potential || 0
-                    }%`,
+                  value: `~${
+                    analysis.ipo_details?.approximate_gains_potential || 0
+                  }%`,
                   color: "text-green-600 dark:text-green-400",
                   description: "Expected listing gains",
                 },
@@ -460,27 +441,25 @@ export default function AnalysisPageClient({
               Timeline & Split
             </h2>
             <div className="w-full mb-16">
-              {/* Desktop Timeline */}
-              <div className="hidden sm:block">
-                <div className="relative h-12">
-                  <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between">
-                    {Array.from({ length: totalDots }).map((_, i) => {
-                      const colorClass = getDotColorClass(i);
-                      const prevColorClass =
-                        i > 0 ? getDotColorClass(i - 1) : null;
-                      const sizeClass =
-                        i === 0 || colorClass !== prevColorClass
-                          ? "w-7 h-7 animate-pulse p-1"
-                          : "w-5 h-5 mt-1";
-                      return (
-                        <div
-                          key={i}
-                          className={`rounded-full transition-all ${sizeClass} ${colorClass}`}
-                        />
-                      );
-                    })}
+              {isTimelineValid ? (
+                <div className="relative h-24 sm:h-12">
+                  {/* Dynamic Timeline Bar */}
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-full h-3 rounded-full"
+                    style={gradientStyle}
+                  />
+
+                  {/* Today's Date Marker */}
+                  <div
+                    className="absolute top-1/2 h-8 w-1 bg-gray-800 rounded-full -translate-y-1/2 -translate-x-1/2"
+                    style={{ left: `${positions.today}%` }}
+                  >
+                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-sm font-bold whitespace-nowrap">
+                      Today
+                    </div>
                   </div>
 
+                  {/* Price Box */}
                   {showPriceBox && (
                     <div
                       className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-[#B4292E] text-white font-semibold text-sm px-3 py-1 rounded-md shadow-lg z-10 font-ibm-plex"
@@ -490,119 +469,44 @@ export default function AnalysisPageClient({
                     </div>
                   )}
 
+                  {/* Event Markers */}
                   <div className="absolute inset-0">
                     <TimelineMarker
                       label="Opening"
                       date={timelineData.opening}
-                      position={markerPositions.opening}
+                      position={`${positions.opening}%`}
                       alignment="left"
                     />
                     <TimelineMarker
                       label="Closing"
                       date={timelineData.closing}
-                      position={markerPositions.closing}
-                      alignment="left"
-                    />
-                    <TimelineMarker
-                      label="Listing"
-                      date={timelineData.listing}
-                      position={markerPositions.listing}
-                      alignment="left"
+                      position={`${positions.closing}%`}
+                      alignment="center"
                     />
                     <TimelineMarker
                       label="Allotment"
                       date={timelineData.allotment}
-                      position={markerPositions.allotment}
-                      alignment="left"
+                      position={`${positions.allotment}%`}
+                      alignment="center"
                     />
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile Timeline */}
-              <div className="block sm:hidden">
-                <div className="relative h-12">
-                  <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between">
-                    {Array.from({ length: totalDots / 2 }).map((_, i) => {
-                      const index = i;
-                      const colorClass = getDotColorClass(index);
-                      const prevColorClass =
-                        index > 0 ? getDotColorClass(index - 1) : null;
-                      const sizeClass =
-                        index === 0 || colorClass !== prevColorClass
-                          ? "w-7 h-7 animate-pulse p-1"
-                          : "w-5 h-5 mt-1";
-                      return (
-                        <div
-                          key={index}
-                          className={`rounded-full transition-all ${sizeClass} ${colorClass}`}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  {showPriceBox && (
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 bg-[#B4292E] text-white font-semibold text-sm px-3 py-1 rounded-md shadow-lg z-10 font-ibm-plex"
-                      style={{ left: priceBoxPosition }}
-                    >
-                      {displayPrice}
-                    </div>
-                  )}
-
-                  <div className="absolute inset-0">
-                    <TimelineMarkerMobileUpper
-                      label="Opening"
-                      date={timelineData.opening}
-                      position={markerPositions.opening}
-                    />
-                    <TimelineMarkerMobileUpper
-                      label="Closing"
-                      date={timelineData.closing}
-                      position={`${parseFloat(markerPositions.closing) + 22}%`}
-                    />
-                  </div>
-                </div>
-
-                <div className="relative h-12 mt-24">
-                  <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between">
-                    {Array.from({ length: totalDots / 2 }).map((_, i) => {
-                      const index = i + totalDots / 2;
-                      const colorClass = getDotColorClass(index);
-                      const prevColorClass =
-                        index > 0 ? getDotColorClass(index - 1) : null;
-                      const sizeClass =
-                        colorClass !== prevColorClass
-                          ? "w-7 h-7 animate-pulse p-1"
-                          : "w-5 h-5 mt-1";
-                      return (
-                        <div
-                          key={index}
-                          className={`rounded-full transition-all ${sizeClass} ${colorClass}`}
-                        />
-                      );
-                    })}
-                  </div>
-
-                  <div className="absolute inset-0">
-                    <TimelineMarkerMobileLower
+                    <TimelineMarker
                       label="Listing"
                       date={timelineData.listing}
-                      position={`${parseFloat(markerPositions.listing) - 42}%`}
-                    />
-                    <TimelineMarkerMobileLower
-                      label="Allotment"
-                      date={timelineData.allotment}
-                      position={`${parseFloat(markerPositions.allotment) - 22}%`}
+                      position={`${positions.listing}%`}
+                      alignment="right"
                     />
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className="text-center text-muted-foreground font-ibm-plex py-8">
+                  IPO timeline will be displayed once opening and listing dates are available.
+                </div>
+              )}
             </div>
             <hr className="my-8 border-t border-gray-200" />
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-y-8 gap-x-4 justify-items-center">
               {investorData.map((item, i) => (
-                <ProgressCircle key={i} label={item.label} value={parseFloat(item.value)} />
+                <ProgressCircle key={i} label={item.label} value={item.value} />
               ))}
             </div>
           </section>
@@ -673,10 +577,11 @@ export default function AnalysisPageClient({
                   <button
                     key={tab}
                     onClick={() => handleTabClick(tab)}
-                    className={`sticky-tab-button text-sm py-2 px-2 sm:px-3 transition-colors capitalize font-medium font-ibm-plex ${activeTab === tab
-                      ? "bg-[#99CCFF] text-[#0073E6] shadow-md"
-                      : "hover:bg-[#99CCFF]/50 text-[#0073E6]"
-                      }`}
+                    className={`sticky-tab-button text-sm py-2 px-2 sm:px-3 transition-colors capitalize font-medium font-ibm-plex ${
+                      activeTab === tab
+                        ? "bg-[#99CCFF] text-[#0073E6] shadow-md"
+                        : "hover:bg-[#99CCFF]/50 text-[#0073E6]"
+                    }`}
                   >
                     {tab}
                   </button>
@@ -731,13 +636,17 @@ export default function AnalysisPageClient({
                               <div className="flex-1 space-y-2 text-body-sm">
                                 <p>
                                   <strong>Experience:</strong>{" "}
-                                  {analysis.performance.management_quality
-                                    .experience}
+                                  {
+                                    analysis.performance.management_quality
+                                      .experience
+                                  }
                                 </p>
                                 <p>
                                   <strong>Track Record:</strong>{" "}
-                                  {analysis.performance.management_quality
-                                    .track_record}
+                                  {
+                                    analysis.performance.management_quality
+                                      .track_record
+                                  }
                                 </p>
                               </div>
                             </div>
@@ -866,8 +775,9 @@ export default function AnalysisPageClient({
                               <Card key={category}>
                                 <CardHeader>
                                   <CardTitle
-                                    className={`capitalize text-xl font-semibold font-ibm-plex ${riskCategoryColors[category] || riskCategoryColors.default
-                                      }`}
+                                    className={`capitalize text-xl font-semibold font-ibm-plex ${
+                                      riskCategoryColors[category] || riskCategoryColors.default
+                                    }`}
                                   >
                                     {category.replace(/_/g, " ")}
                                   </CardTitle>
@@ -942,8 +852,6 @@ export default function AnalysisPageClient({
           </div>
         </div>
       </section>
-
-
     </div>
   );
 }
