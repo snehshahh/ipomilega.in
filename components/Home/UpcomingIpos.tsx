@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -82,7 +83,7 @@ export function UpcomingIposSection({ ipos, count }: IpoSectionProps) {
   }, [itemsPerPage]);
 
   return (
-    <section className="bg-[#EEF9FF] py-10 app-container">
+    <section className="py-10 app-container">
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="text-center sm:text-left">

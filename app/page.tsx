@@ -12,6 +12,8 @@ import { UpcomingIposSection } from '@/components/Home/UpcomingIpos';
 import { getHomePageData } from '@/lib/data-fetching';
 import { Metadata } from 'next';
 import { HomePageData } from './types/homepage';
+import { HeroSection } from '@/components/Home/HeroSection';
+import { Footer } from '@/components/Home/Footer';
 
 export const metadata: Metadata = {
   title: 'IPO Milega - Your Gateway to IPO Investments | Live, Upcoming & Past IPOs',
@@ -76,9 +78,9 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   // Move data fetching outside of component for better performance
   const homeDataPromise = getHomePageData();
-  
+
   return (
-    <div className="min-h-screen relative overflow-hidden bg-[#EEF9FF]">
+    <div className="min-h-screen relative overflow-hidden">
       <div className="relative z-10 min-h-screen pt-15 md:pt-15 lg:pt-0">
         <Suspense fallback={<HomePageSkeleton />}>
           <HomeContent dataPromise={homeDataPromise} />
@@ -91,13 +93,15 @@ export default async function HomePage() {
 // Create a new component to handle the data
 async function HomeContent({ dataPromise }: { dataPromise: Promise<HomePageData> }) {
   const homeData = await dataPromise;
-  
+
   return (
     <>
+      <HeroSection ipos={homeData.data.live} />
       <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
       <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
       <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
       <BlogSection blogs={homeData.blogList} />
+      <Footer />
     </>
   );
 }
