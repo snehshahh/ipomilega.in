@@ -3,7 +3,7 @@
 
 export function Footer() {
     return (
-        <div className="app-container">
+        <section>
             <hr className="border-gray-300 w-full mx-auto" />
             <footer className="py-6">
                 <div className="max-w-7xl mx-auto text-center">
@@ -17,6 +17,6 @@ export function Footer() {
                     </div>
                 </div>
             </footer>
-        </div>
+        </section>
     );
 }

@@ -86,7 +86,7 @@ export function HeroSection({ ipos }: { ipos: HomePageIpoProps[] }) {
 
   return (
     <>
-      <section className="min-h-screen flex items-center py-10 app-container">
+      <section>
         <div className="max-w-7xl mx-auto w-full">
           <div className="flex flex-col md:flex-row md:justify-between gap-8 md:gap-6 items-center">
             {/* Hero Image - Appears first on mobile */}

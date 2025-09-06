@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     siteName: 'IPO Milega',
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'IPO Milega - IPO Investment Platform',
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'IPO Milega - Your Gateway to IPO Investments',
     description: 'Discover the latest IPO opportunities. Track live IPOs, upcoming listings, and past performance.',
-    images: ['/twitter-image.jpg'],
+    images: ['/twitter-image.png'],
     creator: '@ipomilega',
   },
   alternates: {
@@ -95,14 +95,14 @@ async function HomeContent({ dataPromise }: { dataPromise: Promise<HomePageData>
   const homeData = await dataPromise;
 
   return (
-    <>
+    <div className="app-container">
       <HeroSection ipos={homeData.data.live} />
       <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
       <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
       <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
       <BlogSection blogs={homeData.blogList} />
       <Footer />
-    </>
+    </div>
   );
 }
 
