@@ -14,6 +14,8 @@ import { Metadata } from 'next';
 import { HomePageData } from './types/homepage';
 import { HeroSection } from '@/components/Home/HeroSection';
 import { Footer } from '@/components/Home/Footer';
+import { AnimatedWrapper } from '@/components/Home/AnimatedWrapper';
+import { AnimatedSection } from '@/components/Home/AnimatedSection';
 
 export const metadata: Metadata = {
   title: 'IPO Milega - Your Gateway to IPO Investments | Live, Upcoming & Past IPOs',
@@ -76,12 +78,11 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  // Move data fetching outside of component for better performance
   const homeDataPromise = getHomePageData();
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      <div className="relative z-10 min-h-screen pt-15 md:pt-15 lg:pt-0">
+      <div className="relative z-10">
         <Suspense fallback={<HomePageSkeleton />}>
           <HomeContent dataPromise={homeDataPromise} />
         </Suspense>
@@ -90,23 +91,35 @@ export default async function HomePage() {
   );
 }
 
-// Create a new component to handle the data
+// Server Component - fetches data
+// Remove the space-y-20 and just use app-container
 async function HomeContent({ dataPromise }: { dataPromise: Promise<HomePageData> }) {
   const homeData = await dataPromise;
 
   return (
-    <div className="app-container mt-5">
-      <HeroSection ipos={homeData.data.live} />
-      <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
-      <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
-      <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
-      <BlogSection blogs={homeData.blogList} />
-      <Footer />
-    </div>
+    <AnimatedWrapper>
+      <div className="app-container">
+        <AnimatedSection>
+          <HeroSection ipos={homeData.data.live} />
+        </AnimatedSection>
+        <AnimatedSection>
+          <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
+        </AnimatedSection>
+        <AnimatedSection>
+          <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />
+        </AnimatedSection>
+        <AnimatedSection>
+          <PastIposSection ipos={homeData.data.past} count={homeData.counts.past} />
+        </AnimatedSection>
+        <AnimatedSection>
+          <BlogSection blogs={homeData.blogList} />
+        </AnimatedSection>
+        <Footer />
+      </div>
+    </AnimatedWrapper>
   );
 }
 
-// Add a lightweight skeleton
 function HomePageSkeleton() {
   return (
     <div className="animate-pulse">
