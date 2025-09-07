@@ -42,7 +42,7 @@ export function BlogSection({ blogs }: { blogs: Blog[] }) {
   };
 
   return (
-    <div>
+    <div className="py-15">
       {/* Section for displaying blog posts */}
       <section className="py-10">
         <div className="max-w-7xl mx-auto">

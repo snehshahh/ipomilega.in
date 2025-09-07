@@ -117,6 +117,13 @@ interface TimeData {
   };
 }
 
+interface IPOInvestorSplit{
+  application:string;
+  lot_size:string;
+  shares:string;
+  amount:string;
+}
+
 interface IpoDetailsData {
   opening: string;
   closing: string;
@@ -153,6 +160,9 @@ interface RequestBody {
   ipo_table_id: string;
   company_name: string;
   image_url: string;
+  slug:string;
+  investorSplit: IPOInvestorSplit[];
+  financialReport: FinancialReportData[];
   risk_meter: RiskMeterData;
   performance: PerformanceData;
   flexibility: FlexibilityData;
@@ -190,13 +200,24 @@ interface IpoRecord {
   }>;
 }
 
+interface FinancialReportData {
+  period_ended: string;
+  revenue: string;
+  expense: string;
+  profit_after_tax: string;
+  assets: string; 
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body: RequestBody = await req.json();
     const {
       ipo_table_id,
       company_name,
+      slug,
       image_url,
+      investorSplit,
+      financialReport,
       risk_meter,
       performance,
       flexibility,
@@ -258,6 +279,7 @@ export async function POST(req: NextRequest) {
     const analysisDoc = {
       ipo_table_id: ipoRecord._id.toString(),
       company_name: company_name,
+      slug: slug,
       image_url: image_url || ipoRecord.image_url || '',
       
       // Fundamentals section - directly use the data from modal
@@ -288,6 +310,9 @@ export async function POST(req: NextRequest) {
           return_on_equity: null
         }
       },
+
+      investorSplit: investorSplit || [],
+      financialReport: financialReport || [],
 
       // Risk meter section - directly use the data from modal
       risk_meter: {

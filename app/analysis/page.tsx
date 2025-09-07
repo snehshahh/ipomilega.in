@@ -328,7 +328,7 @@ export default function AllIPOsPage() {
                         {/* FIXED: Displaying risk score out of 10 and using corrected color logic */}
                         <td className="px-4 py-4 text-center"><div className={cn("text-sm font-bold", getRiskColor(ipo.summary_metrics?.risk_meter || 0))}>{ipo.summary_metrics?.risk_meter ? `${ipo.summary_metrics.risk_meter}/10` : "N/A"}</div></td>
                         <td className="px-4 py-4 text-center">{getStatusBadge(ipo)}</td>
-                        <td className="px-4 py-4 text-center"><Link href={`/analysis/${ipo.ipo_table_id}`}><Button size="sm" variant="outline" className="border-primary/20 hover:bg-primary/10 text-primary hover:border-primary/40 transition-all duration-200"><Eye className="h-4 w-4 mr-1" />View</Button></Link></td>
+                        <td className="px-4 py-4 text-center"><Link href={`/analysis/${ipo.slug}`}><Button size="sm" variant="outline" className="border-primary/20 hover:bg-primary/10 text-primary hover:border-primary/40 transition-all duration-200"><Eye className="h-4 w-4 mr-1" />View</Button></Link></td>
                       </tr>
                     ))}
                   </tbody>
@@ -349,7 +349,7 @@ export default function AllIPOsPage() {
                     <div><div className="text-muted-foreground mb-1">GMP Potential</div><div className="font-bold text-green-600">{ipo.ipo_details?.gains_rationale || "N/A"}</div></div>
                   </div>
                   <div className="pt-3 border-t border-muted/20">
-                    <Link href={`/analysis/${ipo.ipo_table_id}`} className="block">
+                    <Link href={`/analysis/${ipo?.slug}`} className="block">
                       <Button size="sm" variant="outline" className="w-full border-primary/20 hover:bg-primary/10 text-primary hover:border-primary/40 transition-all duration-200">
                         <Eye className="h-4 w-4 mr-2" />View Analysis
                       </Button>

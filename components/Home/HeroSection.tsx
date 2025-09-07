@@ -85,7 +85,7 @@ export function HeroSection({ ipos }: { ipos: HomePageIpoProps[] }) {
   }, [isModalOpen]);
 
   return (
-    <>
+    <div className='py-15'>
       <section>
         <div className="max-w-7xl mx-auto w-full">
           <div className="flex flex-col md:flex-row md:justify-between gap-8 md:gap-6 items-center">
@@ -166,6 +166,6 @@ export function HeroSection({ ipos }: { ipos: HomePageIpoProps[] }) {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

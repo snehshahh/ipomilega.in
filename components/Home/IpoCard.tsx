@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, Calendar, CheckCircle } from 'lucide-react';
+import { TrendingUp, Calendar, CheckCircle, ClockAlert } from 'lucide-react';
 import { Ipo } from '@/app/models/ipo';
 import { IpoComprehensiveAnalysis } from '@/app/models/ipo_comprehensive_analysis';
 import { Card, CardContent, CardHeader } from '../ui/card';
@@ -135,9 +135,24 @@ export function LiveIpoCard({ ipo, analysis }: IpoCardProps) {
         </div>
         <hr className="my-4 border-gray-200" />
         <div className="mt-6">
-          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
-            View Analysis
-          </Button>
+          {riskScore > 0 ? (
+            <Button
+              variant="outline"
+              className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors"
+              onClick={() => handleViewAnalysis(ipo!)}
+            >
+              View Analysis
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              disabled
+              className="w-full bg-gray-300 text-gray-600 cursor-not-allowed text-sm py-2 font-medium"
+            >
+              <ClockAlert className="w-4 h-4 mr-2" />
+              Analysis Unavailable
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -234,9 +249,18 @@ export function UpcomingIpoCard({ ipo, analysis }: IpoCardProps) {
         </div>
         <hr className="my-4 border-gray-200" />
         <div className="mt-6">
-          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
-            Pre-Analysis
-          </Button>
+          {
+            riskScore > 0 ? (
+              <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
+                Pre-Analysis
+              </Button>
+            ) : (
+              <Button variant="outline" disabled className="w-full bg-gray-300 text-gray-600 cursor-not-allowed text-sm py-2 font-medium">
+                <ClockAlert className="w-4 h-4 mr-2" />
+                Analysis Unavailable
+              </Button>
+            )
+          }
         </div>
       </CardContent>
     </Card>
@@ -320,9 +344,18 @@ export function PastIpoCard({ ipo, analysis }: IpoCardProps) {
         </div>
         <hr className="my-4 border-gray-200" />
         <div className="mt-6">
-          <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
-            View Analysis
-          </Button>
+          {
+            riskScore > 0 ? (
+              <Button variant="outline" className="w-full bg-[#0073E6] text-white hover:bg-white hover:text-[#0073E6] hover:border-[#0073E6] text-sm py-2 font-medium transition-colors" onClick={() => handleViewAnalysis(ipo!)}>
+                View Analysis
+              </Button>
+            ) : (
+              <Button variant="outline" disabled className="w-full bg-gray-300 text-gray-600 cursor-not-allowed text-sm py-2 font-medium">
+                <ClockAlert className="w-4 h-4 mr-2" />
+                Analysis Unavailable
+              </Button>
+            )
+          }
         </div>
       </CardContent>
     </Card>

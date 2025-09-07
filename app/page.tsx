@@ -95,7 +95,7 @@ async function HomeContent({ dataPromise }: { dataPromise: Promise<HomePageData>
   const homeData = await dataPromise;
 
   return (
-    <div className="app-container">
+    <div className="app-container mt-5">
       <HeroSection ipos={homeData.data.live} />
       <LiveIposSection ipos={homeData.data.live} count={homeData.counts.live} />
       <UpcomingIposSection ipos={homeData.data.upcoming} count={homeData.counts.upcoming} />

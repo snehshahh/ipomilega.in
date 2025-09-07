@@ -114,6 +114,7 @@ interface FundamentalsAnalysis {
     };
 }
 
+
 interface TimeAnalysis {
     score: number;
     summary: string;
@@ -148,6 +149,7 @@ interface SummaryAnalysis {
         assessment: string;
     };
 }
+
 
 
 // Analysis data type union
@@ -469,6 +471,9 @@ const getInitials = (name: string) => {
 };
 
 export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalProps) {
+    // DEBUGGING: Log the incoming prop to check its structure
+    console.log("Received ipoItem prop:", ipoItem);
+
     const [isOpen, setIsOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(0);
     const [analysisData, setAnalysisData] = useState<AnalysisData>({});
@@ -484,6 +489,7 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
     // Get RHP and DRHP links from the correct ipo_details structure
     const rhpLink = ipoItem.ipo.ipo_details?.rhp_draft_prospectus_links?.[0]?.href;
     const drhpLink = ipoItem.ipo.ipo_details?.drhp_draft_prospectus_links?.[0]?.href;
+    const marketLot=ipoItem.ipo.ipo_market_lot || [];
 
     const parsePercentage = (value: string): number => {
         if (!value) return 0;
@@ -726,6 +732,9 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
                 ipo_table_id: ipoItem.ipo._id,
                 company_name: ipoItem.ipo.ipo_name || ipoItem.ipo.upcoming_ipo_2025 || 'Unknown Company',
                 image_url: ipoItem.ipo.image_url || '',
+                investorSplit: marketLot,
+                slug: ipoItem.ipo.slug,
+                financialReport: ipoItem.ipo.financial_report || {},   
                 fundamentals: finalAnalysisData.fundamentals || {},
                 risk_meter: finalAnalysisData.risk_meter || {},
                 flexibility: finalAnalysisData.flexibility || {},
@@ -1080,7 +1089,7 @@ export function IpoAnalysisModal({ ipoItem, onAnalysisAdded }: IpoAnalysisModalP
                                         )}
                                     </Avatar>
                                 </div>
-                                <div>1
+                                <div>
                                     <div>
                                         {ipoItem.ipo.ipo_name || ipoItem.ipo.upcoming_ipo_2025 || 'Unknown Company'}
                                     </div>

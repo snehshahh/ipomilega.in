@@ -82,7 +82,7 @@ export function PastIposSection({ ipos, count }: IpoSectionProps) {
   }, [itemsPerPage]);
 
   return (
-    <section>
+    <section className='py-15'>
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div className="text-center sm:text-left">

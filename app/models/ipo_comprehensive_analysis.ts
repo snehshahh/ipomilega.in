@@ -1,6 +1,7 @@
 export interface IpoComprehensiveAnalysis {
     _id: string; // Handle MongoDB ObjectId format
     ipo_table_id: string;
+    slug: string;
     company_name: string;
     image_url: string;
     fundamentals: IpoFundamentals;
@@ -10,6 +11,8 @@ export interface IpoComprehensiveAnalysis {
     performance: IpoPerformance;
     ipo_details: IpoDetailsComprehensive;
     summary_metrics: IpoSummaryMetrics;
+    investorSplit: IPOInvestorSplit[];
+    financialReport: FinancialReport[];
     created_at?: Date;
     updated_at?: Date;
 }
@@ -156,4 +159,21 @@ interface IpoSummaryMetrics {
     total_revenue: number;
     net_profit: number;
     total_assets: number;
+}
+
+
+interface IPOInvestorSplit {
+    application: string;
+    lot_size: string;
+    shares: string;
+    amount: string;
+}
+
+
+interface FinancialReport {
+    period_ended: string;
+    revenue: string;
+    expense: string;
+    profit_after_tax: string;
+    assets: string;
 }
