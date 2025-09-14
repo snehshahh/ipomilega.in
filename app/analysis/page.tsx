@@ -323,8 +323,8 @@ export default function AllIPOsPage() {
                         <td className="px-4 py-4"><div className="text-sm font-medium text-foreground">{ipo.ipo_details?.issue_size || "N/A"}</div></td>
                         <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{formatDateToReadable(ipo.time?.issue_dates?.opening)}</div></td>
                         <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{formatDateToReadable(ipo.time?.issue_dates?.closing)}</div></td>
-                        <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{ipo.ipo_details?.price_band || "N/A"}</div></td>
-                        <td className="px-4 py-4 text-center"><div className="text-sm font-bold text-green-600">{ipo.ipo_details?.gains_rationale || "N/A"}</div></td>
+                        <td className="px-4 py-4 text-center"><div className="text-sm text-foreground">{ipo.ipo_details?.price_band.includes("₹") ? ipo.ipo_details?.price_band : "₹" + ipo.ipo_details?.price_band || "N/A"}</div></td>
+                        <td className="px-4 py-4 text-center"><div className="text-sm font-bold text-green-600">{ipo.ipo_details?.gains_rationale.includes("₹") ? ipo.ipo_details?.gains_rationale : "₹" + ipo.ipo_details?.gains_rationale}</div></td>
                         {/* FIXED: Displaying risk score out of 10 and using corrected color logic */}
                         <td className="px-4 py-4 text-center"><div className={cn("text-sm font-bold", getRiskColor(ipo.summary_metrics?.risk_meter || 0))}>{ipo.summary_metrics?.risk_meter ? `${ipo.summary_metrics.risk_meter}/10` : "N/A"}</div></td>
                         <td className="px-4 py-4 text-center">{getStatusBadge(ipo)}</td>

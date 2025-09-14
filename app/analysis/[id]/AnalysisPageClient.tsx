@@ -83,7 +83,7 @@ const ProgressCircle = ({
   const innerRadius = progressRadius - strokeWidth / 2;
   const circumference = 2 * Math.PI * progressRadius;
   const strokeDasharray = circumference;
-  const strokeDashoffset = circumference - (cappedValue / 100) * circumference;
+  const strokeDashoffset = circumference - (cappedValue / 10) * circumference;
 
   return (
     <div className="flex flex-col items-center text-center">
@@ -422,13 +422,13 @@ export default function AnalysisPageClient({
                 },
                 {
                   label: "Price Band",
-                  value: analysis.ipo_details?.price_band || "N/A",
+                  value: analysis.ipo_details?.price_band.includes("₹") ? analysis.ipo_details?.price_band : "₹" + analysis.ipo_details?.price_band || "N/A",
                   color: "text-foreground",
                   description: "Price per share",
                 },
                 {
                   label: "Potential Gains",
-                  value: `₹${analysis.ipo_details.gains_rationale.includes("%") ? analysis.ipo_details.gains_rationale : analysis.ipo_details.gains_rationale}`,
+                  value: `${analysis.ipo_details?.gains_rationale.includes("₹") ? analysis.ipo_details?.gains_rationale : "₹" + analysis.ipo_details?.gains_rationale}`,
                   color: "text-green-600 dark:text-green-400",
                   description: "Expected listing gains",
                 },
