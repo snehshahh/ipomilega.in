@@ -750,7 +750,7 @@ export default function AnalysisPageClient({
                           <p className="text-body mb-6">
                             {analysis.fundamentals.summary}
                           </p>
-                          <div className="w-full sm:w-[70%] grid gap-2 grid-cols-1 sm:grid-cols-2 mx-auto">
+                          {/* <div className="w-full sm:w-[70%] grid gap-2 grid-cols-1 sm:grid-cols-2 mx-auto">
                             {analysis.fundamentals.revenue_details?.revenue_cagr && (
                               <div className="bg-[#ffffff] rounded-[8px] shadow-[0px_0px_6px_#0000000c] p-4 sm:p-6 flex flex-col items-center w-full">
                                 <p className="text-base font-medium font-ibm-plex text-[#4f4c4c]">
@@ -777,7 +777,7 @@ export default function AnalysisPageClient({
                                 </span>
                               </div>
                             )}
-                          </div>
+                          </div> */}
                         </li>
                       </ul>
                     </div>
