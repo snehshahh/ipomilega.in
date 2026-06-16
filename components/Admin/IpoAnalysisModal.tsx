@@ -19,7 +19,8 @@
         Copy,
         ExternalLink,
         Link as LinkIcon,
-        ArrowLeftCircle
+        ArrowLeftCircle,
+        Edit
     } from 'lucide-react';
     import { toast } from 'sonner';
     import { cn } from '@/lib/utils';
@@ -341,6 +342,7 @@
         ipoItem: {
             _id: string;
             ipo: Ipo;
+            analysis?: any;
         };
         onAnalysisAdded: () => void;
     }
@@ -500,14 +502,43 @@
         useEffect(() => {
             if (isOpen) {
                 setCurrentStep(0);
-                setAnalysisData({});
-                setJsonInput('');
-                setCompletedSteps(new Set());
                 setJsonError(null);
                 setIsSubmitting(false);
                 setShowPreview(false);
+
+                const existing = ipoItem.analysis;
+                if (existing) {
+                    const mapped: AnalysisData = {
+                        risk_meter: existing.risk_meter,
+                        performance: existing.performance,
+                        flexibility: existing.flexibility,
+                        fundamentals: existing.fundamentals,
+                        time: existing.time,
+                        summary: {
+                            approximate_gains_potential: existing.ipo_details?.approximate_gains_potential || 0,
+                            gains_rationale: existing.ipo_details?.gains_rationale || '',
+                            profitability_of_allotment: existing.ipo_details?.profitability_of_allotment || { score: 0, assessment: '' }
+                        }
+                    };
+                    setAnalysisData(mapped);
+                    const completed = new Set<string>();
+                    if (existing.risk_meter) completed.add('risk_meter');
+                    if (existing.performance) completed.add('performance');
+                    if (existing.flexibility) completed.add('flexibility');
+                    if (existing.fundamentals) completed.add('fundamentals');
+                    if (existing.time) completed.add('time');
+                    completed.add('summary');
+                    setCompletedSteps(completed);
+                    
+                    // Pre-fill the JSON textarea for the first step
+                    setJsonInput(JSON.stringify(existing.risk_meter, null, 2));
+                } else {
+                    setAnalysisData({});
+                    setCompletedSteps(new Set());
+                    setJsonInput('');
+                }
             }
-        }, [isOpen]);
+        }, [isOpen, ipoItem]);
 
         // Auto-load data when step changes
         useEffect(() => {
@@ -1070,9 +1101,22 @@
         return (
             <Dialog open={isOpen} onOpenChange={setIsOpen}>
                 <DialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9 px-3 text-sm border-green-600/20 hover:bg-green-600/10 text-green-600 font-bold font-ibm-plex">
-                        <Plus className="h-4 w-4 mr-1.5" />
-                        Add Analysis
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                            "h-9 px-3 text-sm font-bold font-ibm-plex",
+                            ipoItem.analysis
+                                ? "border-blue-600/20 hover:bg-blue-600/10 text-blue-600"
+                                : "border-green-600/20 hover:bg-green-600/10 text-green-600"
+                        )}
+                    >
+                        {ipoItem.analysis ? (
+                            <Edit className="h-4 w-4 mr-1.5" />
+                        ) : (
+                            <Plus className="h-4 w-4 mr-1.5" />
+                        )}
+                        {ipoItem.analysis ? "Edit Analysis" : "Add Analysis"}
                     </Button>
                 </DialogTrigger>
                 <DialogContent className="h-[95vh] flex flex-col font-ibm-plex lg:max-w-[calc(100%-6rem)]">

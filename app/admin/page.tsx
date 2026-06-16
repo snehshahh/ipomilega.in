@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import {
-  Search, Building2, Calendar, TrendingUp, Shield, ChevronRight, LineChart, PieChart, ChevronLeft, Clock, XCircle, Activity, Loader2, Upload, Copy, Eye, ExternalLink, PenTool, Plus, Edit
+  Search, Building2, Calendar, TrendingUp, Shield, ChevronRight, LineChart, PieChart, ChevronLeft, Clock, XCircle, Activity, Loader2, Upload, Copy, Eye, ExternalLink, PenTool, Plus, Edit, Sparkles, Trash2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HomePageIpoProps } from "../types/homepage"
@@ -17,6 +17,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Blog } from "../models/ipo";
 import { useSession } from "@/lib/auth-client";
 import { IpoAnalysisModal } from "@/components/Admin/IpoAnalysisModal";
+import { IpoAiParserModal } from "@/components/Admin/IpoAiParserModal";
+
+const getInitials = (name?: string) => {
+  if (!name) return "IP";
+  return name.split(" ").map(w => w[0]).join("").substring(0, 2).toUpperCase();
+};
 
 type FilterType = 'all' | 'live' | 'upcoming' | 'past' | 'recently_added'
 
@@ -54,6 +60,25 @@ function AdminContent() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
     toast.success("Copied to clipboard", { description: text })
+  }
+
+  const handleDeleteAnalysis = async (ipoId: string) => {
+    if (!confirm("Are you sure you want to delete the analysis for this IPO?")) return;
+    try {
+      const response = await fetch(`/api/analysis/manipulate-analysis?ipo_table_id=${ipoId}`, {
+        method: 'DELETE'
+      });
+      const data = await response.json();
+      if (data.success) {
+        toast.success("Analysis deleted successfully");
+        refreshData();
+      } else {
+        toast.error(data.error || "Failed to delete analysis");
+      }
+    } catch (error) {
+      console.error("Error deleting analysis:", error);
+      toast.error("Error deleting analysis");
+    }
   }
 
   const handleLogoUpload = async (e: ChangeEvent<HTMLInputElement>, ipoId: string) => {
@@ -281,25 +306,90 @@ function AdminContent() {
                       <th className="font-black text-left p-4 text-gray-900">Close Date</th>
                       <th className="font-black text-left p-4 text-gray-900">Price Band</th>
                       <th className="font-black text-left p-4 text-gray-900">Issue Size</th>
+                      <th className="font-black text-left p-4 text-gray-900">Analysis Matrix</th>
                       <th className="font-black text-left p-4 text-gray-900">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {currentIpos.map(ipoItem => (
                       <tr key={ipoItem._id} className="group hover:bg-gray-50/80 border-b border-gray-100">
-                        <td className="p-4"><div className="flex items-center gap-3"><Avatar className="border-2"><AvatarImage src={ipoItem.ipo.image_url} /><AvatarFallback className="bg-[#0073E6]/10 text-[#0073E6] font-bold">IP</AvatarFallback></Avatar><div className="font-black truncate text-gray-900">{ipoItem.ipo.upcoming_ipo_2025}</div></div></td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="relative group cursor-pointer w-10 h-10 rounded-full border-2 overflow-hidden flex-shrink-0">
+                              <Avatar className="w-full h-full">
+                                <AvatarImage src={ipoItem.ipo.image_url} className="object-cover w-full h-full" />
+                                <AvatarFallback className="bg-[#0073E6]/10 text-[#0073E6] font-bold w-full h-full flex items-center justify-center">
+                                  {getInitials(ipoItem.ipo.upcoming_ipo_2025 || ipoItem.ipo.ipo_name)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <label className="absolute inset-0 bg-black/45 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => handleLogoUpload(e, ipoItem.ipo._id!)}
+                                  className="hidden"
+                                />
+                                <Upload className="h-4 w-4 text-white" />
+                              </label>
+                            </div>
+                            <div className="font-black truncate text-gray-900 max-w-[200px]" title={ipoItem.ipo.upcoming_ipo_2025}>
+                              {ipoItem.ipo.upcoming_ipo_2025}
+                            </div>
+                          </div>
+                        </td>
                         <td className="p-4"><Badge variant={ipoItem.ipo.ipo_type === 'Mainboard' ? 'default' : 'secondary'} className="font-bold bg-[#0073E6] text-white">{ipoItem.ipo.ipo_type}</Badge></td>
                         <td className="p-4"><div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-gray-400" /><span className="text-sm font-medium">{ipoItem.ipo.ipo_dates.ipo_open_date}</span></div></td>
                         <td className="p-4"><div className="flex items-center gap-2"><Calendar className="h-4 w-4 text-gray-400" /><span className="text-sm font-medium">{ipoItem.ipo.ipo_dates.ipo_close_date}</span></div></td>
                         <td className="p-4"><div className="font-black">₹{ipoItem.ipo.price_band}</div></td>
                         <td className="p-4"><div className="font-black">₹{ipoItem.ipo.ipo_size}</div></td>
                         <td className="p-4">
+                          {hasAnalysis(ipoItem) ? (
+                            <div className="flex flex-col gap-1 text-[11px] font-bold min-w-[200px]">
+                              <div className="flex gap-1 flex-wrap">
+                                <Badge variant="outline" className="border-purple-200 bg-purple-50 text-purple-700 h-6 px-1.5" title="Fundamentals">
+                                  F: {ipoItem.analysis?.summary_metrics?.fundamentals_score ?? ipoItem.analysis?.fundamentals?.score ?? 0}/10
+                                </Badge>
+                                <Badge variant="outline" className="border-red-200 bg-red-50 text-red-700 h-6 px-1.5" title="Risk Score">
+                                  R: {ipoItem.analysis?.summary_metrics?.risk_meter ?? ipoItem.analysis?.risk_meter?.score ?? 0}/10
+                                </Badge>
+                                <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700 h-6 px-1.5" title="Performance">
+                                  P: {ipoItem.analysis?.summary_metrics?.performance_score ?? ipoItem.analysis?.performance?.score ?? 0}/10
+                                </Badge>
+                              </div>
+                              <div className="flex gap-1 flex-wrap">
+                                <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700 h-6 px-1.5" title="Flexibility">
+                                  Fl: {ipoItem.analysis?.summary_metrics?.flexibility_score ?? ipoItem.analysis?.flexibility?.score ?? 0}/10
+                                </Badge>
+                                <Badge variant="outline" className="border-orange-200 bg-orange-50 text-orange-700 h-6 px-1.5" title="Timing">
+                                  T: {ipoItem.analysis?.summary_metrics?.time_score ?? ipoItem.analysis?.time?.score ?? 0}/10
+                                </Badge>
+                                <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700 h-6 px-1.5" title="Listing Gains">
+                                  G: {ipoItem.analysis?.summary_metrics?.approximate_gains_potential ?? ipoItem.analysis?.ipo_details?.approximate_gains_potential ?? 0}%
+                                </Badge>
+                              </div>
+                            </div>
+                          ) : (
+                            <Badge variant="outline" className="border-gray-200 bg-gray-50 text-gray-500 font-bold h-6 px-2">
+                              Pending Analysis
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="p-4">
                           <div className="flex items-center gap-2 flex-wrap">
-                            {!hasAnalysis(ipoItem) && (
-                              <IpoAnalysisModal ipoItem={ipoItem} onAnalysisAdded={refreshData} />
+                            <IpoAnalysisModal ipoItem={ipoItem} onAnalysisAdded={refreshData} />
+                            <IpoAiParserModal ipoItem={ipoItem} onAnalysisSaved={refreshData} />
+                            {hasAnalysis(ipoItem) && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 px-3 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 font-bold"
+                                onClick={() => handleDeleteAnalysis(ipoItem.ipo._id!)}
+                              >
+                                <Trash2 className="h-4 w-4 mr-1.5" />
+                                Delete
+                              </Button>
                             )}
-                            {!ipoItem.ipo.image_url && <label><input type="file" accept="image/*" onChange={e => handleLogoUpload(e, ipoItem.ipo._id!)} className="hidden" /><Button asChild variant="outline" size="sm" className="h-9 px-3 border-primary/20 hover:bg-primary/10"><span className="flex items-center"><Upload className="h-4 w-4 mr-1.5 text-primary" />Logo</span></Button></label>}
-                            <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => copyToClipboard(ipoItem.ipo._id!)}><Copy className="h-4 w-4 mr-1.5 text-primary" />ID</Button>
+                            <Button variant="outline" size="sm" className="h-9 px-3 font-semibold" onClick={() => copyToClipboard(ipoItem.ipo._id!)}><Copy className="h-4 w-4 mr-1.5 text-primary" />ID</Button>
                             {ipoItem.ipo.detail_url && <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => window.open(ipoItem.ipo.detail_url!, '_blank')}><Eye className="h-4 w-4 mr-1.5 text-primary" />View</Button>}
                             {ipoItem.ipo.ipo_details?.rhp_draft_prospectus_links?.[0]?.href && <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => window.open(ipoItem.ipo.ipo_details.rhp_draft_prospectus_links[0].href!, '_blank')}><ExternalLink className="h-4 w-4 mr-1.5 text-green-600" />RHP</Button>}
                             {ipoItem.ipo.ipo_details?.drhp_draft_prospectus_links?.[0]?.href && <Button variant="outline" size="sm" className="h-9 px-3" onClick={() => window.open(ipoItem.ipo.ipo_details.drhp_draft_prospectus_links[0].href!, '_blank')}><ExternalLink className="h-4 w-4 mr-1.5 text-green-600" />DRHP</Button>}

@@ -170,7 +170,7 @@ function LayoutContent({ children }: { children: React.ReactNode }) {
     await signOut();
   };
 
-  const isAdmin = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+  const isAdmin = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com", "devanshisoni2004@gmail.com", "devanshisoni2311@gmail.com"].includes(
     session?.user?.email || ""
   );
 
