@@ -16,7 +16,7 @@ import { useSearchParams } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Blog } from "../models/ipo";
 import { useSession } from "@/lib/auth-client";
-import { IpoAnalysisModal } from "@/components/Admin/IpoAnalysisModal";
+import { IpoAnalysisEditModal } from "@/components/Admin/IpoAnalysisEditModal";
 import { IpoAiParserModal } from "@/components/Admin/IpoAiParserModal";
 
 const getInitials = (name?: string) => {
@@ -29,6 +29,7 @@ type FilterType = 'all' | 'live' | 'upcoming' | 'past' | 'recently_added'
 function AdminContent() {
   const [ipoList, setIpoList] = useState<HomePageIpoProps[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isAuthChecking, setIsAuthChecking] = useState(true)
   const [upcomingIpoList, setUpcomingIpoList] = useState<HomePageIpoProps[]>([])
   const [liveIpoList, setLiveIpoList] = useState<HomePageIpoProps[]>([])
   const [pastIpoList, setPastIpoList] = useState<HomePageIpoProps[]>([])
@@ -46,10 +47,13 @@ function AdminContent() {
   const itemsPerPage = 10
 
   useEffect(() => {
-    const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
-      session?.data?.user?.email || ""
-    );
-    setIsAdmin(bool);
+    if (!session.isPending) {
+      const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+        session?.data?.user?.email || ""
+      );
+      setIsAdmin(bool);
+      setIsAuthChecking(false);
+    }
   }, [session]);
 
   // Helper function to check if analysis exists for an IPO
@@ -243,6 +247,29 @@ function AdminContent() {
     }
   }
 
+  if (isAuthChecking) return <LoadingFallback />
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 font-ibm-plex">
+        <Card className="w-full max-w-md bg-white border border-red-100 shadow-xl rounded-xl">
+          <CardContent className="p-8 text-center flex flex-col items-center gap-4">
+            <div className="p-3 bg-red-50 text-red-600 rounded-full">
+              <Shield className="h-10 w-10" />
+            </div>
+            <h2 className="text-2xl font-black text-gray-900 mt-2">Access Denied</h2>
+            <p className="text-sm text-gray-600 leading-relaxed">
+              This area is restricted to administrators only. Please log in with an authorized administrator account to access this page.
+            </p>
+            <Button onClick={() => router.push("/")} className="mt-4 bg-[#0073E6] hover:bg-[#0059b3] text-white font-bold w-full h-11 rounded-lg">
+              Return to Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (isLoading) return <LoadingFallback />
   if (error) return <ErrorFallback error={error} />
 
@@ -376,7 +403,7 @@ function AdminContent() {
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <IpoAnalysisModal ipoItem={ipoItem} onAnalysisAdded={refreshData} />
+                            <IpoAnalysisEditModal ipoItem={ipoItem} onAnalysisAdded={refreshData} />
                             <IpoAiParserModal ipoItem={ipoItem} onAnalysisSaved={refreshData} />
                             {hasAnalysis(ipoItem) && (
                               <Button
