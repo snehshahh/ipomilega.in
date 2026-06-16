@@ -1,4 +1,5 @@
-    import React, { useState, useEffect } from 'react';
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState, useEffect } from 'react';
     import { Button } from '@/components/ui/button';
     import { Badge } from '@/components/ui/badge';
     import { Textarea } from '@/components/ui/textarea';

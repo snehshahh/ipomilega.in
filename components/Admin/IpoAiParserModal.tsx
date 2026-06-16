@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState } from "react";
@@ -88,20 +89,6 @@ export function IpoAiParserModal({ ipoItem, onAnalysisSaved }: IpoAiParserModalP
       [section]: {
         ...prev[section],
         score: num,
-      },
-    }));
-  };
-
-  const handleNestedScoreChange = (section: string, subsection: string, value: string) => {
-    const num = Math.min(10, Math.max(1, parseInt(value) || 0));
-    setParsedData((prev: any) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [subsection]: {
-          ...prev[section][subsection],
-          score: num,
-        },
       },
     }));
   };
@@ -491,7 +478,7 @@ export function IpoAiParserModal({ ipoItem, onAnalysisSaved }: IpoAiParserModalP
                   Ready to Parse
                 </h3>
                 <p className="text-sm max-w-md mt-2 text-gray-500">
-                  Paste the raw prospectus text on the left panel, and click "Parse with AI" to generate the structured Analysis Matrix.
+                  Paste the raw prospectus text on the left panel, and click {"Parse with AI"} to generate the structured Analysis Matrix.
                 </p>
               </div>
             )}
