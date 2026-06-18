@@ -1,12 +1,14 @@
 "use client";
 import { useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeftCircle, Share2 } from "lucide-react";
+import { ArrowLeftCircle, Share2, Loader2, Save } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis";
 import { Ipo } from "@/app/models/ipo";
 import "@/app/styles/analysis.css";
 import { InvestorSplitPieChart } from "@/components/charts/InvestorSplitPieChart"; // Adjust path if needed
+import { useSession } from "@/lib/auth-client";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -149,6 +151,120 @@ export default function AnalysisPageClient({
   analysis,
   ipo,
 }: AnalysisPageClientProps) {
+  const [editedAnalysis, setEditedAnalysis] = useState<IpoComprehensiveAnalysis>(analysis);
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+
+  const session = useSession();
+  const isAdmin = !session.isPending && ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+    session?.data?.user?.email || ""
+  );
+
+  const updateField = (path: string, value: any) => {
+    setEditedAnalysis((prev) => {
+      const copy = { ...prev };
+      const parts = path.split(".");
+      let current: any = copy;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!current[parts[i]]) {
+          current[parts[i]] = {};
+        }
+        current[parts[i]] = { ...current[parts[i]] };
+        current = current[parts[i]];
+      }
+      current[parts[parts.length - 1]] = value;
+      setHasUnsavedChanges(true);
+      return copy;
+    });
+  };
+
+  const updateArrayField = (path: string, newlineString: string) => {
+    const arr = newlineString.split("\n").filter((item) => item.trim() !== "");
+    updateField(path, arr);
+  };
+
+  const handleSave = async (silent = false) => {
+    if (isSaving) return;
+    setIsSaving(true);
+
+    const fundamentalsScore = Number(editedAnalysis.fundamentals?.score ?? 0);
+    const performanceScore = Number(editedAnalysis.performance?.score ?? 0);
+    const riskScore = Number(editedAnalysis.risk_meter?.score ?? 0);
+    const flexibilityScore = Number(editedAnalysis.flexibility?.score ?? 0);
+    const timeScore = Number(editedAnalysis.time?.score ?? 0);
+    const gainsPotential = Number(editedAnalysis.ipo_details?.approximate_gains_potential ?? 0);
+    const allotmentScore = Number(editedAnalysis.ipo_details?.profitability_of_allotment?.score ?? 0);
+    const totalRevenue = Number(editedAnalysis.fundamentals?.revenue_details?.total_revenue ?? 0);
+    const netProfit = Number(editedAnalysis.fundamentals?.profit_analysis?.net_profit ?? 0);
+    const totalAssets = Number(editedAnalysis.fundamentals?.assets_and_liabilities?.total_assets ?? 0);
+
+    const payload = {
+      ipo_table_id: editedAnalysis.ipo_table_id,
+      company_name: editedAnalysis.company_name,
+      slug: editedAnalysis.slug,
+      image_url: editedAnalysis.image_url || ipo.image_url || "",
+      investorSplit: editedAnalysis.investorSplit || [],
+      financialReport: editedAnalysis.financialReport || [],
+      fundamentals: editedAnalysis.fundamentals,
+      risk_meter: editedAnalysis.risk_meter,
+      flexibility: editedAnalysis.flexibility,
+      time: editedAnalysis.time,
+      performance: editedAnalysis.performance,
+      ipo_details: editedAnalysis.ipo_details,
+      summary_metrics: {
+        fundamentals_score: fundamentalsScore,
+        risk_meter: riskScore,
+        flexibility_score: flexibilityScore,
+        time_score: timeScore,
+        performance_score: performanceScore,
+        approximate_gains_potential: gainsPotential,
+        profitability_of_allotment: allotmentScore,
+        total_revenue: totalRevenue,
+        net_profit: netProfit,
+        total_assets: totalAssets,
+      },
+    };
+
+    let toastId = null;
+    if (!silent) {
+      toastId = toast.loading("Saving changes...");
+    }
+
+    try {
+      const response = await fetch("/api/analysis/manipulate-analysis", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.message || "Failed to save analysis");
+
+      if (toastId) {
+        toast.success("Analysis saved successfully!", { id: toastId });
+      } else {
+        toast.success("Analysis auto-saved successfully!");
+      }
+      setHasUnsavedChanges(false);
+    } catch (error) {
+      console.error("Save error:", error);
+      const errMsg = error instanceof Error ? error.message : "Error saving updates";
+      if (toastId) {
+        toast.error(errMsg, { id: toastId });
+      } else {
+        toast.error(`Auto-save failed: ${errMsg}`);
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleBlur = () => {
+    if (hasUnsavedChanges) {
+      handleSave(true);
+    }
+  };
+
   const [activeTab, setActiveTab] = useState("performance");
   const [sectionOrder, setSectionOrder] = useState<string[]>([
     "performance",
@@ -158,17 +274,6 @@ export default function AnalysisPageClient({
     "investor_split",
   ]);
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-
-  // Return early if no data is available
-  if (!analysis || !ipo) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-lg text-muted-foreground font-ibm-plex">
-          No analysis data available.
-        </p>
-      </div>
-    );
-  }
 
   // Helper function to determine score color
   const getScoreColor = (score: number) => {
@@ -186,13 +291,13 @@ export default function AnalysisPageClient({
   };
 
   const overallScore =
-    ((analysis.summary_metrics?.fundamentals_score ?? 0) +
-      (analysis.summary_metrics?.performance_score ?? 0)) /
+    ((editedAnalysis.fundamentals?.score ?? 0) +
+      (editedAnalysis.performance?.score ?? 0)) /
     2;
 
   // Helper function to get the upper price from the price band
   const getDisplayPrice = () => {
-    const priceBand = analysis.ipo_details?.price_band;
+    const priceBand = editedAnalysis.ipo_details?.price_band;
     if (
       priceBand &&
       typeof priceBand === "string" &&
@@ -207,11 +312,11 @@ export default function AnalysisPageClient({
 
   // --- DYNAMIC Timeline Calculation ---
   const timelineData = {
-    opening: analysis.time?.issue_dates?.opening || "",
-    closing: analysis.time?.issue_dates?.closing || "",
-    allotment: analysis.time?.allotment_timeline?.date || "",
+    opening: editedAnalysis.time?.issue_dates?.opening || "",
+    closing: editedAnalysis.time?.issue_dates?.closing || "",
+    allotment: editedAnalysis.time?.allotment_timeline?.date || "",
     today: new Date().toISOString().split("T")[0],
-    listing: analysis.time?.listing_details?.expected_date || "",
+    listing: editedAnalysis.time?.listing_details?.expected_date || "",
   };
 
   // Helper to safely parse dates and check validity
@@ -288,15 +393,15 @@ export default function AnalysisPageClient({
   const investorData = [
     {
       label: "Retail Investor",
-      value: analysis.ipo_details?.allocation_details?.retail || parsePercentage(ipo.ipo_details?.retail_quota || "35"),
+      value: editedAnalysis.ipo_details?.allocation_details?.retail || parsePercentage(ipo.ipo_details?.retail_quota || "35"),
     },
     {
       label: "NII",
-      value: analysis.ipo_details?.allocation_details?.nii || parsePercentage(ipo.ipo_details?.nii_quota || "15"),
+      value: editedAnalysis.ipo_details?.allocation_details?.nii || parsePercentage(ipo.ipo_details?.nii_quota || "15"),
     },
     {
       label: "QIB",
-      value: analysis.ipo_details?.allocation_details?.qib || parsePercentage(ipo.ipo_details?.qib_quota || "50"),
+      value: editedAnalysis.ipo_details?.allocation_details?.qib || parsePercentage(ipo.ipo_details?.qib_quota || "50"),
     },
     {
       label: "Total",
@@ -313,7 +418,7 @@ export default function AnalysisPageClient({
     }));
 
   // Prepare data for the table, pulling from the analysis object
-  const investorTableData = analysis.investorSplit?.filter(
+  const investorTableData = editedAnalysis.investorSplit?.filter(
     (row) => row.application.toLowerCase() !== "application"
   ) || [];
 
@@ -322,8 +427,8 @@ export default function AnalysisPageClient({
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `${analysis.company_name} IPO Analysis`,
-          text: `Check out this comprehensive IPO analysis of ${analysis.company_name
+          title: `${editedAnalysis.company_name} IPO Analysis`,
+          text: `Check out this comprehensive IPO analysis of ${editedAnalysis.company_name
             }. Score: ${overallScore.toFixed(1)}/10`,
           url: window.location.href,
         });
@@ -332,7 +437,7 @@ export default function AnalysisPageClient({
       }
     } else {
       await navigator.clipboard.writeText(window.location.href);
-      alert("Link copied to clipboard");
+      toast.success("Link copied to clipboard");
     }
   };
 
@@ -366,18 +471,18 @@ export default function AnalysisPageClient({
                   {ipo.image_url?.trim() ? (
                     <AvatarImage
                       src={ipo.image_url}
-                      alt={`${analysis.company_name} logo`}
+                      alt={`${editedAnalysis.company_name} logo`}
                     />
                   ) : (
                     <AvatarFallback className="text-white bg-black border-black border-2 text-xs font-medium">
-                      {getInitials(analysis.company_name || "")}
+                      {getInitials(editedAnalysis.company_name || "")}
                     </AvatarFallback>
                   )}
                 </Avatar>
               </div>
               <div className="min-w-0 flex-1">
                 <h1 className="heading-main text-lg md:text-xl lg:text-2xl text-primary truncate">
-                  {analysis.company_name} IPO Analysis
+                  {editedAnalysis.company_name} IPO Analysis
                 </h1>
                 <p className="text-sm text-muted-foreground font-ibm-plex">
                   Comprehensive Investment Review
@@ -413,38 +518,77 @@ export default function AnalysisPageClient({
                   value: `${overallScore.toFixed(1)}/10`,
                   color: getScoreColor(overallScore),
                   description: "Combined rating",
+                  isScore: true,
                 },
                 {
                   label: "Issue Size",
-                  value: analysis.ipo_details?.issue_size || "N/A",
+                  value: editedAnalysis.ipo_details?.issue_size || "N/A",
                   color: "text-foreground",
                   description: "Total offering amount",
+                  path: "ipo_details.issue_size",
                 },
                 {
                   label: "Price Band",
-                  value: analysis.ipo_details?.price_band.includes("₹") ? analysis.ipo_details?.price_band : "₹" + analysis.ipo_details?.price_band || "N/A",
+                  value: editedAnalysis.ipo_details?.price_band.includes("₹") ? editedAnalysis.ipo_details?.price_band : "₹" + editedAnalysis.ipo_details?.price_band || "N/A",
                   color: "text-foreground",
                   description: "Price per share",
+                  path: "ipo_details.price_band",
                 },
                 {
                   label: "Potential Gains",
-                  value: `${analysis.ipo_details?.gains_rationale.includes("₹") ? analysis.ipo_details?.gains_rationale : "₹" + analysis.ipo_details?.gains_rationale}`,
+                  value: `${editedAnalysis.ipo_details?.gains_rationale.includes("₹") ? editedAnalysis.ipo_details?.gains_rationale : "₹" + editedAnalysis.ipo_details?.gains_rationale}`,
                   color: "text-green-600 dark:text-green-400",
                   description: "Expected listing gains",
+                  path: "ipo_details.gains_rationale",
+                  isGains: true,
                 },
               ].map((metric) => (
                 <div
                   key={metric.label}
-                  className="bg-white/70 backdrop-blur-sm border p-4 sm:p-6 text-center rounded-lg flex flex-col justify-center"
+                  className="bg-white/70 backdrop-blur-sm border p-4 sm:p-6 text-center rounded-lg flex flex-col justify-center min-h-[120px]"
                 >
                   <p className="metric-card-label mb-2 text-base font-ibm-plex">
                     {metric.label}
                   </p>
-                  <p
-                    className={`metric-card-value ${metric.color} text-xl font-ibm-plex`}
-                  >
-                    {metric.value}
-                  </p>
+                  {isAdmin && !metric.isScore ? (
+                    metric.isGains ? (
+                      <div className="flex flex-col gap-2">
+                        <input
+                          type="text"
+                          value={editedAnalysis.ipo_details?.gains_rationale || ""}
+                          onChange={(e) => updateField("ipo_details.gains_rationale", e.target.value)}
+                          onBlur={handleBlur}
+                          placeholder="Gains rationale (e.g. ₹20-30)"
+                          className="w-full text-center border-b border-dashed border-gray-300 focus:border-blue-500 outline-none bg-transparent font-ibm-plex text-xl font-bold py-1 text-green-600"
+                        />
+                        <div className="flex items-center gap-1 justify-center text-xs">
+                          <span className="text-gray-500 font-semibold">Gains %:</span>
+                          <input
+                            type="number"
+                            value={editedAnalysis.ipo_details?.approximate_gains_potential ?? 0}
+                            onChange={(e) => updateField("ipo_details.approximate_gains_potential", parseFloat(e.target.value) || 0)}
+                            onBlur={handleBlur}
+                            className="w-12 text-center border-b border-dashed border-gray-300 focus:border-blue-500 outline-none bg-transparent font-ibm-plex text-xs font-bold text-green-600"
+                          />
+                          <span className="text-green-600 font-bold">%</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value={metric.path ? (metric.path.split('.').reduce((obj: any, key) => obj?.[key], editedAnalysis) || "") : ""}
+                        onChange={(e) => metric.path && updateField(metric.path, e.target.value)}
+                        onBlur={handleBlur}
+                        className="w-full text-center border-b border-dashed border-gray-300 focus:border-blue-500 outline-none bg-transparent font-ibm-plex text-xl font-bold py-1"
+                      />
+                    )
+                  ) : (
+                    <p
+                      className={`metric-card-value ${metric.color} text-xl font-ibm-plex`}
+                    >
+                      {metric.value}
+                    </p>
+                  )}
                   <p className="metric-card-description mt-1 text-sm font-ibm-plex">
                     {metric.description}
                   </p>
@@ -459,6 +603,62 @@ export default function AnalysisPageClient({
               Timeline & Split
             </h2>
             <div className="w-full mb-16">
+              {isAdmin && (
+                <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl mb-6 grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-600">Opening Date</label>
+                    <input
+                      type="date"
+                      value={timelineData.opening ? timelineData.opening.split('T')[0] : ""}
+                      onChange={(e) => updateField("time.issue_dates.opening", e.target.value)}
+                      onBlur={handleBlur}
+                      className="bg-white border rounded px-2 py-1 text-sm outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-600">Closing Date</label>
+                    <input
+                      type="date"
+                      value={timelineData.closing ? timelineData.closing.split('T')[0] : ""}
+                      onChange={(e) => updateField("time.issue_dates.closing", e.target.value)}
+                      onBlur={handleBlur}
+                      className="bg-white border rounded px-2 py-1 text-sm outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-600">Allotment Date</label>
+                    <input
+                      type="date"
+                      value={timelineData.allotment ? timelineData.allotment.split('T')[0] : ""}
+                      onChange={(e) => updateField("time.allotment_timeline.date", e.target.value)}
+                      onBlur={handleBlur}
+                      className="bg-white border rounded px-2 py-1 text-sm outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-600">Listing Date</label>
+                    <input
+                      type="date"
+                      value={timelineData.listing ? timelineData.listing.split('T')[0] : ""}
+                      onChange={(e) => updateField("time.listing_details.expected_date", e.target.value)}
+                      onBlur={handleBlur}
+                      className="bg-white border rounded px-2 py-1 text-sm outline-none focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs font-bold text-gray-600">Timing Score (1-10)</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={editedAnalysis.time?.score ?? 5}
+                      onChange={(e) => updateField("time.score", parseInt(e.target.value) || 0)}
+                      onBlur={handleBlur}
+                      className="bg-white border rounded px-2 py-1 text-sm outline-none focus:border-blue-500 font-bold"
+                    />
+                  </div>
+                </div>
+              )}
               {isTimelineValid ? (
                 <div className="relative h-24 sm:h-12">
                   <div
@@ -530,7 +730,7 @@ export default function AnalysisPageClient({
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={analysis.financialReport?.map(report => ({
+                    data={editedAnalysis.financialReport?.map(report => ({
                       year: `FY ${report.period_ended}`,
                       Revenue: parseFloat(report.revenue || "0"),
                       Expense: parseFloat(report.expense || "0"),
@@ -593,25 +793,51 @@ export default function AnalysisPageClient({
                 <p className="summary-score-label mb-2 text-base font-ibm-plex">
                   Profitability Score
                 </p>
-                <p
-                  className={`summary-score-value mt-4 text-lg font-ibm-plex ${getScoreColor(
-                    analysis.ipo_details.profitability_of_allotment.score
-                  )}`}
-                >
-                  {analysis.ipo_details.profitability_of_allotment.score}/10
-                </p>
+                {isAdmin ? (
+                  <div className="flex items-center justify-center gap-2 mt-4">
+                    <input
+                      type="number"
+                      min={1}
+                      max={10}
+                      value={editedAnalysis.ipo_details?.profitability_of_allotment?.score ?? 0}
+                      onChange={(e) => updateField("ipo_details.profitability_of_allotment.score", parseInt(e.target.value) || 0)}
+                      onBlur={handleBlur}
+                      className="w-16 text-center border rounded p-1 font-bold text-lg bg-white"
+                    />
+                    <span className="text-lg font-bold">/10</span>
+                  </div>
+                ) : (
+                  <p
+                    className={`summary-score-value mt-4 text-lg font-ibm-plex ${getScoreColor(
+                      editedAnalysis.ipo_details.profitability_of_allotment.score
+                    )}`}
+                  >
+                    {editedAnalysis.ipo_details.profitability_of_allotment.score}/10
+                  </p>
+                )}
               </div>
               <div>
                 <p className="summary-score-label mb-2 text-base font-ibm-plex">
                   Assessment
                 </p>
-                <p
-                  className={`summary-assessment-text mt-4 text-sm font-ibm-plex ${getScoreColor(
-                    analysis.ipo_details.profitability_of_allotment.score
-                  )}`}
-                >
-                  {analysis.ipo_details.profitability_of_allotment.assessment}
-                </p>
+                {isAdmin ? (
+                  <textarea
+                    value={editedAnalysis.ipo_details?.profitability_of_allotment?.assessment ?? ""}
+                    onChange={(e) => updateField("ipo_details.profitability_of_allotment.assessment", e.target.value)}
+                    onBlur={handleBlur}
+                    rows={2}
+                    className="w-full border rounded p-2 text-sm text-gray-800 bg-white"
+                    placeholder="Allotment assessment recommendation..."
+                  />
+                ) : (
+                  <p
+                    className={`summary-assessment-text mt-4 text-sm font-ibm-plex ${getScoreColor(
+                      editedAnalysis.ipo_details.profitability_of_allotment.score
+                    )}`}
+                  >
+                    {editedAnalysis.ipo_details.profitability_of_allotment.assessment}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -662,210 +888,429 @@ export default function AnalysisPageClient({
                   id={tab}
                   className="scroll-mt-[300px] sm:scroll-mt-[150px] mb-8"
                 >
-                  {tab === "performance" && analysis.performance && (
+                  {tab === "performance" && editedAnalysis.performance && (
                     <div className="p-4 sm:p-6">
-                      <h3 className="heading-section text-blue-600 mb-6">
-                        Performance
-                      </h3>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="heading-section text-blue-600">
+                          Performance
+                        </h3>
+                        {isAdmin && (
+                          <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 animate-in fade-in duration-200">
+                            <span className="text-sm font-bold text-blue-700">Section Score:</span>
+                            <input
+                              type="number"
+                              min={1}
+                              max={10}
+                              value={editedAnalysis.performance?.score ?? 0}
+                              onChange={(e) => updateField("performance.score", parseInt(e.target.value) || 0)}
+                              onBlur={handleBlur}
+                              className="w-12 text-center font-bold border rounded p-0.5 text-sm bg-white"
+                            />
+                            <span className="text-sm font-bold text-blue-700">/10</span>
+                          </div>
+                        )}
+                      </div>
                       <ul className="space-y-6 list-disc list-outside pl-5">
                         <li>
                           <h4 className="heading-subsection">
                             Company Performance
                           </h4>
-                          <p className="text-body">
-                            {analysis.performance.summary}
-                          </p>
+                          {isAdmin ? (
+                            <textarea
+                              value={editedAnalysis.performance.summary}
+                              onChange={(e) => updateField("performance.summary", e.target.value)}
+                              onBlur={handleBlur}
+                              className="w-full p-2 border rounded-md text-sm min-h-[100px] bg-white"
+                            />
+                          ) : (
+                            <p className="text-body">
+                              {editedAnalysis.performance.summary}
+                            </p>
+                          )}
                         </li>
-                        {analysis.performance.management_quality && (
+                        {editedAnalysis.performance.management_quality && (
                           <li>
                             <h4 className="heading-subsection">
                               Management Quality
                             </h4>
-                            <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                              <div className="flex-shrink-0">
-                                <ProgressCircle
-                                  label="Mgmt Score"
-                                  value={
-                                    analysis.performance.management_quality.score
-                                  }
-                                />
+                            {isAdmin ? (
+                              <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full mt-2">
+                                <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border min-w-[120px]">
+                                  <label className="text-xs font-bold text-gray-600 mb-1">Mgmt Score</label>
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    max={10}
+                                    value={editedAnalysis.performance.management_quality.score ?? 0}
+                                    onChange={(e) => updateField("performance.management_quality.score", parseInt(e.target.value) || 0)}
+                                    onBlur={handleBlur}
+                                    className="w-16 text-center font-bold border rounded p-1 text-base bg-white"
+                                  />
+                                  <span className="text-xs text-gray-400 mt-1">out of 10</span>
+                                </div>
+                                <div className="flex-1 space-y-3">
+                                  <div className="flex flex-col gap-1">
+                                    <label className="text-xs font-bold text-gray-600">Experience</label>
+                                    <textarea
+                                      value={editedAnalysis.performance.management_quality.experience || ""}
+                                      onChange={(e) => updateField("performance.management_quality.experience", e.target.value)}
+                                      onBlur={handleBlur}
+                                      className="w-full p-2 border rounded text-sm min-h-[60px] bg-white"
+                                    />
+                                  </div>
+                                  <div className="flex flex-col gap-1">
+                                    <label className="text-xs font-bold text-gray-600">Track Record</label>
+                                    <textarea
+                                      value={editedAnalysis.performance.management_quality.track_record || ""}
+                                      onChange={(e) => updateField("performance.management_quality.track_record", e.target.value)}
+                                      onBlur={handleBlur}
+                                      className="w-full p-2 border rounded text-sm min-h-[60px] bg-white"
+                                    />
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex-1 space-y-2 text-body-sm">
-                                <p>
-                                  <strong>Experience:</strong>{" "}
-                                  {
-                                    analysis.performance.management_quality
-                                      .experience
-                                  }
-                                </p>
-                                <p>
-                                  <strong>Track Record:</strong>{" "}
-                                  {
-                                    analysis.performance.management_quality
-                                      .track_record
-                                  }
-                                </p>
+                            ) : (
+                              <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+                                <div className="flex-shrink-0">
+                                  <ProgressCircle
+                                    label="Mgmt Score"
+                                    value={
+                                      editedAnalysis.performance.management_quality.score
+                                    }
+                                  />
+                                </div>
+                                <div className="flex-1 space-y-2 text-body-sm">
+                                  <p>
+                                    <strong>Experience:</strong>{" "}
+                                    {
+                                      editedAnalysis.performance.management_quality
+                                        .experience
+                                    }
+                                  </p>
+                                  <p>
+                                    <strong>Track Record:</strong>{" "}
+                                    {
+                                      editedAnalysis.performance.management_quality
+                                        .track_record
+                                    }
+                                  </p>
+                                </div>
                               </div>
-                            </div>
+                            )}
                           </li>
                         )}
-                        {analysis.performance.key_achievements && (
+                        {editedAnalysis.performance.key_achievements && (
                           <li>
                             <h4 className="heading-subsection">
                               Key Achievements
                             </h4>
-                            <div className="space-y-2 text-body-sm">
-                              {analysis.performance.key_achievements
-                                .slice(0, 3)
-                                .map((achievement, index) => (
-                                  <p key={index}>{achievement}</p>
-                                ))}
-                            </div>
+                            {isAdmin ? (
+                              <div className="flex flex-col gap-1 mt-2">
+                                <label className="text-xs font-bold text-gray-600">Key Achievements (One per line)</label>
+                                <textarea
+                                  value={editedAnalysis.performance.key_achievements.join("\n")}
+                                  onChange={(e) => updateArrayField("performance.key_achievements", e.target.value)}
+                                  onBlur={handleBlur}
+                                  className="w-full p-2 border rounded text-sm min-h-[100px] bg-white"
+                                  placeholder="Achievement 1&#10;Achievement 2"
+                                />
+                              </div>
+                            ) : (
+                              <div className="space-y-2 text-body-sm">
+                                {editedAnalysis.performance.key_achievements
+                                  .slice(0, 3)
+                                  .map((achievement, index) => (
+                                    <p key={index}>{achievement}</p>
+                                  ))}
+                              </div>
+                            )}
                           </li>
                         )}
-                        {analysis.performance.market_comparison && (
+                        {editedAnalysis.performance.market_comparison && (
                           <li>
                             <h4 className="heading-subsection">
                               Market Comparison
                             </h4>
-                            <p className="text-body">
-                              {analysis.performance.market_comparison}
-                            </p>
+                            {isAdmin ? (
+                              <textarea
+                                value={editedAnalysis.performance.market_comparison}
+                                onChange={(e) => updateField("performance.market_comparison", e.target.value)}
+                                onBlur={handleBlur}
+                                className="w-full p-2 border rounded text-sm min-h-[80px] mt-2 bg-white"
+                              />
+                            ) : (
+                              <p className="text-body">
+                                {editedAnalysis.performance.market_comparison}
+                              </p>
+                            )}
                           </li>
                         )}
                       </ul>
                     </div>
                   )}
 
-                  {tab === "fundamentals" && analysis.fundamentals && (
+                  {tab === "fundamentals" && editedAnalysis.fundamentals && (
                     <div className="p-4 sm:p-6">
-                      <h3 className="heading-section text-blue-600 mb-6">
-                        Fundamentals
-                      </h3>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="heading-section text-blue-600">
+                          Fundamentals
+                        </h3>
+                        {isAdmin && (
+                          <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 animate-in fade-in duration-200">
+                            <span className="text-sm font-bold text-blue-700">Section Score:</span>
+                            <input
+                              type="number"
+                              min={1}
+                              max={10}
+                              value={editedAnalysis.fundamentals?.score ?? 0}
+                              onChange={(e) => updateField("fundamentals.score", parseInt(e.target.value) || 0)}
+                              onBlur={handleBlur}
+                              className="w-12 text-center font-bold border rounded p-0.5 text-sm bg-white"
+                            />
+                            <span className="text-sm font-bold text-blue-700">/10</span>
+                          </div>
+                        )}
+                      </div>
                       <ul className="space-y-6 list-disc list-outside pl-5">
                         <li>
                           <h4 className="heading-subsection">
                             Financial Fundamentals
                           </h4>
-                          <p className="text-body mb-6">
-                            {analysis.fundamentals.summary}
-                          </p>
-                          {/* <div className="w-full sm:w-[70%] grid gap-2 grid-cols-1 sm:grid-cols-2 mx-auto">
-                            {analysis.fundamentals.revenue_details?.revenue_cagr && (
-                              <div className="bg-[#ffffff] rounded-[8px] shadow-[0px_0px_6px_#0000000c] p-4 sm:p-6 flex flex-col items-center w-full">
-                                <p className="text-base font-medium font-ibm-plex text-[#4f4c4c]">
-                                  Revenue Growth
-                                </p>
-                                <span className="text-xl font-semibold font-ibm-plex mt-3 text-[#00914d]">
-                                  {analysis.fundamentals.revenue_details.revenue_cagr}%
-                                </span>
-                                <span className="text-sm font-medium font-ibm-plex text-[#4f4c4c] mt-1">
-                                  Current Growth
-                                </span>
-                              </div>
-                            )}
-                            {analysis.fundamentals.profit_analysis?.profit_margin && (
-                              <div className="bg-[#ffffff] rounded-[8px] shadow-[0px_0px_6px_#0000000c] p-4 sm:p-6 flex flex-col items-center w-full">
-                                <p className="text-base font-medium font-ibm-plex text-[#4f4c4c]">
-                                  Profit Margin
-                                </p>
-                                <span className="text-xl font-semibold font-ibm-plex mt-3 text-[#00914d]">
-                                  {analysis.fundamentals.profit_analysis.profit_margin}%
-                                </span>
-                                <span className="text-sm font-medium font-ibm-plex text-[#4f4c4c] mt-1">
-                                  Current Margin
-                                </span>
-                              </div>
-                            )}
-                          </div> */}
+                          {isAdmin ? (
+                            <textarea
+                              value={editedAnalysis.fundamentals.summary}
+                              onChange={(e) => updateField("fundamentals.summary", e.target.value)}
+                              onBlur={handleBlur}
+                              className="w-full p-2 border rounded-md text-sm min-h-[120px] bg-white"
+                            />
+                          ) : (
+                            <p className="text-body mb-6">
+                              {editedAnalysis.fundamentals.summary}
+                            </p>
+                          )}
                         </li>
                       </ul>
                     </div>
                   )}
 
-                  {tab === "risk" && analysis.risk_meter && (
+                  {tab === "risk" && editedAnalysis.risk_meter && (
                     <div className="p-4 sm:p-6">
-                      <h3 className="heading-section text-blue-600 mb-4">
-                        Risk Assessment
-                      </h3>
-                      <p className="text-body mb-8">
-                        {analysis.risk_meter.summary}
-                      </p>
-                      {analysis.risk_meter.risk_categories && (
-                        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
-                          {Object.entries(analysis.risk_meter.risk_categories).map(
-                            ([category, risks]) => (
-                              <Card key={category}>
-                                <CardHeader>
-                                  <CardTitle
-                                    className={`capitalize text-xl font-semibold font-ibm-plex ${riskCategoryColors[category] || riskCategoryColors.default
-                                      }`}
-                                  >
-                                    {category.replace(/_/g, " ")}
-                                  </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                  <ul className="list-disc list-outside space-y-2 pl-5 text-body-sm">
-                                    {(risks as string[])
-                                      .slice(0, 3)
-                                      .map((risk, i) => (
-                                        <li key={i} className="text-gray-800">
-                                          {risk}
-                                        </li>
-                                      ))}
-                                  </ul>
-                                </CardContent>
-                              </Card>
-                            )
-                          )}
-                        </div>
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="heading-section text-blue-600">
+                          Risk Assessment
+                        </h3>
+                        {isAdmin && (
+                          <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 animate-in fade-in duration-200">
+                            <span className="text-sm font-bold text-blue-700">Section Score:</span>
+                            <input
+                              type="number"
+                              min={1}
+                              max={10}
+                              value={editedAnalysis.risk_meter?.score ?? 0}
+                              onChange={(e) => updateField("risk_meter.score", parseInt(e.target.value) || 0)}
+                              onBlur={handleBlur}
+                              className="w-12 text-center font-bold border rounded p-0.5 text-sm bg-white"
+                            />
+                            <span className="text-sm font-bold text-blue-700">/10</span>
+                          </div>
+                        )}
+                      </div>
+                      {isAdmin ? (
+                        <textarea
+                          value={editedAnalysis.risk_meter.summary}
+                          onChange={(e) => updateField("risk_meter.summary", e.target.value)}
+                          onBlur={handleBlur}
+                          className="w-full p-2 border rounded-md text-sm min-h-[100px] mb-6 bg-white"
+                        />
+                      ) : (
+                        <p className="text-body mb-8">
+                          {editedAnalysis.risk_meter.summary}
+                        </p>
+                      )}
+                      {editedAnalysis.risk_meter.risk_categories && (
+                        isAdmin ? (
+                          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+                            {Object.entries(editedAnalysis.risk_meter.risk_categories).map(
+                              ([category, risks]) => (
+                                <Card key={category}>
+                                  <CardHeader>
+                                    <CardTitle
+                                      className={`capitalize text-xl font-semibold font-ibm-plex ${riskCategoryColors[category] || riskCategoryColors.default
+                                        }`}
+                                    >
+                                      {category.replace(/_/g, " ")}
+                                    </CardTitle>
+                                  </CardHeader>
+                                  <CardContent>
+                                    <textarea
+                                      value={(risks as string[]).join("\n")}
+                                      onChange={(e) => {
+                                        const arr = e.target.value.split("\n").filter((item) => item.trim() !== "");
+                                        updateField(`risk_meter.risk_categories.${category}`, arr);
+                                      }}
+                                      onBlur={handleBlur}
+                                      className="w-full p-2 border rounded text-sm min-h-[120px] bg-white"
+                                      placeholder={`One risk per line...`}
+                                    />
+                                  </CardContent>
+                                </Card>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+                            {Object.entries(editedAnalysis.risk_meter.risk_categories).map(
+                              ([category, risks]) => (
+                                <Card key={category}>
+                                  <CardHeader>
+                                    <CardTitle
+                                      className={`capitalize text-xl font-semibold font-ibm-plex ${riskCategoryColors[category] || riskCategoryColors.default
+                                        }`}
+                                    >
+                                      {category.replace(/_/g, " ")}
+                                    </CardTitle>
+                                  </CardHeader>
+                                  <CardContent>
+                                    <ul className="list-disc list-outside space-y-2 pl-5 text-body-sm">
+                                      {(risks as string[])
+                                        .slice(0, 3)
+                                        .map((risk, i) => (
+                                          <li key={i} className="text-gray-800">
+                                            {risk}
+                                          </li>
+                                        ))}
+                                    </ul>
+                                  </CardContent>
+                                </Card>
+                              )
+                            )}
+                          </div>
+                        )
                       )}
                     </div>
                   )}
 
-                  {tab === "flexibility" && analysis.flexibility && (
+                  {tab === "flexibility" && editedAnalysis.flexibility && (
                     <div className="p-4 sm:p-6">
-                      <h3 className="heading-section text-blue-600 mb-6">
-                        Business Flexibility & Adaptability
-                      </h3>
+                      <div className="flex items-center justify-between mb-6">
+                        <h3 className="heading-section text-blue-600">
+                          Business Flexibility & Adaptability
+                        </h3>
+                        {isAdmin && (
+                          <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 animate-in fade-in duration-200">
+                            <span className="text-sm font-bold text-blue-700">Section Score:</span>
+                            <input
+                              type="number"
+                              min={1}
+                              max={10}
+                              value={editedAnalysis.flexibility?.score ?? 0}
+                              onChange={(e) => updateField("flexibility.score", parseInt(e.target.value) || 0)}
+                              onBlur={handleBlur}
+                              className="w-12 text-center font-bold border rounded p-0.5 text-sm bg-white"
+                            />
+                            <span className="text-sm font-bold text-blue-700">/10</span>
+                          </div>
+                        )}
+                      </div>
                       <div className="mb-12">
                         <ul className="space-y-6 list-disc list-outside pl-5">
                           <li>
                             <h4 className="heading-subsection">
                               Flexibility and Adaptability Insights
                             </h4>
-                            <p className="text-body">
-                              {analysis.flexibility.summary}
-                            </p>
+                            {isAdmin ? (
+                              <textarea
+                                value={editedAnalysis.flexibility.summary}
+                                onChange={(e) => updateField("flexibility.summary", e.target.value)}
+                                onBlur={handleBlur}
+                                className="w-full p-2 border rounded-md text-sm min-h-[100px] bg-white"
+                              />
+                            ) : (
+                              <p className="text-body">
+                                {editedAnalysis.flexibility.summary}
+                              </p>
+                            )}
                           </li>
                         </ul>
                       </div>
-                      <div className="grid gap-8 grid-cols-1 sm:grid-cols-3 justify-items-center">
-                        {[
-                          {
-                            label: "Market Adaptability",
-                            metric: analysis.flexibility.market_adaptability,
-                          },
-                          {
-                            label: "Financial Stability",
-                            metric: analysis.flexibility.financial_stability,
-                          },
-                          {
-                            label: "Operational Agility",
-                            metric: analysis.flexibility.operational_agility,
-                          },
-                        ].map(({ label, metric }) => {
-                          if (!metric) return null;
-                          return (
-                            <ProgressCircle
-                              key={label}
-                              label={label}
-                              value={metric.score || 0}
-                              description={metric.description || ""}
-                            />
-                          );
-                        })}
-                      </div>
+                      {isAdmin ? (
+                        <div className="grid gap-6 grid-cols-1 sm:grid-cols-3 mt-6">
+                          {[
+                            {
+                              label: "Market Adaptability",
+                              metric: editedAnalysis.flexibility.market_adaptability,
+                              path: "flexibility.market_adaptability"
+                            },
+                            {
+                              label: "Financial Stability",
+                              metric: editedAnalysis.flexibility.financial_stability,
+                              path: "flexibility.financial_stability"
+                            },
+                            {
+                              label: "Operational Agility",
+                              metric: editedAnalysis.flexibility.operational_agility,
+                              path: "flexibility.operational_agility"
+                            },
+                          ].map(({ label, metric, path }) => {
+                            if (!metric) return null;
+                            return (
+                              <div key={label} className="bg-white p-4 rounded-xl border flex flex-col gap-3 shadow-sm">
+                                <div className="flex items-center justify-between border-b pb-2">
+                                  <span className="font-bold text-sm text-gray-800">{label}</span>
+                                  <div className="flex items-center gap-1">
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      max={10}
+                                      value={metric.score ?? 0}
+                                      onChange={(e) => updateField(`${path}.score`, parseInt(e.target.value) || 0)}
+                                      onBlur={handleBlur}
+                                      className="w-12 text-center border rounded font-bold text-sm bg-white"
+                                    />
+                                    <span className="text-xs text-gray-500">/10</span>
+                                  </div>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <label className="text-xs font-semibold text-gray-500">Description</label>
+                                  <textarea
+                                    value={metric.description ?? ""}
+                                    onChange={(e) => updateField(`${path}.description`, e.target.value)}
+                                    onBlur={handleBlur}
+                                    className="w-full p-2 border rounded text-xs min-h-[60px] bg-white"
+                                  />
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="grid gap-8 grid-cols-1 sm:grid-cols-3 justify-items-center">
+                          {[
+                            {
+                              label: "Market Adaptability",
+                              metric: editedAnalysis.flexibility.market_adaptability,
+                            },
+                            {
+                              label: "Financial Stability",
+                              metric: editedAnalysis.flexibility.financial_stability,
+                            },
+                            {
+                              label: "Operational Agility",
+                              metric: editedAnalysis.flexibility.operational_agility,
+                            },
+                          ].map(({ label, metric }) => {
+                            if (!metric) return null;
+                            return (
+                              <ProgressCircle
+                                key={label}
+                                label={label}
+                                value={metric.score || 0}
+                                description={metric.description || ""}
+                              />
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -920,6 +1365,37 @@ export default function AnalysisPageClient({
           </div>
         </div>
       </section>
+
+      {isAdmin && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-4 bg-white/95 backdrop-blur-md border border-blue-200 p-4 rounded-xl shadow-2xl animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className="flex flex-col">
+            <span className="text-xs font-bold text-gray-500">Administrative Actions</span>
+            <span className="text-sm font-semibold text-gray-800">
+              {hasUnsavedChanges ? "⚠️ Unsaved draft changes" : "All changes saved"}
+            </span>
+          </div>
+          <button
+            onClick={() => handleSave(false)}
+            disabled={isSaving}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm transition-all ${hasUnsavedChanges
+              ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
+              : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              }`}
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Save Changes
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
