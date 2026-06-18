@@ -981,7 +981,7 @@ export default function AnalysisPageClient({
                               value={editedAnalysis.performance?.score ?? 0}
                               onSave={(val) => handleInlineSave("performance.score", parseInt(val) || 0)}
                               type="number"
-                              isAdmin={isAdmin}
+                              isAdmin={true}
                               inputClassName="w-12 text-center font-bold border rounded p-0.5 text-sm bg-white"
                               textClassName="text-sm font-bold text-blue-700 underline decoration-dashed cursor-pointer"
                             />
@@ -998,7 +998,7 @@ export default function AnalysisPageClient({
                             value={editedAnalysis.performance.summary}
                             onSave={(val) => handleInlineSave("performance.summary", val)}
                             type="textarea"
-                            isAdmin={isAdmin}
+                            isAdmin={true}
                             className="w-full"
                             textClassName="text-body block whitespace-pre-wrap min-h-[40px]"
                           />
@@ -1017,7 +1017,7 @@ export default function AnalysisPageClient({
                                       value={editedAnalysis.performance.management_quality.score ?? 0}
                                       onSave={(val) => handleInlineSave("performance.management_quality.score", parseInt(val) || 0)}
                                       type="number"
-                                      isAdmin={isAdmin}
+                                      isAdmin={true}
                                       inputClassName="w-12 text-center font-bold border rounded p-0.5 text-sm bg-white"
                                       textClassName="text-lg font-bold text-blue-600 cursor-pointer"
                                     />
@@ -1037,7 +1037,7 @@ export default function AnalysisPageClient({
                                     value={editedAnalysis.performance.management_quality.experience || ""}
                                     onSave={(val) => handleInlineSave("performance.management_quality.experience", val)}
                                     type="textarea"
-                                    isAdmin={isAdmin}
+                                    isAdmin={true}
                                     className="inline-block w-full mt-1"
                                     textClassName="text-gray-800"
                                   />
@@ -1048,7 +1048,7 @@ export default function AnalysisPageClient({
                                     value={editedAnalysis.performance.management_quality.track_record || ""}
                                     onSave={(val) => handleInlineSave("performance.management_quality.track_record", val)}
                                     type="textarea"
-                                    isAdmin={isAdmin}
+                                    isAdmin={true}
                                     className="inline-block w-full mt-1"
                                     textClassName="text-gray-800"
                                   />
