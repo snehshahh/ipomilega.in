@@ -154,6 +154,7 @@ export default function AnalysisPageClient({
   const [editedAnalysis, setEditedAnalysis] = useState<IpoComprehensiveAnalysis>(analysis);
   const [isSaving, setIsSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const session = useSession();
   const isAdmin = !session.isPending && ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com", "devanshisoni2004@gmail.com", "devanshisoni2311@gmail.com"].includes(
@@ -453,7 +454,38 @@ export default function AnalysisPageClient({
   };
 
   return (
-    <div className="min-h-screen font-ibm-plex pt-[89px]">
+    <div 
+      className="min-h-screen font-ibm-plex pt-[89px]"
+      onDoubleClick={(e) => {
+        if (!isAdmin) return;
+        const target = e.target as HTMLElement;
+        if (
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "BUTTON" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable ||
+          target.closest("button") ||
+          target.closest("a")
+        ) {
+          return;
+        }
+        
+        setIsEditing((prev) => {
+          const next = !prev;
+          if (next) {
+            toast.success("Edit Mode Activated!", {
+              description: "You can now edit details inline. Double-click empty space to toggle.",
+            });
+          } else {
+            toast.info("Edit Mode Deactivated.", {
+              description: "Review details. Unsaved changes are draft until saved.",
+            });
+          }
+          return next;
+        });
+      }}
+    >
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
@@ -550,7 +582,7 @@ export default function AnalysisPageClient({
                   <p className="metric-card-label mb-2 text-base font-ibm-plex">
                     {metric.label}
                   </p>
-                  {isAdmin && !metric.isScore ? (
+                  {isAdmin && isEditing && !metric.isScore ? (
                     metric.isGains ? (
                       <div className="flex flex-col gap-2">
                         <input
@@ -603,7 +635,7 @@ export default function AnalysisPageClient({
               Timeline & Split
             </h2>
             <div className="w-full mb-16">
-              {isAdmin && (
+              {isAdmin && isEditing && (
                 <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl mb-6 grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div className="flex flex-col gap-1">
                     <label className="text-xs font-bold text-gray-600">Opening Date</label>
@@ -793,7 +825,7 @@ export default function AnalysisPageClient({
                 <p className="summary-score-label mb-2 text-base font-ibm-plex">
                   Profitability Score
                 </p>
-                {isAdmin ? (
+                {isAdmin && isEditing ? (
                   <div className="flex items-center justify-center gap-2 mt-4">
                     <input
                       type="number"
@@ -820,7 +852,7 @@ export default function AnalysisPageClient({
                 <p className="summary-score-label mb-2 text-base font-ibm-plex">
                   Assessment
                 </p>
-                {isAdmin ? (
+                {isAdmin && isEditing ? (
                   <textarea
                     value={editedAnalysis.ipo_details?.profitability_of_allotment?.assessment ?? ""}
                     onChange={(e) => updateField("ipo_details.profitability_of_allotment.assessment", e.target.value)}
@@ -894,7 +926,7 @@ export default function AnalysisPageClient({
                         <h3 className="heading-section text-blue-600">
                           Performance
                         </h3>
-                        {isAdmin && (
+                        {isAdmin && isEditing && (
                           <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 animate-in fade-in duration-200">
                             <span className="text-sm font-bold text-blue-700">Section Score:</span>
                             <input
@@ -915,7 +947,7 @@ export default function AnalysisPageClient({
                           <h4 className="heading-subsection">
                             Company Performance
                           </h4>
-                          {isAdmin ? (
+                          {isAdmin && isEditing ? (
                             <textarea
                               value={editedAnalysis.performance.summary}
                               onChange={(e) => updateField("performance.summary", e.target.value)}
@@ -933,7 +965,7 @@ export default function AnalysisPageClient({
                             <h4 className="heading-subsection">
                               Management Quality
                             </h4>
-                            {isAdmin ? (
+                            {isAdmin && isEditing ? (
                               <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full mt-2">
                                 <div className="flex flex-col items-center justify-center p-4 bg-gray-50 rounded-lg border min-w-[120px]">
                                   <label className="text-xs font-bold text-gray-600 mb-1">Mgmt Score</label>
@@ -1004,7 +1036,7 @@ export default function AnalysisPageClient({
                             <h4 className="heading-subsection">
                               Key Achievements
                             </h4>
-                            {isAdmin ? (
+                            {isAdmin && isEditing ? (
                               <div className="flex flex-col gap-1 mt-2">
                                 <label className="text-xs font-bold text-gray-600">Key Achievements (One per line)</label>
                                 <textarea
@@ -1031,7 +1063,7 @@ export default function AnalysisPageClient({
                             <h4 className="heading-subsection">
                               Market Comparison
                             </h4>
-                            {isAdmin ? (
+                            {isAdmin && isEditing ? (
                               <textarea
                                 value={editedAnalysis.performance.market_comparison}
                                 onChange={(e) => updateField("performance.market_comparison", e.target.value)}
@@ -1055,7 +1087,7 @@ export default function AnalysisPageClient({
                         <h3 className="heading-section text-blue-600">
                           Fundamentals
                         </h3>
-                        {isAdmin && (
+                        {isAdmin && isEditing && (
                           <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 animate-in fade-in duration-200">
                             <span className="text-sm font-bold text-blue-700">Section Score:</span>
                             <input
@@ -1076,7 +1108,7 @@ export default function AnalysisPageClient({
                           <h4 className="heading-subsection">
                             Financial Fundamentals
                           </h4>
-                          {isAdmin ? (
+                          {isAdmin && isEditing ? (
                             <textarea
                               value={editedAnalysis.fundamentals.summary}
                               onChange={(e) => updateField("fundamentals.summary", e.target.value)}
@@ -1099,7 +1131,7 @@ export default function AnalysisPageClient({
                         <h3 className="heading-section text-blue-600">
                           Risk Assessment
                         </h3>
-                        {isAdmin && (
+                        {isAdmin && isEditing && (
                           <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 animate-in fade-in duration-200">
                             <span className="text-sm font-bold text-blue-700">Section Score:</span>
                             <input
@@ -1115,7 +1147,7 @@ export default function AnalysisPageClient({
                           </div>
                         )}
                       </div>
-                      {isAdmin ? (
+                      {isAdmin && isEditing ? (
                         <textarea
                           value={editedAnalysis.risk_meter.summary}
                           onChange={(e) => updateField("risk_meter.summary", e.target.value)}
@@ -1128,7 +1160,7 @@ export default function AnalysisPageClient({
                         </p>
                       )}
                       {editedAnalysis.risk_meter.risk_categories && (
-                        isAdmin ? (
+                        isAdmin && isEditing ? (
                           <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
                             {Object.entries(editedAnalysis.risk_meter.risk_categories).map(
                               ([category, risks]) => (
@@ -1196,7 +1228,7 @@ export default function AnalysisPageClient({
                         <h3 className="heading-section text-blue-600">
                           Business Flexibility & Adaptability
                         </h3>
-                        {isAdmin && (
+                        {isAdmin && isEditing && (
                           <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 animate-in fade-in duration-200">
                             <span className="text-sm font-bold text-blue-700">Section Score:</span>
                             <input
@@ -1218,7 +1250,7 @@ export default function AnalysisPageClient({
                             <h4 className="heading-subsection">
                               Flexibility and Adaptability Insights
                             </h4>
-                            {isAdmin ? (
+                            {isAdmin && isEditing ? (
                               <textarea
                                 value={editedAnalysis.flexibility.summary}
                                 onChange={(e) => updateField("flexibility.summary", e.target.value)}
@@ -1233,7 +1265,7 @@ export default function AnalysisPageClient({
                           </li>
                         </ul>
                       </div>
-                      {isAdmin ? (
+                      {isAdmin && isEditing ? (
                         <div className="grid gap-6 grid-cols-1 sm:grid-cols-3 mt-6">
                           {[
                             {
@@ -1371,9 +1403,29 @@ export default function AnalysisPageClient({
           <div className="flex flex-col">
             <span className="text-xs font-bold text-gray-500">Administrative Actions</span>
             <span className="text-sm font-semibold text-gray-800">
-              {hasUnsavedChanges ? "⚠️ Unsaved draft changes" : "All changes saved"}
+              {isEditing ? "✏️ Edit Mode" : "👁️ View Mode"} {hasUnsavedChanges && "(Draft)"}
             </span>
+            <span className="text-[10px] text-gray-400 font-medium mt-0.5">Double-click empty space to toggle</span>
           </div>
+          <button
+            onClick={() => {
+              setIsEditing(!isEditing);
+              if (!isEditing) {
+                toast.success("Edit Mode Activated!", {
+                  description: "You can now edit details inline.",
+                });
+              } else {
+                toast.info("Edit Mode Deactivated.");
+              }
+            }}
+            className={`px-3 py-1.5 rounded-lg font-bold text-xs border transition-all ${
+              isEditing 
+                ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100" 
+                : "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100"
+            }`}
+          >
+            {isEditing ? "View Mode" : "Edit Mode"}
+          </button>
           <button
             onClick={() => handleSave(false)}
             disabled={isSaving}

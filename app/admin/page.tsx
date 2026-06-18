@@ -30,6 +30,7 @@ function AdminContent() {
   const [ipoList, setIpoList] = useState<HomePageIpoProps[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [isAuthChecking, setIsAuthChecking] = useState(true)
+  const [editingIpoId, setEditingIpoId] = useState<string | null>(null)
   const [upcomingIpoList, setUpcomingIpoList] = useState<HomePageIpoProps[]>([])
   const [liveIpoList, setLiveIpoList] = useState<HomePageIpoProps[]>([])
   const [pastIpoList, setPastIpoList] = useState<HomePageIpoProps[]>([])
@@ -339,7 +340,23 @@ function AdminContent() {
                   </thead>
                   <tbody>
                     {currentIpos.map(ipoItem => (
-                      <tr key={ipoItem._id} className="group hover:bg-gray-50/80 border-b border-gray-100">
+                      <tr
+                        key={ipoItem._id}
+                        className="group hover:bg-gray-50/80 border-b border-gray-100 cursor-pointer select-none"
+                        onDoubleClick={(e) => {
+                          const target = e.target as HTMLElement;
+                          if (
+                            target.closest("button") ||
+                            target.closest("a") ||
+                            target.closest("input") ||
+                            target.closest("label") ||
+                            target.closest(".actions-cell")
+                          ) {
+                            return;
+                          }
+                          setEditingIpoId(ipoItem.ipo._id || null);
+                        }}
+                      >
                         <td className="p-4">
                           <div className="flex items-center gap-3">
                             <div className="relative group cursor-pointer w-10 h-10 rounded-full border-2 overflow-hidden flex-shrink-0">
@@ -401,9 +418,16 @@ function AdminContent() {
                             </Badge>
                           )}
                         </td>
-                        <td className="p-4">
+                        <td className="p-4 actions-cell">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <IpoAnalysisEditModal ipoItem={ipoItem} onAnalysisAdded={refreshData} />
+                            <IpoAnalysisEditModal
+                              ipoItem={ipoItem}
+                              onAnalysisAdded={refreshData}
+                              externalOpen={editingIpoId === ipoItem.ipo._id}
+                              onExternalOpenChange={(open) => {
+                                if (!open) setEditingIpoId(null);
+                              }}
+                            />
                             <IpoAiParserModal ipoItem={ipoItem} onAnalysisSaved={refreshData} />
                             {hasAnalysis(ipoItem) && (
                               <Button

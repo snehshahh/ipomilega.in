@@ -35,10 +35,25 @@ interface IpoAnalysisEditModalProps {
     analysis?: any;
   };
   onAnalysisAdded: () => void;
+  externalOpen?: boolean;
+  onExternalOpenChange?: (open: boolean) => void;
 }
 
-export function IpoAnalysisEditModal({ ipoItem, onAnalysisAdded }: IpoAnalysisEditModalProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function IpoAnalysisEditModal({ 
+  ipoItem, 
+  onAnalysisAdded,
+  externalOpen,
+  onExternalOpenChange
+}: IpoAnalysisEditModalProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setIsOpen = (open: boolean) => {
+    if (onExternalOpenChange !== undefined) {
+      onExternalOpenChange(open);
+    } else {
+      setInternalOpen(open);
+    }
+  };
   const [isSaving, setIsSaving] = useState(false);
 
   // Form states grouped by category
