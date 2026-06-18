@@ -156,7 +156,7 @@ export default function AnalysisPageClient({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const session = useSession();
-  const isAdmin = !session.isPending && ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+  const isAdmin = !session.isPending && ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com", "devanshisoni2004@gmail.com", "devanshisoni2311@gmail.com"].includes(
     session?.data?.user?.email || ""
   );
 

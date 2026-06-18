@@ -95,7 +95,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
   });
 
   useEffect(() => {
-    const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+    const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com", "devanshisoni2004@gmail.com", "devanshisoni2311@gmail.com"].includes(
       session?.data?.user?.email || ""
     );
     setIsAdmin(bool);
@@ -365,7 +365,7 @@ export default function EditBlog({ blog }: { blog: Blog }) {
 
     setBlogPost(prev => ({ ...prev, content: newContent }));
   };
-   console.log(isAdmin)
+  console.log(isAdmin)
 
 
   if (isLoadingBlog) {

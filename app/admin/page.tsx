@@ -48,7 +48,7 @@ function AdminContent() {
 
   useEffect(() => {
     if (!session.isPending) {
-      const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+      const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com", "devanshisoni2004@gmail.com", "devanshisoni2311@gmail.com"].includes(
         session?.data?.user?.email || ""
       );
       setIsAdmin(bool);

@@ -89,7 +89,7 @@ export default function CreateBlogPage() {
 
 
   useEffect(() => {
-    const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com"].includes(
+    const bool = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com", "devanshisoni2004@gmail.com", "devanshisoni2311@gmail.com"].includes(
       session?.data?.user?.email || ""
     );
     setIsAdmin(bool);
@@ -305,10 +305,10 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
           if (uploadResult.success) {
             imageUrl = uploadResult.url;
           } else {
-             throw new Error(uploadResult.error || 'Image upload failed');
+            throw new Error(uploadResult.error || 'Image upload failed');
           }
         } else {
-           throw new Error('Image upload request failed');
+          throw new Error('Image upload request failed');
         }
       }
 
@@ -333,7 +333,7 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
       if (!response.ok) {
         throw new Error('Failed to save blog post');
       }
-      
+
       const blogResponse = await response.json();
       console.log(blogResponse);
       toast.success(status === 'published' ? 'Blog published successfully!' : 'Draft saved successfully!');
@@ -576,10 +576,10 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                   /* Preview Mode */
                   <div className="prose prose-lg dark:prose-invert max-w-none">
                     {(imagePreviewUrl || blogPost.image_url) && (
-                      <img 
-                        src={imagePreviewUrl || blogPost.image_url} 
+                      <img
+                        src={imagePreviewUrl || blogPost.image_url}
                         alt="Featured image preview"
-                        className="w-full rounded-lg mb-8" 
+                        className="w-full rounded-lg mb-8"
                       />
                     )}
                     <h1>{blogPost.title}</h1>
@@ -698,9 +698,9 @@ ${companyName} is set to launch its Initial Public Offering (IPO) in 2025, marki
                   </div>
                 )}
                 {imagePreviewUrl && (
-                    <div className="mt-2">
-                        <img src={imagePreviewUrl} alt="Preview" className="w-full rounded-md object-cover"/>
-                    </div>
+                  <div className="mt-2">
+                    <img src={imagePreviewUrl} alt="Preview" className="w-full rounded-md object-cover" />
+                  </div>
                 )}
               </CardContent>
             </Card>
