@@ -157,9 +157,11 @@ export default function AnalysisPageClient({
   const [isEditing, setIsEditing] = useState(false);
 
   const session = useSession();
-  const isAdmin = !session.isPending && ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com", "devanshisoni2004@gmail.com", "devanshisoni2311@gmail.com"].includes(
+  const isAdmin = ["admin@gmail.com", "snehshah7634@gmail.com", "shahvraj114@gmail.com", "devanshisoni2004@gmail.com", "devanshisoni2311@gmail.com"].includes(
     session?.data?.user?.email || ""
   );
+
+  console.log("RENDER AnalysisPageClient - isAdmin:", isAdmin, "sessionPending:", session?.isPending, "email:", session?.data?.user?.email, "isEditing:", isEditing);
 
   const updateField = (path: string, value: any) => {
     setEditedAnalysis((prev) => {
@@ -457,8 +459,9 @@ export default function AnalysisPageClient({
     <div 
       className="min-h-screen font-ibm-plex pt-[89px]"
       onDoubleClick={(e) => {
-        if (!isAdmin) return;
         const target = e.target as HTMLElement;
+        console.log("DOUBLE CLICK DETECTED - target:", target.tagName, "class:", target.className, "isAdmin:", isAdmin);
+        if (!isAdmin) return;
         if (
           target.tagName === "INPUT" ||
           target.tagName === "TEXTAREA" ||
@@ -468,6 +471,7 @@ export default function AnalysisPageClient({
           target.closest("button") ||
           target.closest("a")
         ) {
+          console.log("DOUBLE CLICK IGNORED - target is interactive");
           return;
         }
         
@@ -522,6 +526,30 @@ export default function AnalysisPageClient({
               </div>
             </div>
             <div className="flex items-center gap-2 w-full sm:w-auto">
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    setIsEditing((prev) => {
+                      const next = !prev;
+                      if (next) {
+                        toast.success("Edit Mode Activated!", {
+                          description: "You can now edit details inline.",
+                        });
+                      } else {
+                        toast.info("Edit Mode Deactivated.");
+                      }
+                      return next;
+                    });
+                  }}
+                  className={`px-4 py-2 rounded-lg font-bold text-sm border transition-all flex items-center gap-1.5 ${
+                    isEditing 
+                      ? "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100 shadow-md" 
+                      : "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100 shadow-md"
+                  }`}
+                >
+                  {isEditing ? "View Mode" : "Edit Mode"}
+                </button>
+              )}
               <button
                 onClick={handleShare}
                 className="border border-primary/20 hover:bg-primary/10 px-3 py-2 rounded-md text-sm flex items-center justify-center w-full sm:w-auto font-ibm-plex"

@@ -425,7 +425,11 @@ function AdminContent() {
                               onAnalysisAdded={refreshData}
                               externalOpen={editingIpoId === ipoItem.ipo._id}
                               onExternalOpenChange={(open) => {
-                                if (!open) setEditingIpoId(null);
+                                if (open) {
+                                  setEditingIpoId(ipoItem.ipo._id || null);
+                                } else {
+                                  setEditingIpoId(null);
+                                }
                               }}
                             />
                             <IpoAiParserModal ipoItem={ipoItem} onAnalysisSaved={refreshData} />
