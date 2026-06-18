@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeftCircle, Share2, Loader2, Save } from "lucide-react";
+import { ArrowLeftCircle, Share2, Loader2, Save, Pencil } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { IpoComprehensiveAnalysis } from "@/app/models/ipo_comprehensive_analysis";
 import { Ipo } from "@/app/models/ipo";
@@ -221,7 +221,7 @@ const EditableText = ({
     );
   }
 
-  const displayContent = renderText ? renderText(localVal) : (localVal || <span className="text-gray-400 italic">Double-click to edit</span>);
+  const displayContent = renderText ? renderText(localVal) : (localVal || <span className="text-gray-400 italic">Double-click or click edit icon to edit</span>);
 
   return (
     <div
@@ -231,14 +231,26 @@ const EditableText = ({
         }
       }}
       className={cn(
-        isAdmin ? "cursor-pointer hover:bg-yellow-50/50 hover:border-yellow-200 border border-dashed border-transparent rounded transition-colors duration-150 p-1" : "",
+        isAdmin ? "group relative cursor-pointer hover:bg-yellow-50/50 hover:border-yellow-200 border border-dashed border-transparent rounded transition-colors duration-150 p-1 pr-6" : "",
         className
       )}
-      title={isAdmin ? "Double-click to edit" : undefined}
+      title={isAdmin ? "Double-click or click edit icon to edit" : undefined}
     >
       <div className={textClassName}>
         {displayContent}
       </div>
+      {isAdmin && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsEditing(true);
+          }}
+          className="absolute right-1 top-1/2 -translate-y-1/2 opacity-60 md:opacity-0 md:group-hover:opacity-100 p-1 rounded hover:bg-gray-200/80 text-gray-400 hover:text-gray-600 transition-all flex-shrink-0"
+          title="Edit this field"
+        >
+          <Pencil className="h-3 w-3" />
+        </button>
+      )}
     </div>
   );
 };
